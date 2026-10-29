@@ -35,7 +35,7 @@ jobs:
 
   java:
     needs: changes
-    if: needs.changes.outputs.java == 'true' && hashFiles('services/pom.xml') != ''
+    if: needs.changes.outputs.java == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -48,7 +48,7 @@ jobs:
 
   dotnet:
     needs: changes
-    if: needs.changes.outputs.dotnet == 'true' && hashFiles('services-dotnet/*.sln') != ''
+    if: needs.changes.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -60,7 +60,7 @@ jobs:
 
   web:
     needs: changes
-    if: needs.changes.outputs.web == 'true' && hashFiles('frontend/sso-web/package.json') != ''
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
