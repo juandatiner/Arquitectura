@@ -1,0 +1,40 @@
+# MSCatalogo.jar · nodo MSCatalogo SERVER :8082 · Máquina 2 · 10.43.100.238
+server:
+  port: ${PORT:8082}
+
+spring:
+  application:
+    name: MSCatalogo
+  datasource:
+    # DB CATALOGO (DB SERVER :5432)
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/catalogo}
+    username: ${DB_USUARIO:catalogo}
+    password: ${DB_CLAVE:catalogo}
+  rabbitmq:
+    # MOM SERVER :5672 (RabbitMQ) · Máquina 2
+    host: ${MOM_HOST:localhost}
+    port: ${MOM_PUERTO:5672}
+    username: ${MOM_USUARIO:sso}
+    password: ${MOM_CLAVE:sso}
+    publisher-confirm-type: simple
+    listener:
+      simple:
+        # Las colas se crean desde deploy/mom/definiciones/colas.json, no desde el código
+        missing-queues-fatal: false
+        prefetch: 10
+
+sso:
+  outbox:
+    intervalo: ${OUTBOX_INTERVALO:1s}
+    tamano-lote: ${OUTBOX_TAMANO_LOTE:50}
+    espera-confirmacion: 5s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

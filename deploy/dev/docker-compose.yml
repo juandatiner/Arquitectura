@@ -79,6 +79,44 @@ services:
       db-acceso:
         condition: service_healthy
 
+  # DB SERVER :5432 · DB CATALOGO · Máquina 2
+  db-catalogo:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: catalogo
+      POSTGRES_USER: catalogo
+      POSTGRES_PASSWORD: ${DB_CLAVE:-catalogo}
+    volumes:
+      - db-catalogo:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U catalogo -d catalogo"]
+      interval: 5s
+      retries: 20
+
+  # MSCatalogo SERVER :8082 · MSCatalogo.jar · Máquina 2
+  mscatalogo:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mscatalogo
+        ARTEFACTO: MSCatalogo
+    environment:
+      PORT: 8082
+      DB_URL: jdbc:postgresql://db-catalogo:5432/catalogo
+      DB_USUARIO: catalogo
+      DB_CLAVE: ${DB_CLAVE:-catalogo}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:-sso}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:-sso}
+    ports:
+      - "${MSCATALOGO_PUERTO_HOST:-8082}:8082"
+    depends_on:
+      db-catalogo:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -132,4 +170,5 @@ secrets:
 
 volumes:
   mom:
+  db-catalogo:
   db-acceso:
