@@ -44,7 +44,8 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - run: ./mvnw -B -f services/pom.xml verify
+      - run: ./mvnw -B verify
+        working-directory: services
 
   dotnet:
     needs: changes
