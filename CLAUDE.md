@@ -26,6 +26,7 @@ Estas reglas mandan sobre cualquier otra preferencia, convención o "buena prác
 | Cola `q.xxx` | Cola RabbitMQ con ese nombre exacto |
 | Estados (`EN_VALIDACION`, `ESPERANDO_PAGO`, `PAGO_CONFIRMADO`, `TERMINADA`, `CANCELADA`, `EN_REVISION`, `APROBADO`, `RECHAZADO`, `ENPROCESO`) | Enum con esos literales exactos |
 
+- En las clases `WS*` (HTTP) los parámetros del paso llegan como cuerpo JSON cuyos campos son exactamente esos parámetros, en el mismo orden (ej. `autenticar(usuario, clave)` → `{"usuario", "clave"}`).
 - Una clase **solo llama** a las clases a las que el diagrama le dibuja flecha. Nada de atajos (ej. `WSGateway` nunca llama directo a `WSSubasta`: pasa por `SrvSeguridadToken` → `SrvRuteo`).
 - Cada método lleva Javadoc / comentario XML con los pasos que implementa: `/** Pasos IV.9, IV.11 */`.
 - Paquete raíz del componente (`co.edu.javeriana.sso.<componente>` en Java, raíz del proyecto en .NET) = **exactamente** las clases del diagrama + la clase de arranque. Entidades, DTO, eventos, enums y configuración van en los subpaquetes `modelo` y `config`. Ninguna clase de negocio fuera del diagrama.
