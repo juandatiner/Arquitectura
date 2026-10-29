@@ -29,6 +29,7 @@
         <module>apigateway</module>
         <module>msacceso</module>
         <module>mscatalogo</module>
+        <module>mssubasta</module>
     </modules>
 
     <properties>

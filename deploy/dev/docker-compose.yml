@@ -117,6 +117,46 @@ services:
       mom:
         condition: service_healthy
 
+  # DB SERVER :5432 · DB SUBASTA · Máquina 2
+  db-subasta:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: subasta
+      POSTGRES_USER: subasta
+      POSTGRES_PASSWORD: ${DB_CLAVE:-subasta}
+    volumes:
+      - db-subasta:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U subasta -d subasta"]
+      interval: 5s
+      retries: 20
+
+  # MSSubasta SERVER :8083 · MSSubasta.jar · Máquina 2
+  mssubasta:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mssubasta
+        ARTEFACTO: MSSubasta
+    environment:
+      PORT: 8083
+      DB_URL: jdbc:postgresql://db-subasta:5432/subasta
+      DB_USUARIO: subasta
+      DB_CLAVE: ${DB_CLAVE:-subasta}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:-sso}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:-sso}
+      TIMER_APERTURA: 5s
+      TIMER_CIERRE: 5s
+    ports:
+      - "${MSSUBASTA_PUERTO_HOST:-8083}:8083"
+    depends_on:
+      db-subasta:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -171,4 +211,5 @@ secrets:
 volumes:
   mom:
   db-catalogo:
+  db-subasta:
   db-acceso:
