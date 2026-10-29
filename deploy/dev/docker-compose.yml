@@ -62,6 +62,25 @@ services:
       db-acceso:
         condition: service_healthy
 
+  # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
+  balanceador:
+    image: nginx:1.29-alpine
+    environment:
+      SSOWEB: ssoweb:80
+      APIGATEWAY: apigateway:8080
+      MSCOMPRA_REPLICA1: mscompra-replica1:8085
+      MSCOMPRA_REPLICA2: mscompra-replica2:8085
+      RESOLVER: 127.0.0.11
+    volumes:
+      - ../balanceador/templates:/etc/nginx/templates:ro
+      - ../secretos/balanceador.crt:/etc/nginx/tls/balanceador.crt:ro
+      - ../secretos/balanceador.key:/etc/nginx/tls/balanceador.key:ro
+    ports:
+      - "${BALANCEADOR_PUERTO_HOST:-80}:80"
+      - "${BALANCEADOR_HTTPS_PUERTO_HOST:-443}:443"
+    depends_on:
+      - apigateway
+
   # APIGATEWAY SERVER :8080 · APIGateway.jar · Máquina 1 (DMZ)
   apigateway:
     build:
