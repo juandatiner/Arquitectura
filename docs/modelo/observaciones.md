@@ -6,8 +6,8 @@ si cambia el modelo, se actualiza primero el VPP y luego se regenera `modelo-can
 
 | # | Paso / elemento | Observación | Decisión |
 |---|-----------------|-------------|----------|
-| 1 | VI.23c | El PDF dice `SrvCompraSaga → RepoOutboxCompra cambiarEstado(EN_REVISION) · guardar(NotificacionDemora)`. `cambiarEstado` es de `RepoCompra` (VI.22b, X.1). | Pendiente |
+| 1 | VI.22c / VI.23c | El PDF dice `SrvCompraSaga → RepoOutboxCompra cambiarEstado(EN_REVISION) · guardar(NotificacionDemora)`. `cambiarEstado` es de `RepoCompra` (VI.22b, X.1) y el pliego solo muestra el número del paso sobre cada flecha. | **Decidida (2026-10-29):** `VI.22c` → `RepoCompra.registrarIntento(intento + 1) · cambiarEstado(EN_REVISION)` (solo al agotar intentos); `VI.23c` → `RepoOutboxCompra.guardar(NotificacionDemora)`, en la misma transacción. Las flechas del pliego no cambian. Aplicada en `CORRECCIONES` de `extraer_modelo.py`. Conviene corregir el texto en el PDF de casos de uso. |
 | 2 | VII.32b | Autollamada `SrvCompraSaga → SrvCompraSaga compensar(...)`; no tiene flecha en el despliegue (es interna). | Se implementa como método de `SrvCompraSaga` |
-| 3 | Máquina 1 | `BALANCEADOR DE CARGAS :80` y `SSOWeb SERVER :80` usan el mismo puerto en la misma máquina. | Pendiente: en Docker ambos escuchan :80 en su contenedor; solo el balanceador publica :80 al host |
+| 3 | Máquina 1 | `BALANCEADOR DE CARGAS :80` y `SSOWeb SERVER :80` usan el mismo puerto en la misma máquina. | **Decidida (2026-10-29):** en Docker ambos escuchan :80 dentro de su contenedor; solo el balanceador publica :80 al host. El balanceador sirve `/` reenviando a SSOWeb por la red interna de Docker y `/api/` al APIGateway. |
 | 4 | DB COMPRA | Las dos réplicas de `MSCompra` (Máquinas 2 y 3) tienen flecha JDBC a `DB COMPRA`, que está en Máquina 2. | La réplica 2 se conecta por red a la base de Máquina 2 |
 | 5 | SMS SERVER, MAIL SERVER, AD | Nodos sin componente propio (sistemas externos). | Se simulan con contenedores: OpenLDAP (estereotipo del diagrama), Mailpit (SMTP :1025) y un simulador HTTP :9004 |

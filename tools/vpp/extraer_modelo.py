@@ -50,6 +50,15 @@ COLORES_CU = {
     "IX": ["Notificar al cliente", "azul", "0,112,192"],
     "X": ["Compensar la compra", "café", "128,64,0"],
 }
+# Correcciones al TEXTO de un paso del PDF de casos de uso. Nunca cambian origen ni destino:
+# las flechas del pliego quedan idénticas. Cada una está decidida en docs/modelo/observaciones.md.
+CORRECCIONES = {
+    "VI.22c": {"mensaje": "registrarIntento(intento + 1) · cambiarEstado(EN_REVISION)",
+               "motivo": "Observación 1: el estado de la compra pertenece a RepoCompra (igual que VI.22b y X.1); "
+                         "cambiarEstado(EN_REVISION) se ejecuta solo al agotar los intentos."},
+    "VI.23c": {"mensaje": "guardar(NotificacionDemora)",
+               "motivo": "Observación 1: RepoOutboxCompra solo guarda eventos; el cambio de estado pasa a VI.22c."},
+}
 # Destinos que no son clases de código propio
 NO_CODIGO = re.compile(r"^(Browser|Nginx|AD|CORREO|SMS GATEWAY|q\..+|DB .+)$")
 
@@ -156,6 +165,9 @@ def pasos_pdf():
             ultimo["notas"].extend(extra)
             ultimo = None
     for p in pasos:
+        if p["id"] in CORRECCIONES:
+            c = CORRECCIONES[p["id"]]
+            p["mensaje_pdf"], p["mensaje"], p["correccion"] = p["mensaje"], c["mensaje"], c["motivo"]
         p["operaciones"] = operaciones_de(p["mensaje"])
     return pasos
 
