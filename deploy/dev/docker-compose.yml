@@ -62,7 +62,35 @@ services:
       db-acceso:
         condition: service_healthy
 
+  # APIGATEWAY SERVER :8080 · APIGateway.jar · Máquina 1 (DMZ)
+  apigateway:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: apigateway
+        ARTEFACTO: APIGateway
+    environment:
+      PORT: 8080
+      RUTA_MSACCESO: http://msacceso:8081
+      RUTA_MSCATALOGO: http://mscatalogo:8082
+      RUTA_MSSUBASTA: http://mssubasta:8083
+      RUTA_MSSUSCRIPCION: http://mssuscripcion:8084
+      RUTA_BALANCEADOR_COMPRA: http://balanceador:8085
+      RUTA_MSPAGO: http://mspago:5086
+      TOKEN_CLAVE_PUBLICA: /run/secrets/token_publica
+      CREDENCIAL_YOPAGO: ${CREDENCIAL_YOPAGO:-yopago-dev}
+    secrets:
+      - token_publica
+    ports:
+      - "${APIGATEWAY_PUERTO_HOST:-8080}:8080"
+    depends_on:
+      msacceso:
+        condition: service_healthy
+
 secrets:
+  token_publica:
+    file: ../secretos/token_publica.pem
   token_privada:
     file: ../secretos/token_privada.pem
 
