@@ -10,6 +10,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  modelo:
+    name: Código idéntico al diagrama
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -I tools/vpp/verificar_codigo.py
+
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -22,13 +29,13 @@ jobs:
         id: filter
         with:
           filters: |
-            java: ['services/**', 'external/**', 'libs/**']
+            java: ['services/**']
             dotnet: ['services-dotnet/**']
             web: ['frontend/sso-web/**']
 
   java:
     needs: changes
-    if: needs.changes.outputs.java == 'true' && hashFiles('services/pom.xml') != ''
+    if: needs.changes.outputs.java == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,7 +48,7 @@ jobs:
 
   dotnet:
     needs: changes
-    if: needs.changes.outputs.dotnet == 'true' && hashFiles('services-dotnet/*.sln') != ''
+    if: needs.changes.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -53,7 +60,7 @@ jobs:
 
   web:
     needs: changes
-    if: needs.changes.outputs.web == 'true' && hashFiles('frontend/sso-web/package.json') != ''
+    if: needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
