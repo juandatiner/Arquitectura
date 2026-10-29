@@ -1,0 +1,10 @@
+# Solo para probar el balanceo antes de que exista MSCompra:
+# dos réplicas falsas que responden con su nombre de host.
+#   docker compose -f deploy/dev/docker-compose.yml -f deploy/dev/prueba-balanceo.yml up -d
+services:
+  mscompra-replica1:
+    image: traefik/whoami:v1.11
+    command: --port 8085
+  mscompra-replica2:
+    image: traefik/whoami:v1.11
+    command: --port 8085

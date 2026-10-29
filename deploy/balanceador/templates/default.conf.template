@@ -1,0 +1,96 @@
+# BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 · 10.43.99.2 (DMZ)
+# Flechas del diagrama:
+#   ProxyWSSubastaWeb / ProxyWSSubastaMobile → Nginx (HTTP)   pasos I.3, II.3, III.3, IV.3, VI.3
+#   IntegraSSO (YoPago)                     → Nginx (HTTPS)  paso VII.20
+#   Nginx → WSGateway (HTTP)                                  pasos I.4, II.4, III.4, IV.4, VI.4, VII.21
+#   SrvRuteo → Nginx → WSCompra réplica 1 y 2 (least_conn)   pasos VI.7, VI.8
+# Variables: ${SSOWEB} ${APIGATEWAY} ${MSCOMPRA_REPLICA1} ${MSCOMPRA_REPLICA2} ${RESOLVER}
+
+resolver ${RESOLVER} valid=10s ipv6=off;
+
+log_format balanceo '$remote_addr "$request" $status upstream=$upstream_addr '
+                    'tiempo=$upstream_response_time id=$request_id';
+
+# Escalabilidad y balanceo del servicio de compra (enunciado, 10 %)
+upstream msCompra {
+    zone msCompra 64k;
+    least_conn;
+    server ${MSCOMPRA_REPLICA1} max_fails=3 fail_timeout=15s resolve;
+    server ${MSCOMPRA_REPLICA2} max_fails=3 fail_timeout=15s resolve;
+}
+
+# Entrada pública HTTP
+server {
+    listen 80;
+    server_name _;
+    access_log /var/log/nginx/access.log balanceo;
+    client_max_body_size 1m;
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Request-Id $request_id;
+    proxy_connect_timeout 3s;
+    proxy_read_timeout 15s;
+
+    # VII.20 exige HTTPS: el reporte de pago nunca viaja en claro
+    location = /api/pagos/reporte {
+        return 403 '{"title":"Forbidden","status":403,"detail":"El reporte de pago solo se acepta por HTTPS"}';
+        default_type application/json;
+    }
+
+    location /api/ {
+        set $apigateway http://${APIGATEWAY};
+        proxy_pass $apigateway;
+    }
+
+    location / {
+        set $ssoweb http://${SSOWEB};
+        proxy_pass $ssoweb;
+    }
+}
+
+# Entrada HTTPS (VII.20 IntegraSSO → Nginx)
+server {
+    listen 443 ssl;
+    server_name _;
+    access_log /var/log/nginx/access.log balanceo;
+    client_max_body_size 1m;
+
+    ssl_certificate     /etc/nginx/tls/balanceador.crt;
+    ssl_certificate_key /etc/nginx/tls/balanceador.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    proxy_set_header X-Request-Id $request_id;
+    proxy_connect_timeout 3s;
+    proxy_read_timeout 15s;
+
+    location /api/ {
+        set $apigateway http://${APIGATEWAY};
+        proxy_pass $apigateway;
+    }
+}
+
+# Entrada interna para SrvRuteo (VI.7): no se publica fuera de Máquina 1
+server {
+    listen 8085;
+    server_name _;
+    access_log /var/log/nginx/access.log balanceo;
+
+    proxy_set_header Host $host;
+    proxy_set_header X-Request-Id $request_id;
+    proxy_connect_timeout 2s;
+    proxy_read_timeout 15s;
+    # Si una réplica cae, la petición se reintenta en la otra
+    proxy_next_upstream error timeout http_502 http_503 http_504;
+    proxy_next_upstream_tries 2;
+
+    location /compras {
+        proxy_pass http://msCompra;
+    }
+}
