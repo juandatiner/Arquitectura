@@ -1,0 +1,22 @@
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /services
+    schedule: { interval: weekly }
+    groups:
+      spring: { patterns: ["org.springframework*"] }
+  - package-ecosystem: nuget
+    directory: /services-dotnet
+    schedule: { interval: weekly }
+  - package-ecosystem: npm
+    directory: /frontend/sso-web
+    schedule: { interval: weekly }
+  - package-ecosystem: gradle
+    directory: /frontend/sso-mobile
+    schedule: { interval: weekly }
+  - package-ecosystem: docker
+    directory: /
+    schedule: { interval: weekly }
+  - package-ecosystem: github-actions
+    directory: /
+    schedule: { interval: weekly }

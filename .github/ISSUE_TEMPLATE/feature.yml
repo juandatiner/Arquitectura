@@ -1,0 +1,39 @@
+name: Funcionalidad
+description: Implementar un componente o paso de un caso de uso
+title: "feat(<servicio>): "
+labels: ["type:feature", "status:triage"]
+body:
+  - type: input
+    id: cu
+    attributes:
+      label: Caso de uso y pasos
+      description: Referencia al PDF de casos de uso
+      placeholder: "IV · pasos IV.7 – IV.13a"
+    validations:
+      required: true
+  - type: textarea
+    id: contexto
+    attributes:
+      label: Contexto
+      description: Qué problema resuelve y dónde está en el diagrama
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Alcance
+      description: Clases, endpoints, colas, tablas
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación
+      value: |
+        - [ ] Dado ... cuando ... entonces ...
+    validations:
+      required: true
+  - type: textarea
+    id: notas
+    attributes:
+      label: Notas técnicas
