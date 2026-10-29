@@ -1,0 +1,35 @@
+# OS / IDE
+.DS_Store
+.idea/
+.vscode/
+*.iml
+
+# Java
+target/
+*.class
+!.mvn/wrapper/maven-wrapper.jar
+
+# .NET
+bin/
+obj/
+*.user
+
+# Node / Angular
+node_modules/
+dist/
+.angular/
+
+# Android
+.gradle/
+build/
+local.properties
+*.apk
+
+# Entorno
+.env
+!.env.example
+*.log
+
+# Visual Paradigm temporales
+*.vpp.bak_*
+*.vpp.lck

@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      java: ${{ steps.filter.outputs.java }}
+      dotnet: ${{ steps.filter.outputs.dotnet }}
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            java: ['services/**', 'external/**', 'libs/**']
+            dotnet: ['services-dotnet/**']
+            web: ['frontend/sso-web/**']
+
+  java:
+    needs: changes
+    if: needs.changes.outputs.java == 'true' && hashFiles('services/pom.xml') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - run: ./mvnw -B -f services/pom.xml verify
+
+  dotnet:
+    needs: changes
+    if: needs.changes.outputs.dotnet == 'true' && hashFiles('services-dotnet/*.sln') != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: services-dotnet/global.json
+      - run: dotnet build services-dotnet --configuration Release
+      - run: dotnet test services-dotnet --configuration Release --no-build
+
+  web:
+    needs: changes
+    if: needs.changes.outputs.web == 'true' && hashFiles('frontend/sso-web/package.json') != ''
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend/sso-web
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/sso-web/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test -- --watch=false
+      - run: npm run build

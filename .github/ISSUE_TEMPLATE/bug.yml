@@ -1,0 +1,36 @@
+name: Bug
+description: Algo no funciona como se espera
+title: "fix(<servicio>): "
+labels: ["type:bug", "status:triage"]
+body:
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportamiento actual
+    validations:
+      required: true
+  - type: textarea
+    id: esperado
+    attributes:
+      label: Comportamiento esperado
+    validations:
+      required: true
+  - type: textarea
+    id: pasos
+    attributes:
+      label: Pasos para reproducir
+      value: |
+        1.
+        2.
+    validations:
+      required: true
+  - type: dropdown
+    id: maquina
+    attributes:
+      label: Máquina
+      options: ["Desarrollo (local)", "Máquina 1 · 10.43.99.2", "Máquina 2 · 10.43.100.238", "Máquina 3 · 10.43.99.45"]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs relevantes
+      render: shell

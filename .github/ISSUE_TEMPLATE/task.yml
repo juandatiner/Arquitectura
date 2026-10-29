@@ -1,0 +1,22 @@
+name: Tarea técnica
+description: Infraestructura, configuración, documentación o deuda técnica
+labels: ["type:chore", "status:triage"]
+body:
+  - type: textarea
+    id: objetivo
+    attributes:
+      label: Objetivo
+    validations:
+      required: true
+  - type: textarea
+    id: tareas
+    attributes:
+      label: Tareas
+      value: |
+        - [ ]
+    validations:
+      required: true
+  - type: textarea
+    id: criterios
+    attributes:
+      label: Criterios de aceptación

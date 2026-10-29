@@ -1,0 +1,6 @@
+* text=auto eol=lf
+*.vpp binary
+*.docx binary
+*.pdf binary
+*.jar binary
+*.cmd text eol=crlf
