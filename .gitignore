@@ -33,3 +33,7 @@ local.properties
 # Visual Paradigm temporales
 *.vpp.bak_*
 *.vpp.lck
+
+# Claves y secretos
+deploy/secretos/
+*.pem

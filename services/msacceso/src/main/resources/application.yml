@@ -1,0 +1,33 @@
+# MSAcceso.jar · nodo MSAcceso SERVER :8081 · Máquina 2 · 10.43.100.238
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: MSAcceso
+  datasource:
+    # DB ACCESO (DB SERVER :5432)
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/acceso}
+    username: ${DB_USUARIO:acceso}
+    password: ${DB_CLAVE:acceso}
+
+sso:
+  ad:
+    # AD SERVER :389 (OpenLDAP) · Máquina 3 · 10.43.99.45
+    url: ${AD_URL:ldap://localhost:389}
+    patron-dn: ${AD_PATRON_DN:uid={0},ou=usuarios,dc=sso,dc=javeriana,dc=edu,dc=co}
+    timeout: ${AD_TIMEOUT:3s}
+  token:
+    emisor: MSAcceso
+    duracion: ${TOKEN_DURACION:30m}
+    archivo-clave-privada: ${TOKEN_CLAVE_PRIVADA:/run/secrets/token_privada.pem}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
