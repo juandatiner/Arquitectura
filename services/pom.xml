@@ -26,6 +26,7 @@
         tools/vpp/verificar_codigo.py exige que, una vez creado, el módulo coincida con el diagrama.
     -->
     <modules>
+        <module>apigateway</module>
         <module>msacceso</module>
     </modules>
 

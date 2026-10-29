@@ -1,0 +1,34 @@
+# APIGateway.jar · nodo APIGATEWAY SERVER :8080 · Máquina 1 · 10.43.99.2 (DMZ)
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: APIGateway
+
+sso:
+  # Flechas HTTP de SrvRuteo en el diagrama
+  rutas:
+    ms-acceso: ${RUTA_MSACCESO:http://10.43.100.238:8081}
+    ms-catalogo: ${RUTA_MSCATALOGO:http://10.43.100.238:8082}
+    ms-subasta: ${RUTA_MSSUBASTA:http://10.43.100.238:8083}
+    ms-suscripcion: ${RUTA_MSSUSCRIPCION:http://10.43.100.238:8084}
+    # Nginx (Máquina 1) · upstream msCompra least_conn → MSCompra réplica 1 (M2) y réplica 2 (M3)
+    balanceador-compra: ${RUTA_BALANCEADOR_COMPRA:http://balanceador:8085}
+    ms-pago: ${RUTA_MSPAGO:http://10.43.99.45:5086}
+  token:
+    emisor: MSAcceso
+    archivo-clave-publica: ${TOKEN_CLAVE_PUBLICA:/run/secrets/token_publica.pem}
+  credencial-yo-pago: ${CREDENCIAL_YOPAGO}
+  timeout-conexion: ${TIMEOUT_CONEXION:2s}
+  timeout-respuesta: ${TIMEOUT_RESPUESTA:10s}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
