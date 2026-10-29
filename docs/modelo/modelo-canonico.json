@@ -4,6 +4,68 @@
     "vpp": "ProyectoSSO-Integrada-JavaEE-NET.vpp",
     "pdf": "casos-de-uso-arquitectura-integrada.pdf"
   },
+  "colores_sistema": {
+    "SSO (subastas)": "azul claro",
+    "YoPago (.NET)": "rosado",
+    "OFAC": "naranja claro",
+    "SIN (inventario)": "celeste",
+    "SEN (envíos)": "cian",
+    "MOM / colas RabbitMQ": "amarillo",
+    "AD · Correo · SMS": "gris",
+    "Máquinas físicas": "gris muy claro"
+  },
+  "colores_cu": {
+    "I": [
+      "Autenticar cliente",
+      "verde",
+      "0,153,0"
+    ],
+    "II": [
+      "Consultar catálogo y suscribirse",
+      "naranja",
+      "255,128,0"
+    ],
+    "III": [
+      "Publicar y abrir subasta",
+      "morado",
+      "128,0,255"
+    ],
+    "IV": [
+      "Registrar oferta y avisar",
+      "fucsia",
+      "230,0,126"
+    ],
+    "V": [
+      "Cerrar subasta y crear compra",
+      "verde azulado",
+      "0,128,128"
+    ],
+    "VI": [
+      "Iniciar compra y validar OFAC",
+      "mostaza",
+      "204,153,0"
+    ],
+    "VII": [
+      "Pagar en YoPago (.NET)",
+      "azul oscuro",
+      "0,0,160"
+    ],
+    "VIII": [
+      "Despachar con SIN y SEN",
+      "oliva",
+      "128,128,0"
+    ],
+    "IX": [
+      "Notificar al cliente",
+      "azul",
+      "0,112,192"
+    ],
+    "X": [
+      "Compensar la compra",
+      "café",
+      "128,64,0"
+    ]
+  },
   "componentes": {
     "APIGateway.jar": {
       "nodos": [
@@ -3795,6 +3857,14 @@
       }
     ],
     "flechas_sin_paso": [],
-    "clases_en_pasos_sin_componente": []
+    "clases_en_pasos_sin_componente": [],
+    "pliego": "arquitectura-integrada-pliego-100x70.pdf",
+    "componentes_ausentes": [],
+    "clases_ausentes": [],
+    "nodos_ausentes": [],
+    "pliego_pasos_sin_flecha": [
+      "VII.32b"
+    ],
+    "pliego_flechas_sin_paso": []
   }
 }
