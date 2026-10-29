@@ -1171,7 +1171,6 @@
       "obtenerPendientes"
     ],
     "RepoOutboxCompra": [
-      "cambiarEstado",
       "guardar",
       "obtenerPendientes"
     ],
@@ -2704,13 +2703,16 @@
       "cu": "VI",
       "de": "SrvCompraSaga",
       "a": "RepoCompra",
-      "mensaje": "registrarIntento(intento + 1)",
+      "mensaje": "registrarIntento(intento + 1) · cambiarEstado(EN_REVISION)",
       "notas": [
         "r1 y r2",
         "c: sin respuesta"
       ],
+      "mensaje_pdf": "registrarIntento(intento + 1)",
+      "correccion": "Observación 1: el estado de la compra pertenece a RepoCompra (igual que VI.22b y X.1); cambiarEstado(EN_REVISION) se ejecuta solo al agotar los intentos.",
       "operaciones": [
-        "registrarIntento"
+        "registrarIntento",
+        "cambiarEstado"
       ]
     },
     {
@@ -2718,12 +2720,13 @@
       "cu": "VI",
       "de": "SrvCompraSaga",
       "a": "RepoOutboxCompra",
-      "mensaje": "cambiarEstado(EN_REVISION) · guardar(NotificacionDemora)",
+      "mensaje": "guardar(NotificacionDemora)",
       "notas": [
         "r1 y r2"
       ],
+      "mensaje_pdf": "cambiarEstado(EN_REVISION) · guardar(NotificacionDemora)",
+      "correccion": "Observación 1: RepoOutboxCompra solo guarda eventos; el cambio de estado pasa a VI.22c.",
       "operaciones": [
-        "cambiarEstado",
         "guardar"
       ]
     },
