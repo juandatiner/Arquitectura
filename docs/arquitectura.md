@@ -85,7 +85,9 @@ La lógica de presentación (Máquina 1) y la de negocio (Máquinas 2 y 3) queda
 | `q.despachoConfirmado` | WorkerOutboxDespacho | ListenerConfDespacho (r1 **o** r2) | VIII |
 | `q.LiberarBienSubasta` | WorkerOutboxCompra | ListenerLiberarBienSub, ListenerLiberarBienCat, ListenerLiberarBienSus (fan-out) | X |
 
-`q.LiberarBienSubasta` lo consumen tres servicios, por lo que se implementa como *exchange fanout* con una cola por consumidor.
+Cada `q.*` del diagrama es un **exchange fanout con ese nombre exacto** ligado a su cola durable (tipo *quorum*): los productores siempre publican al exchange `q.*`.
+`q.LiberarBienSubasta` lo consumen tres servicios, así que su exchange reparte a tres colas: `q.LiberarBienSubasta.subasta`, `.catalogo` y `.suscripcion`.
+Cada cola tiene su DLQ (`<cola>.dlq`) tras 5 entregas fallidas. Definiciones en `deploy/mom/definiciones/colas.json`.
 Los mensajes entre Java y .NET usan JSON con nombres de campo en camelCase.
 
 ## Estados de la compra (saga en MSCompra)
