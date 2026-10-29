@@ -23,6 +23,23 @@ services:
       interval: 5s
       retries: 20
 
+  # MOM SERVER :5672 (RabbitMQ) · Máquina 2
+  mom:
+    image: rabbitmq:4.1-management-alpine
+    # Usuario: python3 -I tools/scripts/generar-usuario-mom.py sso sso deploy/secretos/mom
+    volumes:
+      - ../mom/rabbitmq.conf:/etc/rabbitmq/conf.d/20-sso.conf:ro
+      - ../mom/definiciones/colas.json:/etc/rabbitmq/definiciones/colas.json:ro
+      - ../secretos/mom/usuarios.json:/etc/rabbitmq/definiciones/usuarios.json:ro
+      - mom:/var/lib/rabbitmq
+    ports:
+      - "${MOM_PUERTO_HOST:-5672}:5672"
+      - "${MOM_CONSOLA_PUERTO_HOST:-15672}:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      retries: 20
+
   # DB SERVER :5432 · DB ACCESO · Máquina 2
   db-acceso:
     image: postgres:17-alpine
@@ -114,4 +131,5 @@ secrets:
     file: ../secretos/token_privada.pem
 
 volumes:
+  mom:
   db-acceso:

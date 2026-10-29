@@ -1,0 +1,741 @@
+{
+  "rabbit_version": "4.1",
+  "exchanges": [
+    {
+      "name": "sso.dlx",
+      "vhost": "/",
+      "type": "direct",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.nuevaSubasta",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.subastaIniciada",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.cambioOfertaMayor",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.subastaCerrada",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.notificacion",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.pagoSolicitud",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.pagoConfirmado",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.despachoSolicitud",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.inventarioSolicitud",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.inventarioConfirmacion",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.envioSolicitud",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.envioConfirmacion",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.despachoConfirmado",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "q.LiberarBienSubasta",
+      "vhost": "/",
+      "type": "fanout",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    }
+  ],
+  "queues": [
+    {
+      "name": "q.nuevaSubasta",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.nuevaSubasta.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.nuevaSubasta.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.subastaIniciada",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.subastaIniciada.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.subastaIniciada.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.cambioOfertaMayor",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.cambioOfertaMayor.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.cambioOfertaMayor.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.subastaCerrada",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.subastaCerrada.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.subastaCerrada.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.notificacion",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.notificacion.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.notificacion.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.pagoSolicitud",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.pagoSolicitud.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.pagoSolicitud.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.pagoConfirmado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.pagoConfirmado.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.pagoConfirmado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.despachoSolicitud",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.despachoSolicitud.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.despachoSolicitud.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.inventarioSolicitud",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.inventarioSolicitud.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.inventarioSolicitud.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.inventarioConfirmacion",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.inventarioConfirmacion.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.inventarioConfirmacion.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.envioSolicitud",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.envioSolicitud.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.envioSolicitud.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.envioConfirmacion",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.envioConfirmacion.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.envioConfirmacion.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.despachoConfirmado",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.despachoConfirmado.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.despachoConfirmado.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.LiberarBienSubasta.subasta",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.LiberarBienSubasta.subasta.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.LiberarBienSubasta.subasta.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.LiberarBienSubasta.catalogo",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.LiberarBienSubasta.catalogo.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.LiberarBienSubasta.catalogo.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    },
+    {
+      "name": "q.LiberarBienSubasta.suscripcion",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum",
+        "x-dead-letter-exchange": "sso.dlx",
+        "x-dead-letter-routing-key": "q.LiberarBienSubasta.suscripcion.dlq",
+        "x-delivery-limit": 5
+      }
+    },
+    {
+      "name": "q.LiberarBienSubasta.suscripcion.dlq",
+      "vhost": "/",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {
+        "x-queue-type": "quorum"
+      }
+    }
+  ],
+  "bindings": [
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.nuevaSubasta.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.nuevaSubasta.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.nuevaSubasta",
+      "vhost": "/",
+      "destination": "q.nuevaSubasta",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.subastaIniciada.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.subastaIniciada.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.subastaIniciada",
+      "vhost": "/",
+      "destination": "q.subastaIniciada",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.cambioOfertaMayor.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.cambioOfertaMayor.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.cambioOfertaMayor",
+      "vhost": "/",
+      "destination": "q.cambioOfertaMayor",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.subastaCerrada.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.subastaCerrada.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.subastaCerrada",
+      "vhost": "/",
+      "destination": "q.subastaCerrada",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.notificacion.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.notificacion.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.notificacion",
+      "vhost": "/",
+      "destination": "q.notificacion",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.pagoSolicitud.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.pagoSolicitud.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.pagoSolicitud",
+      "vhost": "/",
+      "destination": "q.pagoSolicitud",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.pagoConfirmado.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.pagoConfirmado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.pagoConfirmado",
+      "vhost": "/",
+      "destination": "q.pagoConfirmado",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.despachoSolicitud.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.despachoSolicitud.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.despachoSolicitud",
+      "vhost": "/",
+      "destination": "q.despachoSolicitud",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.inventarioSolicitud.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.inventarioSolicitud.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.inventarioSolicitud",
+      "vhost": "/",
+      "destination": "q.inventarioSolicitud",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.inventarioConfirmacion.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.inventarioConfirmacion.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.inventarioConfirmacion",
+      "vhost": "/",
+      "destination": "q.inventarioConfirmacion",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.envioSolicitud.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.envioSolicitud.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.envioSolicitud",
+      "vhost": "/",
+      "destination": "q.envioSolicitud",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.envioConfirmacion.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.envioConfirmacion.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.envioConfirmacion",
+      "vhost": "/",
+      "destination": "q.envioConfirmacion",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.despachoConfirmado.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.despachoConfirmado.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.despachoConfirmado",
+      "vhost": "/",
+      "destination": "q.despachoConfirmado",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.LiberarBienSubasta.subasta.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.LiberarBienSubasta.subasta.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.LiberarBienSubasta",
+      "vhost": "/",
+      "destination": "q.LiberarBienSubasta.subasta",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.LiberarBienSubasta.catalogo.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.LiberarBienSubasta.catalogo.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.LiberarBienSubasta",
+      "vhost": "/",
+      "destination": "q.LiberarBienSubasta.catalogo",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    },
+    {
+      "source": "sso.dlx",
+      "vhost": "/",
+      "destination": "q.LiberarBienSubasta.suscripcion.dlq",
+      "destination_type": "queue",
+      "routing_key": "q.LiberarBienSubasta.suscripcion.dlq",
+      "arguments": {}
+    },
+    {
+      "source": "q.LiberarBienSubasta",
+      "vhost": "/",
+      "destination": "q.LiberarBienSubasta.suscripcion",
+      "destination_type": "queue",
+      "routing_key": "",
+      "arguments": {}
+    }
+  ],
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ]
+}
