@@ -1,0 +1,13 @@
+# Observaciones sobre el modelo
+
+Puntos donde el diagrama «Arquitectura Integrada JavaEE-.NET» o el PDF de casos de uso es ambiguo o
+parece tener un error. **No se corrigen en el código por cuenta propia**: se decide con el equipo y,
+si cambia el modelo, se actualiza primero el VPP y luego se regenera `modelo-canonico.json`.
+
+| # | Paso / elemento | Observación | Decisión |
+|---|-----------------|-------------|----------|
+| 1 | VI.23c | El PDF dice `SrvCompraSaga → RepoOutboxCompra cambiarEstado(EN_REVISION) · guardar(NotificacionDemora)`. `cambiarEstado` es de `RepoCompra` (VI.22b, X.1). | Pendiente |
+| 2 | VII.32b | Autollamada `SrvCompraSaga → SrvCompraSaga compensar(...)`; no tiene flecha en el despliegue (es interna). | Se implementa como método de `SrvCompraSaga` |
+| 3 | Máquina 1 | `BALANCEADOR DE CARGAS :80` y `SSOWeb SERVER :80` usan el mismo puerto en la misma máquina. | Pendiente: en Docker ambos escuchan :80 en su contenedor; solo el balanceador publica :80 al host |
+| 4 | DB COMPRA | Las dos réplicas de `MSCompra` (Máquinas 2 y 3) tienen flecha JDBC a `DB COMPRA`, que está en Máquina 2. | La réplica 2 se conecta por red a la base de Máquina 2 |
+| 5 | SMS SERVER, MAIL SERVER, AD | Nodos sin componente propio (sistemas externos). | Se simulan con contenedores: OpenLDAP (estereotipo del diagrama), Mailpit (SMTP :1025) y un simulador HTTP :9004 |

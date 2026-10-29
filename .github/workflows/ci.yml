@@ -10,6 +10,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  modelo:
+    name: Código idéntico al diagrama
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 -I tools/vpp/verificar_codigo.py
+
   changes:
     runs-on: ubuntu-latest
     outputs:
@@ -22,7 +29,7 @@ jobs:
         id: filter
         with:
           filters: |
-            java: ['services/**', 'external/**', 'libs/**']
+            java: ['services/**']
             dotnet: ['services-dotnet/**']
             web: ['frontend/sso-web/**']
 

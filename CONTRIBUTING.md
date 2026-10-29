@@ -20,7 +20,9 @@ Scope = nombre del servicio en minúscula (`apigateway`, `msacceso`, `mscompra`,
 - Completar la plantilla: qué cambia, pasos del caso de uso cubiertos (ej. `IV.9–IV.13a`), cómo probar.
 
 ## Definición de terminado
-- [ ] Clases con los mismos nombres del diagrama EBC (`WSx`, `SrvX`, `RepoX`, `IntegraX`, `ListenerX`, `WorkerOutboxX`, `TimerX`).
+- [ ] Clases, operaciones, parámetros, puertos y colas idénticos al diagrama «Arquitectura Integrada JavaEE-.NET» (ver `CLAUDE.md`).
+- [ ] `python3 -I tools/vpp/verificar_codigo.py` termina en ✓.
+- [ ] Cada método documenta los pasos del caso de uso que implementa (`/** Pasos IV.9, IV.11 */`).
 - [ ] Sin lógica de negocio en front end.
 - [ ] Pruebas unitarias del `Srv*` y prueba de integración con Testcontainers del flujo principal.
 - [ ] `Dockerfile` construye y el servicio arranca en el `docker compose` de su máquina.
@@ -29,6 +31,6 @@ Scope = nombre del servicio en minúscula (`apigateway`, `msacceso`, `mscompra`,
 
 ## Estilo
 - Java: Spotless (google-java-format), Checkstyle, Java 21.
-- .NET: `dotnet format`, analizadores habilitados, `Nullable` activado.
+- .NET 8: `dotnet format`, analizadores habilitados, `Nullable` activado.
 - Angular: ESLint + Prettier.
-- Paquetes Java: `co.edu.javeriana.sso.<servicio>.{ws,logica,integrador,repositorio,listener,worker,timer,dominio}`.
+- Paquete Java raíz `co.edu.javeriana.sso.<componente>` = solo las clases del diagrama + `<Componente>Application`. Soporte en `.modelo` (entidades, DTO, eventos, enums) y `.config`.

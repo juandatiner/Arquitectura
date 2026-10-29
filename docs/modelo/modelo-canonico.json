@@ -1,0 +1,3800 @@
+{
+  "fuente": {
+    "diagrama": "Arquitectura Integrada JavaEE-.NET",
+    "vpp": "ProyectoSSO-Integrada-JavaEE-NET.vpp",
+    "pdf": "casos-de-uso-arquitectura-integrada.pdf"
+  },
+  "componentes": {
+    "APIGateway.jar": {
+      "nodos": [
+        {
+          "nodo": "APIGATEWAY SERVER :8080",
+          "puerto": 8080,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 1 · 10.43.99.2",
+          "ip": "10.43.99.2"
+        }
+      ],
+      "clases": [
+        "SrvRuteo",
+        "SrvSeguridadToken",
+        "WSGateway"
+      ]
+    },
+    "MSAcceso.jar": {
+      "nodos": [
+        {
+          "nodo": "MSAcceso SERVER :8081",
+          "puerto": 8081,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "IntegraLoginAD",
+        "RepoLogin",
+        "SrvLogin",
+        "WSAcceso"
+      ]
+    },
+    "MSCatalogo.jar": {
+      "nodos": [
+        {
+          "nodo": "MSCatalogo SERVER :8082",
+          "puerto": 8082,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "ListenerLiberarBienCat",
+        "RepoCatalogo",
+        "RepoOutboxCatalogo",
+        "SrvCatalogo",
+        "WSCatalogo",
+        "WorkerOutboxCatalogo"
+      ]
+    },
+    "MSCompra.jar": {
+      "nodos": [
+        {
+          "nodo": "MSCompra SERVER replica 1 :8085",
+          "puerto": 8085,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        },
+        {
+          "nodo": "MSCompra SERVER replica 2 :8085",
+          "puerto": 8085,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 3 · 10.43.99.45",
+          "ip": "10.43.99.45"
+        }
+      ],
+      "clases": [
+        "IntegraValidacion",
+        "ListenerConfDespacho",
+        "ListenerPago",
+        "ListenerSubastaCerrada",
+        "RepoCompra",
+        "RepoOutboxCompra",
+        "SrvCompraSaga",
+        "TimerValidacionOFAC",
+        "WSCompra",
+        "WorkerOutboxCompra"
+      ]
+    },
+    "MSDespacho.jar": {
+      "nodos": [
+        {
+          "nodo": "MSDespacho SERVER :8088",
+          "puerto": 8088,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "ListenerConfEnvio",
+        "ListenerConfInventario",
+        "ListenerDespachoSolicitud",
+        "RepoDespacho",
+        "RepoOutboxDespacho",
+        "SrvDespacho",
+        "WorkerOutboxDespacho"
+      ]
+    },
+    "MSNotificacion.jar": {
+      "nodos": [
+        {
+          "nodo": "MSNotificacion SERVER :8089",
+          "puerto": 8089,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "IntegraMail",
+        "IntegraSMS",
+        "ListenerNotificar",
+        "RepoNotificar",
+        "SrvNotificar"
+      ]
+    },
+    "MSPago.dll": {
+      "nodos": [
+        {
+          "nodo": "MSPago SERVER :5086",
+          "puerto": 5086,
+          "tecnologia": [
+            "Kestrel .NET 8"
+          ],
+          "maquina": "MAQUINA 3 · 10.43.99.45",
+          "ip": "10.43.99.45"
+        }
+      ],
+      "clases": [
+        "IntegraYoPago",
+        "ListenerPagoSolicitud",
+        "RepoOutboxPago",
+        "RepoPago",
+        "SrvPago",
+        "WSPagoYoPago",
+        "WorkerOutboxPago"
+      ]
+    },
+    "MSSubasta.jar": {
+      "nodos": [
+        {
+          "nodo": "MSSubasta SERVER :8083",
+          "puerto": 8083,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "ListenerLiberarBienSub",
+        "RepoOferta",
+        "RepoOutboxSubasta",
+        "RepoSubasta",
+        "SrvSubasta",
+        "TimerAperturaSubasta",
+        "TimerCierreSubasta",
+        "WSSubasta",
+        "WorkerOutboxSubasta"
+      ]
+    },
+    "MSSuscripcion.jar": {
+      "nodos": [
+        {
+          "nodo": "MSSuscripcion SERVER :8084",
+          "puerto": 8084,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "ListenerEventoSubasta",
+        "ListenerLiberarBienSus",
+        "RepoOutboxSuscripcion",
+        "RepoSuscripcion",
+        "SrvSuscripcion",
+        "WSSuscripcion",
+        "WorkerOutboxSuscripcion"
+      ]
+    },
+    "MSValidacion.jar": {
+      "nodos": [
+        {
+          "nodo": "MSValidacion SERVER :8087",
+          "puerto": 8087,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 2 · 10.43.100.238",
+          "ip": "10.43.100.238"
+        }
+      ],
+      "clases": [
+        "IntegraOFAC",
+        "RepoValidar",
+        "SrvValidarOFAC",
+        "WSValidacion"
+      ]
+    },
+    "OFACBackEnd.jar": {
+      "nodos": [
+        {
+          "nodo": "OFAC SERVER :9001",
+          "puerto": 9001,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 3 · 10.43.99.45",
+          "ip": "10.43.99.45"
+        }
+      ],
+      "clases": [
+        "RepoOFAC",
+        "SrvValidacionOFAC",
+        "WSOfac"
+      ]
+    },
+    "SENBackEnd.jar": {
+      "nodos": [
+        {
+          "nodo": "SEN SERVER :9003",
+          "puerto": 9003,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 3 · 10.43.99.45",
+          "ip": "10.43.99.45"
+        }
+      ],
+      "clases": [
+        "ListenerEnvio",
+        "RepoEnvio",
+        "RepoOutboxSEN",
+        "SrvEnvio",
+        "WorkerOutboxSEN"
+      ]
+    },
+    "SINBackEnd.jar": {
+      "nodos": [
+        {
+          "nodo": "SIN SERVER :9002",
+          "puerto": 9002,
+          "tecnologia": [
+            "Tomcat embebido"
+          ],
+          "maquina": "MAQUINA 3 · 10.43.99.45",
+          "ip": "10.43.99.45"
+        }
+      ],
+      "clases": [
+        "ListenerInventario",
+        "RepoInventario",
+        "RepoOutboxSIN",
+        "SrvInventario",
+        "WorkerOutboxSIN"
+      ]
+    },
+    "SSOMobile.apk": {
+      "nodos": [
+        {
+          "nodo": "MOBILE",
+          "puerto": null,
+          "tecnologia": [
+            "Android"
+          ],
+          "maquina": null,
+          "ip": null
+        }
+      ],
+      "clases": [
+        "PantallaMobileSubasta",
+        "ProxyWSSubastaMobile"
+      ]
+    },
+    "SSOWeb.zip": {
+      "nodos": [
+        {
+          "nodo": "SSOWeb SERVER :80",
+          "puerto": 80,
+          "tecnologia": [
+            "Nginx"
+          ],
+          "maquina": "MAQUINA 1 · 10.43.99.2",
+          "ip": "10.43.99.2"
+        }
+      ],
+      "clases": [
+        "PantallaWebSubasta",
+        "ProxyWSSubastaWeb"
+      ]
+    },
+    "YoPagoBackEnd.dll": {
+      "nodos": [
+        {
+          "nodo": "YoPago SERVER :5001",
+          "puerto": 5001,
+          "tecnologia": [
+            "Kestrel .NET 8"
+          ],
+          "maquina": "MAQUINA 3 · 10.43.99.45",
+          "ip": "10.43.99.45"
+        }
+      ],
+      "clases": [
+        "IntegraSSO",
+        "RepoYoPago",
+        "SrvYoPago",
+        "WSCompraPendiente"
+      ]
+    },
+    "YoPagoFrontEnd.dll": {
+      "nodos": [
+        {
+          "nodo": "YoPagoWeb SERVER :5000",
+          "puerto": 5000,
+          "tecnologia": [
+            "Kestrel .NET 8"
+          ],
+          "maquina": "MAQUINA 1 · 10.43.99.2",
+          "ip": "10.43.99.2"
+        }
+      ],
+      "clases": [
+        "PantallaWebYoPago",
+        "ProxyWSYoPagoWeb"
+      ]
+    }
+  },
+  "infraestructura": [
+    {
+      "nodo": "BALANCEADOR DE CARGAS :80",
+      "puerto": 80,
+      "tecnologia": [
+        "Nginx"
+      ],
+      "maquina": "MAQUINA 1 · 10.43.99.2",
+      "ip": "10.43.99.2",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "MOM SERVER :5672",
+      "puerto": 5672,
+      "tecnologia": [
+        "RabbitMQ"
+      ],
+      "maquina": "MAQUINA 2 · 10.43.100.238",
+      "ip": "10.43.100.238",
+      "contiene": []
+    },
+    {
+      "nodo": "AD SERVER :389",
+      "puerto": 389,
+      "tecnologia": [
+        "OpenLDAP"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "DB SERVER :5432",
+      "puerto": 5432,
+      "tecnologia": [
+        "PostgreSQL"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "MAIL SERVER :1025",
+      "puerto": 1025,
+      "tecnologia": [
+        "SMTP"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    },
+    {
+      "nodo": "SMS SERVER :9004",
+      "puerto": 9004,
+      "tecnologia": [
+        "HTTP"
+      ],
+      "maquina": "MAQUINA 3 · 10.43.99.45",
+      "ip": "10.43.99.45",
+      "contiene": []
+    }
+  ],
+  "conexiones": [
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCatalogo",
+      "a": "q.nuevaSubasta"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.LiberarBienSubasta"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.LiberarBienSubasta"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.despachoSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.despachoSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.notificacion"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.notificacion"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.pagoSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxCompra",
+      "a": "q.pagoSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxDespacho",
+      "a": "q.despachoConfirmado"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxDespacho",
+      "a": "q.envioSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxDespacho",
+      "a": "q.inventarioSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxPago",
+      "a": "q.notificacion"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxPago",
+      "a": "q.pagoConfirmado"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxSEN",
+      "a": "q.envioConfirmacion"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxSIN",
+      "a": "q.inventarioConfirmacion"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxSubasta",
+      "a": "q.cambioOfertaMayor"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxSubasta",
+      "a": "q.subastaCerrada"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxSubasta",
+      "a": "q.subastaIniciada"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "WorkerOutboxSuscripcion",
+      "a": "q.notificacion"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.LiberarBienSubasta",
+      "a": "ListenerLiberarBienCat"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.LiberarBienSubasta",
+      "a": "ListenerLiberarBienSub"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.LiberarBienSubasta",
+      "a": "ListenerLiberarBienSus"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.cambioOfertaMayor",
+      "a": "ListenerEventoSubasta"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.despachoConfirmado",
+      "a": "ListenerConfDespacho"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.despachoConfirmado",
+      "a": "ListenerConfDespacho"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.despachoSolicitud",
+      "a": "ListenerDespachoSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.envioConfirmacion",
+      "a": "ListenerConfEnvio"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.envioSolicitud",
+      "a": "ListenerEnvio"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.inventarioConfirmacion",
+      "a": "ListenerConfInventario"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.inventarioSolicitud",
+      "a": "ListenerInventario"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.notificacion",
+      "a": "ListenerNotificar"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.nuevaSubasta",
+      "a": "ListenerEventoSubasta"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.pagoConfirmado",
+      "a": "ListenerPago"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.pagoConfirmado",
+      "a": "ListenerPago"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.pagoSolicitud",
+      "a": "ListenerPagoSolicitud"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.subastaCerrada",
+      "a": "ListenerSubastaCerrada"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.subastaCerrada",
+      "a": "ListenerSubastaCerrada"
+    },
+    {
+      "protocolo": "AMQP",
+      "de": "q.subastaIniciada",
+      "a": "ListenerEventoSubasta"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "Browser",
+      "a": "PantallaWebSubasta"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "Browser",
+      "a": "PantallaWebYoPago"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "Nginx",
+      "a": "WSCompra"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "Nginx",
+      "a": "WSCompra"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "Nginx",
+      "a": "WSGateway"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "ProxyWSSubastaMobile",
+      "a": "Nginx"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "ProxyWSSubastaWeb",
+      "a": "Nginx"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "ProxyWSYoPagoWeb",
+      "a": "WSCompraPendiente"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "SrvRuteo",
+      "a": "Nginx"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "SrvRuteo",
+      "a": "WSAcceso"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "SrvRuteo",
+      "a": "WSCatalogo"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "SrvRuteo",
+      "a": "WSPagoYoPago"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "SrvRuteo",
+      "a": "WSSubasta"
+    },
+    {
+      "protocolo": "HTTP",
+      "de": "SrvRuteo",
+      "a": "WSSuscripcion"
+    },
+    {
+      "protocolo": "HTTP(SMS)",
+      "de": "IntegraSMS",
+      "a": "SMS GATEWAY"
+    },
+    {
+      "protocolo": "HTTP/REST",
+      "de": "IntegraOFAC",
+      "a": "WSOfac"
+    },
+    {
+      "protocolo": "HTTP/REST",
+      "de": "IntegraValidacion",
+      "a": "WSValidacion"
+    },
+    {
+      "protocolo": "HTTP/REST",
+      "de": "IntegraValidacion",
+      "a": "WSValidacion"
+    },
+    {
+      "protocolo": "HTTP/REST",
+      "de": "IntegraYoPago",
+      "a": "WSCompraPendiente"
+    },
+    {
+      "protocolo": "HTTPS",
+      "de": "IntegraSSO",
+      "a": "Nginx"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoCatalogo",
+      "a": "DB CATALOGO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoCompra",
+      "a": "DB COMPRA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoCompra",
+      "a": "DB COMPRA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoDespacho",
+      "a": "DB DESPACHO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoEnvio",
+      "a": "DB SEN"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoInventario",
+      "a": "DB SIN"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoLogin",
+      "a": "DB ACCESO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoNotificar",
+      "a": "DB NOTIFICACION"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOFAC",
+      "a": "DB OFAC"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOferta",
+      "a": "DB SUBASTA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxCatalogo",
+      "a": "DB CATALOGO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxCompra",
+      "a": "DB COMPRA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxCompra",
+      "a": "DB COMPRA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxDespacho",
+      "a": "DB DESPACHO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxPago",
+      "a": "DB PAGO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxSEN",
+      "a": "DB SEN"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxSIN",
+      "a": "DB SIN"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxSubasta",
+      "a": "DB SUBASTA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoOutboxSuscripcion",
+      "a": "DB Suscripcion"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoPago",
+      "a": "DB PAGO"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoSubasta",
+      "a": "DB SUBASTA"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoSuscripcion",
+      "a": "DB Suscripcion"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoValidar",
+      "a": "DB VALIDAR"
+    },
+    {
+      "protocolo": "JDBC",
+      "de": "RepoYoPago",
+      "a": "DB YOPAGO"
+    },
+    {
+      "protocolo": "LDAP",
+      "de": "IntegraLoginAD",
+      "a": "AD"
+    },
+    {
+      "protocolo": "SMTP",
+      "de": "IntegraMail",
+      "a": "CORREO"
+    }
+  ],
+  "operaciones": {
+    "IntegraLoginAD": [
+      "validarCredenciales"
+    ],
+    "IntegraMail": [
+      "enviarCorreo"
+    ],
+    "IntegraOFAC": [
+      "consultar"
+    ],
+    "IntegraSMS": [
+      "enviarSMS"
+    ],
+    "IntegraSSO": [
+      "reportarPago"
+    ],
+    "IntegraValidacion": [
+      "validar"
+    ],
+    "IntegraYoPago": [
+      "registrarPendiente"
+    ],
+    "ListenerConfDespacho": [
+      "entregar"
+    ],
+    "ListenerConfEnvio": [
+      "entregar"
+    ],
+    "ListenerConfInventario": [
+      "entregar"
+    ],
+    "ListenerDespachoSolicitud": [
+      "entregar"
+    ],
+    "ListenerEnvio": [
+      "entregar"
+    ],
+    "ListenerEventoSubasta": [
+      "entregar"
+    ],
+    "ListenerInventario": [
+      "entregar"
+    ],
+    "ListenerLiberarBienCat": [
+      "entregar"
+    ],
+    "ListenerLiberarBienSub": [
+      "entregar"
+    ],
+    "ListenerLiberarBienSus": [
+      "entregar"
+    ],
+    "ListenerNotificar": [
+      "entregar"
+    ],
+    "ListenerPago": [
+      "entregar"
+    ],
+    "ListenerPagoSolicitud": [
+      "entregar"
+    ],
+    "ListenerSubastaCerrada": [
+      "entregar"
+    ],
+    "PantallaWebSubasta": [
+      "consultarCatalogo",
+      "consultarMisCompras",
+      "ingresarCredenciales",
+      "registrarOferta",
+      "seleccionarCompra",
+      "solicitarPublicacion",
+      "suscribirse"
+    ],
+    "PantallaWebYoPago": [
+      "confirmarPago",
+      "consultarCompraPendiente"
+    ],
+    "ProxyWSSubastaMobile": [
+      "autenticar",
+      "consultarCatalogo",
+      "iniciarCompra",
+      "publicarNuevaSubasta",
+      "registrarOferta",
+      "suscribirse"
+    ],
+    "ProxyWSSubastaWeb": [
+      "autenticar",
+      "consultarCatalogo",
+      "iniciarCompra",
+      "publicarNuevaSubasta",
+      "registrarOferta",
+      "suscribirse"
+    ],
+    "ProxyWSYoPagoWeb": [
+      "consultarCompraPendiente",
+      "pagar"
+    ],
+    "RepoCatalogo": [
+      "buscarSubastasPublicadas",
+      "liberarSiAdjudicada",
+      "publicarSiPendienteYEnFecha"
+    ],
+    "RepoCompra": [
+      "cambiarEstado",
+      "cambiarEstadoSiActual",
+      "crear",
+      "existePorSubasta",
+      "obtener",
+      "registrarIntento",
+      "tomarPendientesValidacion"
+    ],
+    "RepoDespacho": [
+      "crear",
+      "existePorCompra",
+      "marcarEnvioConfirmado",
+      "marcarInventarioConfirmado"
+    ],
+    "RepoEnvio": [
+      "existePorCompra",
+      "programar"
+    ],
+    "RepoInventario": [
+      "existePorCompra",
+      "registrarSalida"
+    ],
+    "RepoLogin": [
+      "obtenerDatosCliente"
+    ],
+    "RepoNotificar": [
+      "registrarEnviada",
+      "yaEnviada"
+    ],
+    "RepoOFAC": [
+      "consultarReporte"
+    ],
+    "RepoOferta": [
+      "guardarOferta",
+      "marcarResultado",
+      "obtenerOfertaMayor"
+    ],
+    "RepoOutboxCatalogo": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxCompra": [
+      "cambiarEstado",
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxDespacho": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxPago": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxSEN": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxSIN": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxSubasta": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoOutboxSuscripcion": [
+      "guardar",
+      "obtenerPendientes"
+    ],
+    "RepoPago": [
+      "confirmarSiPendiente",
+      "existe",
+      "guardar",
+      "obtenerPorCompra"
+    ],
+    "RepoSubasta": [
+      "abrirSiProgramadaYEnPlazo",
+      "actualizarVersionSiAbiertaYEnPlazo",
+      "adjudicar",
+      "buscarVencidas",
+      "declararDesierta",
+      "liberarSiAdjudicada",
+      "obtenerEstadoYVersion",
+      "tomarParaCierre"
+    ],
+    "RepoSuscripcion": [
+      "activarSuscripcion",
+      "buscarSuscriptores",
+      "cancelarSuscripcion",
+      "liberarSiAdjudicada",
+      "yaProcesado"
+    ],
+    "RepoValidar": [
+      "buscarResultado",
+      "guardarResultado"
+    ],
+    "RepoYoPago": [
+      "buscarPendiente",
+      "guardarPendiente",
+      "registrarPagoConfirmado"
+    ],
+    "SrvCatalogo": [
+      "consultarCatalogo",
+      "liberarBien",
+      "publicarNuevaSubasta"
+    ],
+    "SrvCompraSaga": [
+      "compensar",
+      "confirmarDespacho",
+      "iniciarCompra",
+      "iniciarSaga",
+      "procesarPago",
+      "validarComprasPendientes"
+    ],
+    "SrvDespacho": [
+      "confirmarEnvio",
+      "confirmarInventario",
+      "solicitarDespacho"
+    ],
+    "SrvEnvio": [
+      "programarEnvio"
+    ],
+    "SrvInventario": [
+      "registrarSalidaInventario"
+    ],
+    "SrvLogin": [
+      "autenticar"
+    ],
+    "SrvNotificar": [
+      "notificar"
+    ],
+    "SrvPago": [
+      "conciliarPago",
+      "prepararPago"
+    ],
+    "SrvRuteo": [
+      "enrutarConsultaCatalogo",
+      "enrutarInicioCompra",
+      "enrutarLogin",
+      "enrutarOferta",
+      "enrutarPublicacion",
+      "enrutarReportePago",
+      "enrutarSuscripcion"
+    ],
+    "SrvSeguridadToken": [
+      "evaluarAcceso",
+      "validarYAutorizar"
+    ],
+    "SrvSubasta": [
+      "abrirSubastaProgramada",
+      "cerrarSubastasVencidas",
+      "liberarBien",
+      "registrarOferta"
+    ],
+    "SrvSuscripcion": [
+      "cancelarSuscripcion",
+      "liberarBien",
+      "procesarEvento",
+      "suscribirse"
+    ],
+    "SrvValidacionOFAC": [
+      "validarCedula"
+    ],
+    "SrvValidarOFAC": [
+      "validar"
+    ],
+    "SrvYoPago": [
+      "pagar",
+      "registrarCompraPendiente"
+    ],
+    "WSAcceso": [
+      "autenticar"
+    ],
+    "WSCatalogo": [
+      "consultarCatalogo",
+      "publicarNuevaSubasta"
+    ],
+    "WSCompra": [
+      "iniciarCompra"
+    ],
+    "WSCompraPendiente": [
+      "consultarCompraPendiente",
+      "pagar",
+      "registrarCompraPendiente"
+    ],
+    "WSGateway": [
+      "autenticar",
+      "consultarCatalogo",
+      "iniciarCompra",
+      "publicarNuevaSubasta",
+      "registrarOferta",
+      "reportarPago",
+      "suscribirse"
+    ],
+    "WSOfac": [
+      "validarCedula"
+    ],
+    "WSPagoYoPago": [
+      "reportarPago"
+    ],
+    "WSSubasta": [
+      "ofertaNoRegistrada",
+      "registrarOferta"
+    ],
+    "WSSuscripcion": [
+      "cancelarSuscripcion",
+      "suscribirse"
+    ],
+    "WSValidacion": [
+      "validar"
+    ]
+  },
+  "pasos": [
+    {
+      "id": "I.1",
+      "cu": "I",
+      "de": "Browser",
+      "a": "PantallaWebSubasta",
+      "mensaje": "ingresarCredenciales(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "ingresarCredenciales"
+      ]
+    },
+    {
+      "id": "I.2",
+      "cu": "I",
+      "de": "PantallaWebSubasta",
+      "a": "ProxyWSSubastaWeb",
+      "mensaje": "autenticar(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "autenticar"
+      ]
+    },
+    {
+      "id": "I.2m",
+      "cu": "I",
+      "de": "PantallaMobileSubasta",
+      "a": "ProxyWSSubastaMobile",
+      "mensaje": "autenticar(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "autenticar"
+      ]
+    },
+    {
+      "id": "I.3",
+      "cu": "I",
+      "de": "ProxyWSSubastaWeb",
+      "a": "Nginx",
+      "mensaje": "POST /api/acceso/login",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "I.3m",
+      "cu": "I",
+      "de": "ProxyWSSubastaMobile",
+      "a": "Nginx",
+      "mensaje": "POST /api/acceso/login",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "I.4",
+      "cu": "I",
+      "de": "Nginx",
+      "a": "WSGateway",
+      "mensaje": "autenticar(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "autenticar"
+      ]
+    },
+    {
+      "id": "I.5",
+      "cu": "I",
+      "de": "WSGateway",
+      "a": "SrvSeguridadToken",
+      "mensaje": "evaluarAcceso(rutaLogin)",
+      "notas": [],
+      "operaciones": [
+        "evaluarAcceso"
+      ]
+    },
+    {
+      "id": "I.6",
+      "cu": "I",
+      "de": "SrvSeguridadToken",
+      "a": "SrvRuteo",
+      "mensaje": "enrutarLogin(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "enrutarLogin"
+      ]
+    },
+    {
+      "id": "I.7",
+      "cu": "I",
+      "de": "SrvRuteo",
+      "a": "WSAcceso",
+      "mensaje": "autenticar(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "autenticar"
+      ]
+    },
+    {
+      "id": "I.8",
+      "cu": "I",
+      "de": "WSAcceso",
+      "a": "SrvLogin",
+      "mensaje": "autenticar(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "autenticar"
+      ]
+    },
+    {
+      "id": "I.9",
+      "cu": "I",
+      "de": "SrvLogin",
+      "a": "IntegraLoginAD",
+      "mensaje": "validarCredenciales(usuario, clave)",
+      "notas": [],
+      "operaciones": [
+        "validarCredenciales"
+      ]
+    },
+    {
+      "id": "I.10",
+      "cu": "I",
+      "de": "IntegraLoginAD",
+      "a": "AD",
+      "mensaje": "autenticar(usuario, clave)",
+      "notas": [
+        "LDAP"
+      ],
+      "operaciones": [
+        "autenticar"
+      ]
+    },
+    {
+      "id": "I.11",
+      "cu": "I",
+      "de": "SrvLogin",
+      "a": "RepoLogin",
+      "mensaje": "obtenerDatosCliente(identidadValidada)",
+      "notas": [],
+      "operaciones": [
+        "obtenerDatosCliente"
+      ]
+    },
+    {
+      "id": "II.1",
+      "cu": "II",
+      "de": "Browser",
+      "a": "PantallaWebSubasta",
+      "mensaje": "consultarCatalogo(filtros) / suscribirse(criterio)",
+      "notas": [],
+      "operaciones": [
+        "consultarCatalogo",
+        "suscribirse"
+      ]
+    },
+    {
+      "id": "II.2",
+      "cu": "II",
+      "de": "PantallaWebSubasta",
+      "a": "ProxyWSSubastaWeb",
+      "mensaje": "consultarCatalogo / suscribirse (token)",
+      "notas": [],
+      "operaciones": [
+        "consultarCatalogo",
+        "suscribirse"
+      ]
+    },
+    {
+      "id": "II.2m",
+      "cu": "II",
+      "de": "PantallaMobileSubasta",
+      "a": "ProxyWSSubastaMobile",
+      "mensaje": "consultarCatalogo / suscribirse (token)",
+      "notas": [],
+      "operaciones": [
+        "consultarCatalogo",
+        "suscribirse"
+      ]
+    },
+    {
+      "id": "II.3",
+      "cu": "II",
+      "de": "ProxyWSSubastaWeb",
+      "a": "Nginx",
+      "mensaje": "GET /api/catalogo · POST /api/suscripciones",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "II.3m",
+      "cu": "II",
+      "de": "ProxyWSSubastaMobile",
+      "a": "Nginx",
+      "mensaje": "GET /api/catalogo · POST /api/suscripciones",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "II.4",
+      "cu": "II",
+      "de": "Nginx",
+      "a": "WSGateway",
+      "mensaje": "consultarCatalogo / suscribirse",
+      "notas": [],
+      "operaciones": [
+        "consultarCatalogo",
+        "suscribirse"
+      ]
+    },
+    {
+      "id": "II.5",
+      "cu": "II",
+      "de": "WSGateway",
+      "a": "SrvSeguridadToken",
+      "mensaje": "validarYAutorizar(solicitud)",
+      "notas": [],
+      "operaciones": [
+        "validarYAutorizar"
+      ]
+    },
+    {
+      "id": "II.6",
+      "cu": "II",
+      "de": "SrvSeguridadToken",
+      "a": "SrvRuteo",
+      "mensaje": "enrutarConsultaCatalogo / enrutarSuscripcion",
+      "notas": [],
+      "operaciones": [
+        "enrutarConsultaCatalogo",
+        "enrutarSuscripcion"
+      ]
+    },
+    {
+      "id": "II.7a",
+      "cu": "II",
+      "de": "SrvRuteo",
+      "a": "WSCatalogo",
+      "mensaje": "consultarCatalogo(filtros)",
+      "notas": [
+        "a: catálogo"
+      ],
+      "operaciones": [
+        "consultarCatalogo"
+      ]
+    },
+    {
+      "id": "II.8a",
+      "cu": "II",
+      "de": "WSCatalogo",
+      "a": "SrvCatalogo",
+      "mensaje": "consultarCatalogo(filtros)",
+      "notas": [],
+      "operaciones": [
+        "consultarCatalogo"
+      ]
+    },
+    {
+      "id": "II.9a",
+      "cu": "II",
+      "de": "SrvCatalogo",
+      "a": "RepoCatalogo",
+      "mensaje": "buscarSubastasPublicadas(filtros)",
+      "notas": [],
+      "operaciones": [
+        "buscarSubastasPublicadas"
+      ]
+    },
+    {
+      "id": "II.7b",
+      "cu": "II",
+      "de": "SrvRuteo",
+      "a": "WSSuscripcion",
+      "mensaje": "suscribirse / cancelarSuscripcion",
+      "notas": [
+        "b: suscripción"
+      ],
+      "operaciones": [
+        "suscribirse",
+        "cancelarSuscripcion"
+      ]
+    },
+    {
+      "id": "II.8b",
+      "cu": "II",
+      "de": "WSSuscripcion",
+      "a": "SrvSuscripcion",
+      "mensaje": "suscribirse / cancelarSuscripcion",
+      "notas": [],
+      "operaciones": [
+        "suscribirse",
+        "cancelarSuscripcion"
+      ]
+    },
+    {
+      "id": "II.9b",
+      "cu": "II",
+      "de": "SrvSuscripcion",
+      "a": "RepoSuscripcion",
+      "mensaje": "activarSuscripcion / cancelarSuscripcion",
+      "notas": [],
+      "operaciones": [
+        "activarSuscripcion",
+        "cancelarSuscripcion"
+      ]
+    },
+    {
+      "id": "III.1",
+      "cu": "III",
+      "de": "Browser",
+      "a": "PantallaWebSubasta",
+      "mensaje": "solicitarPublicacion(idSubasta)",
+      "notas": [
+        "administrador"
+      ],
+      "operaciones": [
+        "solicitarPublicacion"
+      ]
+    },
+    {
+      "id": "III.2",
+      "cu": "III",
+      "de": "PantallaWebSubasta",
+      "a": "ProxyWSSubastaWeb",
+      "mensaje": "publicarNuevaSubasta(idSubasta, token)",
+      "notas": [],
+      "operaciones": [
+        "publicarNuevaSubasta"
+      ]
+    },
+    {
+      "id": "III.2m",
+      "cu": "III",
+      "de": "PantallaMobileSubasta",
+      "a": "ProxyWSSubastaMobile",
+      "mensaje": "publicarNuevaSubasta(idSubasta, token)",
+      "notas": [],
+      "operaciones": [
+        "publicarNuevaSubasta"
+      ]
+    },
+    {
+      "id": "III.3",
+      "cu": "III",
+      "de": "ProxyWSSubastaWeb",
+      "a": "Nginx",
+      "mensaje": "POST /api/catalogo/publicar",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "III.3m",
+      "cu": "III",
+      "de": "ProxyWSSubastaMobile",
+      "a": "Nginx",
+      "mensaje": "POST /api/catalogo/publicar",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "III.4",
+      "cu": "III",
+      "de": "Nginx",
+      "a": "WSGateway",
+      "mensaje": "publicarNuevaSubasta(idSubasta, token)",
+      "notas": [],
+      "operaciones": [
+        "publicarNuevaSubasta"
+      ]
+    },
+    {
+      "id": "III.5",
+      "cu": "III",
+      "de": "WSGateway",
+      "a": "SrvSeguridadToken",
+      "mensaje": "validarYAutorizar(solicitudPublicacion)",
+      "notas": [],
+      "operaciones": [
+        "validarYAutorizar"
+      ]
+    },
+    {
+      "id": "III.6",
+      "cu": "III",
+      "de": "SrvSeguridadToken",
+      "a": "SrvRuteo",
+      "mensaje": "enrutarPublicacion(idSubasta, admin)",
+      "notas": [],
+      "operaciones": [
+        "enrutarPublicacion"
+      ]
+    },
+    {
+      "id": "III.7",
+      "cu": "III",
+      "de": "SrvRuteo",
+      "a": "WSCatalogo",
+      "mensaje": "publicarNuevaSubasta(idSubasta, admin)",
+      "notas": [],
+      "operaciones": [
+        "publicarNuevaSubasta"
+      ]
+    },
+    {
+      "id": "III.8",
+      "cu": "III",
+      "de": "WSCatalogo",
+      "a": "SrvCatalogo",
+      "mensaje": "publicarNuevaSubasta(idSubasta, admin)",
+      "notas": [],
+      "operaciones": [
+        "publicarNuevaSubasta"
+      ]
+    },
+    {
+      "id": "III.9",
+      "cu": "III",
+      "de": "SrvCatalogo",
+      "a": "RepoCatalogo",
+      "mensaje": "publicarSiPendienteYEnFecha(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "publicarSiPendienteYEnFecha"
+      ]
+    },
+    {
+      "id": "III.10",
+      "cu": "III",
+      "de": "SrvCatalogo",
+      "a": "RepoOutboxCatalogo",
+      "mensaje": "guardar(NuevaSubasta)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "III.11",
+      "cu": "III",
+      "de": "WorkerOutboxCatalogo",
+      "a": "RepoOutboxCatalogo",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "III.12",
+      "cu": "III",
+      "de": "WorkerOutboxCatalogo",
+      "a": "q.nuevaSubasta",
+      "mensaje": "publicar(NuevaSubasta)",
+      "notas": [
+        "AMQP"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "III.13",
+      "cu": "III",
+      "de": "TimerAperturaSubasta",
+      "a": "SrvSubasta",
+      "mensaje": "abrirSubastaProgramada(idSubasta, fechaActual)",
+      "notas": [],
+      "operaciones": [
+        "abrirSubastaProgramada"
+      ]
+    },
+    {
+      "id": "III.14",
+      "cu": "III",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "abrirSiProgramadaYEnPlazo(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "abrirSiProgramadaYEnPlazo"
+      ]
+    },
+    {
+      "id": "III.15",
+      "cu": "III",
+      "de": "SrvSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "guardar(SubastaIniciada)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "III.16",
+      "cu": "III",
+      "de": "WorkerOutboxSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "III.17",
+      "cu": "III",
+      "de": "WorkerOutboxSubasta",
+      "a": "q.subastaIniciada",
+      "mensaje": "publicar(SubastaIniciada)",
+      "notas": [
+        "AMQP"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "III.18a",
+      "cu": "III",
+      "de": "q.nuevaSubasta",
+      "a": "ListenerEventoSubasta",
+      "mensaje": "entregar(evento)",
+      "notas": [
+        "a: nueva subasta"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "III.18b",
+      "cu": "III",
+      "de": "q.subastaIniciada",
+      "a": "ListenerEventoSubasta",
+      "mensaje": "entregar(evento)",
+      "notas": [
+        "b: subasta iniciada"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "III.19",
+      "cu": "III",
+      "de": "ListenerEventoSubasta",
+      "a": "SrvSuscripcion",
+      "mensaje": "procesarEvento(evento)",
+      "notas": [],
+      "operaciones": [
+        "procesarEvento"
+      ]
+    },
+    {
+      "id": "III.20",
+      "cu": "III",
+      "de": "SrvSuscripcion",
+      "a": "RepoSuscripcion",
+      "mensaje": "yaProcesado(idEvento) · buscarSuscriptores()",
+      "notas": [],
+      "operaciones": [
+        "yaProcesado",
+        "buscarSuscriptores"
+      ]
+    },
+    {
+      "id": "III.21",
+      "cu": "III",
+      "de": "SrvSuscripcion",
+      "a": "RepoOutboxSuscripcion",
+      "mensaje": "guardar(Notificacion)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "III.22",
+      "cu": "III",
+      "de": "WorkerOutboxSuscripcion",
+      "a": "RepoOutboxSuscripcion",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "III.23",
+      "cu": "III",
+      "de": "WorkerOutboxSuscripcion",
+      "a": "q.notificacion",
+      "mensaje": "publicar(Notificacion)",
+      "notas": [
+        "→ IX"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "IV.1",
+      "cu": "IV",
+      "de": "Browser",
+      "a": "PantallaWebSubasta",
+      "mensaje": "registrarOferta(idSubasta, valor)",
+      "notas": [],
+      "operaciones": [
+        "registrarOferta"
+      ]
+    },
+    {
+      "id": "IV.2",
+      "cu": "IV",
+      "de": "PantallaWebSubasta",
+      "a": "ProxyWSSubastaWeb",
+      "mensaje": "registrarOferta(idSubasta, valor, token)",
+      "notas": [],
+      "operaciones": [
+        "registrarOferta"
+      ]
+    },
+    {
+      "id": "IV.2m",
+      "cu": "IV",
+      "de": "PantallaMobileSubasta",
+      "a": "ProxyWSSubastaMobile",
+      "mensaje": "registrarOferta(idSubasta, valor, token)",
+      "notas": [],
+      "operaciones": [
+        "registrarOferta"
+      ]
+    },
+    {
+      "id": "IV.3",
+      "cu": "IV",
+      "de": "ProxyWSSubastaWeb",
+      "a": "Nginx",
+      "mensaje": "POST /api/subastas/{id}/ofertas",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "IV.3m",
+      "cu": "IV",
+      "de": "ProxyWSSubastaMobile",
+      "a": "Nginx",
+      "mensaje": "POST /api/subastas/{id}/ofertas",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "IV.4",
+      "cu": "IV",
+      "de": "Nginx",
+      "a": "WSGateway",
+      "mensaje": "registrarOferta(idSubasta, valor, token)",
+      "notas": [],
+      "operaciones": [
+        "registrarOferta"
+      ]
+    },
+    {
+      "id": "IV.5",
+      "cu": "IV",
+      "de": "WSGateway",
+      "a": "SrvSeguridadToken",
+      "mensaje": "validarYAutorizar(solicitud)",
+      "notas": [],
+      "operaciones": [
+        "validarYAutorizar"
+      ]
+    },
+    {
+      "id": "IV.6",
+      "cu": "IV",
+      "de": "SrvSeguridadToken",
+      "a": "SrvRuteo",
+      "mensaje": "enrutarOferta(idSubasta, cliente, valor)",
+      "notas": [],
+      "operaciones": [
+        "enrutarOferta"
+      ]
+    },
+    {
+      "id": "IV.7",
+      "cu": "IV",
+      "de": "SrvRuteo",
+      "a": "WSSubasta",
+      "mensaje": "registrarOferta(idSubasta, cliente, valor)",
+      "notas": [],
+      "operaciones": [
+        "registrarOferta"
+      ]
+    },
+    {
+      "id": "IV.8",
+      "cu": "IV",
+      "de": "WSSubasta",
+      "a": "SrvSubasta",
+      "mensaje": "registrarOferta(idSubasta, cliente, valor)",
+      "notas": [],
+      "operaciones": [
+        "registrarOferta"
+      ]
+    },
+    {
+      "id": "IV.9",
+      "cu": "IV",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "obtenerEstadoYVersion(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "obtenerEstadoYVersion"
+      ]
+    },
+    {
+      "id": "IV.10",
+      "cu": "IV",
+      "de": "SrvSubasta",
+      "a": "RepoOferta",
+      "mensaje": "obtenerOfertaMayor(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "obtenerOfertaMayor"
+      ]
+    },
+    {
+      "id": "IV.11",
+      "cu": "IV",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "actualizarVersionSiAbiertaYEnPlazo(idSubasta, version)",
+      "notas": [],
+      "operaciones": [
+        "actualizarVersionSiAbiertaYEnPlazo"
+      ]
+    },
+    {
+      "id": "IV.12a",
+      "cu": "IV",
+      "de": "SrvSubasta",
+      "a": "RepoOferta",
+      "mensaje": "guardarOferta(idSubasta, cliente, valor)",
+      "notas": [
+        "a: filasAfectadas = 1"
+      ],
+      "operaciones": [
+        "guardarOferta"
+      ]
+    },
+    {
+      "id": "IV.13a",
+      "cu": "IV",
+      "de": "SrvSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "guardar(CambioOfertaMayor)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "IV.12b",
+      "cu": "IV",
+      "de": "SrvSubasta",
+      "a": "WSSubasta",
+      "mensaje": "ofertaNoRegistrada(CONFLICTO_CONCURRENTE)",
+      "notas": [
+        "b: filasAfectadas = 0"
+      ],
+      "operaciones": [
+        "ofertaNoRegistrada"
+      ]
+    },
+    {
+      "id": "IV.14",
+      "cu": "IV",
+      "de": "WorkerOutboxSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "IV.15",
+      "cu": "IV",
+      "de": "WorkerOutboxSubasta",
+      "a": "q.cambioOfertaMayor",
+      "mensaje": "publicar(CambioOfertaMayor)",
+      "notas": [
+        "AMQP"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "IV.16",
+      "cu": "IV",
+      "de": "q.cambioOfertaMayor",
+      "a": "ListenerEventoSubasta",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "IV.17",
+      "cu": "IV",
+      "de": "ListenerEventoSubasta",
+      "a": "SrvSuscripcion",
+      "mensaje": "procesarEvento(evento)",
+      "notas": [],
+      "operaciones": [
+        "procesarEvento"
+      ]
+    },
+    {
+      "id": "IV.18",
+      "cu": "IV",
+      "de": "SrvSuscripcion",
+      "a": "RepoSuscripcion",
+      "mensaje": "yaProcesado(idEvento) · buscarSuscriptores()",
+      "notas": [],
+      "operaciones": [
+        "yaProcesado",
+        "buscarSuscriptores"
+      ]
+    },
+    {
+      "id": "IV.19",
+      "cu": "IV",
+      "de": "SrvSuscripcion",
+      "a": "RepoOutboxSuscripcion",
+      "mensaje": "guardar(Notificacion)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "IV.20",
+      "cu": "IV",
+      "de": "WorkerOutboxSuscripcion",
+      "a": "RepoOutboxSuscripcion",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "IV.21",
+      "cu": "IV",
+      "de": "WorkerOutboxSuscripcion",
+      "a": "q.notificacion",
+      "mensaje": "publicar(Notificacion)",
+      "notas": [
+        "→ IX"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "V.1",
+      "cu": "V",
+      "de": "TimerCierreSubasta",
+      "a": "SrvSubasta",
+      "mensaje": "cerrarSubastasVencidas()",
+      "notas": [],
+      "operaciones": [
+        "cerrarSubastasVencidas"
+      ]
+    },
+    {
+      "id": "V.2",
+      "cu": "V",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "buscarVencidas() · tomarParaCierre(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "buscarVencidas",
+        "tomarParaCierre"
+      ]
+    },
+    {
+      "id": "V.3",
+      "cu": "V",
+      "de": "SrvSubasta",
+      "a": "RepoOferta",
+      "mensaje": "obtenerOfertaMayor(idSubasta) · marcarResultado(...)",
+      "notas": [],
+      "operaciones": [
+        "obtenerOfertaMayor",
+        "marcarResultado"
+      ]
+    },
+    {
+      "id": "V.4a",
+      "cu": "V",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "adjudicar(idSubasta, cedulaGanador, valor)",
+      "notas": [
+        "a: hay ofertas"
+      ],
+      "operaciones": [
+        "adjudicar"
+      ]
+    },
+    {
+      "id": "V.4b",
+      "cu": "V",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "declararDesierta(idSubasta)",
+      "notas": [
+        "b: sin ofertas"
+      ],
+      "operaciones": [
+        "declararDesierta"
+      ]
+    },
+    {
+      "id": "V.5",
+      "cu": "V",
+      "de": "SrvSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "guardar(SubastaCerrada)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "V.6",
+      "cu": "V",
+      "de": "WorkerOutboxSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "V.7",
+      "cu": "V",
+      "de": "WorkerOutboxSubasta",
+      "a": "q.subastaCerrada",
+      "mensaje": "publicar(SubastaCerrada)",
+      "notas": [
+        "AMQP"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "V.8a/b",
+      "cu": "V",
+      "de": "q.subastaCerrada",
+      "a": "ListenerSubastaCerrada",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "V.9a/b",
+      "cu": "V",
+      "de": "ListenerSubastaCerrada",
+      "a": "SrvCompraSaga",
+      "mensaje": "iniciarSaga(evento)",
+      "notas": [],
+      "operaciones": [
+        "iniciarSaga"
+      ]
+    },
+    {
+      "id": "V.10a/b",
+      "cu": "V",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "existePorSubasta(idSubasta) · crear(Compra)",
+      "notas": [],
+      "operaciones": [
+        "existePorSubasta",
+        "crear"
+      ]
+    },
+    {
+      "id": "V.11a/b",
+      "cu": "V",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(NotificacionGanador)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "V.12a/b",
+      "cu": "V",
+      "de": "WorkerOutboxCompra",
+      "a": "RepoOutboxCompra",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "V.13a/b",
+      "cu": "V",
+      "de": "WorkerOutboxCompra",
+      "a": "q.notificacion",
+      "mensaje": "publicar(NotificacionGanador)",
+      "notas": [
+        "→ IX"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VI.1",
+      "cu": "VI",
+      "de": "Browser",
+      "a": "PantallaWebSubasta",
+      "mensaje": "consultarMisCompras() · seleccionarCompra(numeroCompra)",
+      "notas": [],
+      "operaciones": [
+        "consultarMisCompras",
+        "seleccionarCompra"
+      ]
+    },
+    {
+      "id": "VI.2",
+      "cu": "VI",
+      "de": "PantallaWebSubasta",
+      "a": "ProxyWSSubastaWeb",
+      "mensaje": "iniciarCompra(numeroCompra, token)",
+      "notas": [],
+      "operaciones": [
+        "iniciarCompra"
+      ]
+    },
+    {
+      "id": "VI.2m",
+      "cu": "VI",
+      "de": "PantallaMobileSubasta",
+      "a": "ProxyWSSubastaMobile",
+      "mensaje": "iniciarCompra(numeroCompra, token)",
+      "notas": [],
+      "operaciones": [
+        "iniciarCompra"
+      ]
+    },
+    {
+      "id": "VI.3",
+      "cu": "VI",
+      "de": "ProxyWSSubastaWeb",
+      "a": "Nginx",
+      "mensaje": "POST /api/compras/{numero}/iniciar",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "VI.3m",
+      "cu": "VI",
+      "de": "ProxyWSSubastaMobile",
+      "a": "Nginx",
+      "mensaje": "POST /api/compras/{numero}/iniciar",
+      "notas": [],
+      "operaciones": []
+    },
+    {
+      "id": "VI.4",
+      "cu": "VI",
+      "de": "Nginx",
+      "a": "WSGateway",
+      "mensaje": "iniciarCompra(numeroCompra, token)",
+      "notas": [],
+      "operaciones": [
+        "iniciarCompra"
+      ]
+    },
+    {
+      "id": "VI.5",
+      "cu": "VI",
+      "de": "WSGateway",
+      "a": "SrvSeguridadToken",
+      "mensaje": "validarYAutorizar(solicitud)",
+      "notas": [],
+      "operaciones": [
+        "validarYAutorizar"
+      ]
+    },
+    {
+      "id": "VI.6",
+      "cu": "VI",
+      "de": "SrvSeguridadToken",
+      "a": "SrvRuteo",
+      "mensaje": "enrutarInicioCompra(numeroCompra, cliente)",
+      "notas": [],
+      "operaciones": [
+        "enrutarInicioCompra"
+      ]
+    },
+    {
+      "id": "VI.7",
+      "cu": "VI",
+      "de": "SrvRuteo",
+      "a": "Nginx",
+      "mensaje": "iniciarCompra (upstream msCompra, least_conn)",
+      "notas": [],
+      "operaciones": [
+        "iniciarCompra"
+      ]
+    },
+    {
+      "id": "VI.8",
+      "cu": "VI",
+      "de": "Nginx",
+      "a": "WSCompra",
+      "mensaje": "iniciarCompra(numeroCompra, cliente)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "iniciarCompra"
+      ]
+    },
+    {
+      "id": "VI.9",
+      "cu": "VI",
+      "de": "WSCompra",
+      "a": "SrvCompraSaga",
+      "mensaje": "iniciarCompra(numeroCompra, cliente)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "iniciarCompra"
+      ]
+    },
+    {
+      "id": "VI.10",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "obtener(numeroCompra) · cambiarEstado(EN_VALIDACION)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "obtener",
+        "cambiarEstado"
+      ]
+    },
+    {
+      "id": "VI.11",
+      "cu": "VI",
+      "de": "TimerValidacionOFAC",
+      "a": "SrvCompraSaga",
+      "mensaje": "validarComprasPendientes()",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "validarComprasPendientes"
+      ]
+    },
+    {
+      "id": "VI.12",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "tomarPendientesValidacion(tamañoLote)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "tomarPendientesValidacion"
+      ]
+    },
+    {
+      "id": "VI.13",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "IntegraValidacion",
+      "mensaje": "validar(numeroCompra, cedula)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "validar"
+      ]
+    },
+    {
+      "id": "VI.14",
+      "cu": "VI",
+      "de": "IntegraValidacion",
+      "a": "WSValidacion",
+      "mensaje": "validar(numeroCompra, cedula)",
+      "notas": [
+        "r1 y r2",
+        "HTTP/REST"
+      ],
+      "operaciones": [
+        "validar"
+      ]
+    },
+    {
+      "id": "VI.15",
+      "cu": "VI",
+      "de": "WSValidacion",
+      "a": "SrvValidarOFAC",
+      "mensaje": "validar(numeroCompra, cedula)",
+      "notas": [],
+      "operaciones": [
+        "validar"
+      ]
+    },
+    {
+      "id": "VI.16",
+      "cu": "VI",
+      "de": "SrvValidarOFAC",
+      "a": "RepoValidar",
+      "mensaje": "buscarResultado(numeroCompra)",
+      "notas": [],
+      "operaciones": [
+        "buscarResultado"
+      ]
+    },
+    {
+      "id": "VI.17",
+      "cu": "VI",
+      "de": "SrvValidarOFAC",
+      "a": "IntegraOFAC",
+      "mensaje": "consultar(cedula)",
+      "notas": [],
+      "operaciones": [
+        "consultar"
+      ]
+    },
+    {
+      "id": "VI.18",
+      "cu": "VI",
+      "de": "IntegraOFAC",
+      "a": "WSOfac",
+      "mensaje": "validarCedula(cedula)",
+      "notas": [
+        "HTTP/REST"
+      ],
+      "operaciones": [
+        "validarCedula"
+      ]
+    },
+    {
+      "id": "VI.19",
+      "cu": "VI",
+      "de": "WSOfac",
+      "a": "SrvValidacionOFAC",
+      "mensaje": "validarCedula(cedula)",
+      "notas": [],
+      "operaciones": [
+        "validarCedula"
+      ]
+    },
+    {
+      "id": "VI.20",
+      "cu": "VI",
+      "de": "SrvValidacionOFAC",
+      "a": "RepoOFAC",
+      "mensaje": "consultarReporte(cedula)",
+      "notas": [],
+      "operaciones": [
+        "consultarReporte"
+      ]
+    },
+    {
+      "id": "VI.21",
+      "cu": "VI",
+      "de": "SrvValidarOFAC",
+      "a": "RepoValidar",
+      "mensaje": "guardarResultado(numeroCompra, estado)",
+      "notas": [],
+      "operaciones": [
+        "guardarResultado"
+      ]
+    },
+    {
+      "id": "VI.22a",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "cambiarEstado(ESPERANDO_PAGO)",
+      "notas": [
+        "r1 y r2",
+        "a: APROBADO"
+      ],
+      "operaciones": [
+        "cambiarEstado"
+      ]
+    },
+    {
+      "id": "VI.23a",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(PagoSolicitud)",
+      "notas": [
+        "r1 y r2",
+        "→ VII"
+      ],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VI.22b",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "cambiarEstado(CANCELADA, \"RECHAZADO OFAC\")",
+      "notas": [
+        "r1 y r2",
+        "b: RECHAZADO"
+      ],
+      "operaciones": [
+        "cambiarEstado"
+      ]
+    },
+    {
+      "id": "VI.23b",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(NotificacionCancelacion)",
+      "notas": [
+        "r1 y r2",
+        "→ IX"
+      ],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VI.22c",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "registrarIntento(intento + 1)",
+      "notas": [
+        "r1 y r2",
+        "c: sin respuesta"
+      ],
+      "operaciones": [
+        "registrarIntento"
+      ]
+    },
+    {
+      "id": "VI.23c",
+      "cu": "VI",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "cambiarEstado(EN_REVISION) · guardar(NotificacionDemora)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "cambiarEstado",
+        "guardar"
+      ]
+    },
+    {
+      "id": "VII.1",
+      "cu": "VII",
+      "de": "WorkerOutboxCompra",
+      "a": "RepoOutboxCompra",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VII.2",
+      "cu": "VII",
+      "de": "WorkerOutboxCompra",
+      "a": "q.pagoSolicitud",
+      "mensaje": "publicar(PagoSolicitud)",
+      "notas": [
+        "r1 y r2",
+        "AMQP · Java → .NET"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VII.3",
+      "cu": "VII",
+      "de": "q.pagoSolicitud",
+      "a": "ListenerPagoSolicitud",
+      "mensaje": "entregar(solicitud)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VII.4",
+      "cu": "VII",
+      "de": "ListenerPagoSolicitud",
+      "a": "SrvPago",
+      "mensaje": "prepararPago(numeroCompra, cedula, valorOfertado)",
+      "notas": [],
+      "operaciones": [
+        "prepararPago"
+      ]
+    },
+    {
+      "id": "VII.5",
+      "cu": "VII",
+      "de": "SrvPago",
+      "a": "RepoPago",
+      "mensaje": "existe(numeroCompra)",
+      "notas": [],
+      "operaciones": [
+        "existe"
+      ]
+    },
+    {
+      "id": "VII.6",
+      "cu": "VII",
+      "de": "SrvPago",
+      "a": "IntegraYoPago",
+      "mensaje": "registrarPendiente(cedula, numeroCompra, valorTotal)",
+      "notas": [],
+      "operaciones": [
+        "registrarPendiente"
+      ]
+    },
+    {
+      "id": "VII.7",
+      "cu": "VII",
+      "de": "IntegraYoPago",
+      "a": "WSCompraPendiente",
+      "mensaje": "registrarCompraPendiente(...)",
+      "notas": [
+        "HTTP/REST"
+      ],
+      "operaciones": [
+        "registrarCompraPendiente"
+      ]
+    },
+    {
+      "id": "VII.8",
+      "cu": "VII",
+      "de": "WSCompraPendiente",
+      "a": "SrvYoPago",
+      "mensaje": "registrarCompraPendiente(...)",
+      "notas": [],
+      "operaciones": [
+        "registrarCompraPendiente"
+      ]
+    },
+    {
+      "id": "VII.9",
+      "cu": "VII",
+      "de": "SrvYoPago",
+      "a": "RepoYoPago",
+      "mensaje": "guardarPendiente(cedula, numeroCompra, valorTotal)",
+      "notas": [],
+      "operaciones": [
+        "guardarPendiente"
+      ]
+    },
+    {
+      "id": "VII.10",
+      "cu": "VII",
+      "de": "SrvPago",
+      "a": "RepoPago",
+      "mensaje": "guardar(Pago)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VII.11",
+      "cu": "VII",
+      "de": "SrvPago",
+      "a": "RepoOutboxPago",
+      "mensaje": "guardar(NotificacionPago)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VII.12",
+      "cu": "VII",
+      "de": "WorkerOutboxPago",
+      "a": "RepoOutboxPago",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VII.13",
+      "cu": "VII",
+      "de": "WorkerOutboxPago",
+      "a": "q.notificacion",
+      "mensaje": "publicar(NotificacionPago)",
+      "notas": [
+        "→ IX"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VII.14",
+      "cu": "VII",
+      "de": "Browser",
+      "a": "PantallaWebYoPago",
+      "mensaje": "consultarCompraPendiente(numeroCompra) · confirmarPago(...)",
+      "notas": [],
+      "operaciones": [
+        "consultarCompraPendiente",
+        "confirmarPago"
+      ]
+    },
+    {
+      "id": "VII.15",
+      "cu": "VII",
+      "de": "PantallaWebYoPago",
+      "a": "ProxyWSYoPagoWeb",
+      "mensaje": "consultarCompraPendiente · pagar(numeroCompra, datosPago)",
+      "notas": [],
+      "operaciones": [
+        "consultarCompraPendiente",
+        "pagar"
+      ]
+    },
+    {
+      "id": "VII.16",
+      "cu": "VII",
+      "de": "ProxyWSYoPagoWeb",
+      "a": "WSCompraPendiente",
+      "mensaje": "consultarCompraPendiente · pagar(...)",
+      "notas": [
+        "HTTP"
+      ],
+      "operaciones": [
+        "consultarCompraPendiente",
+        "pagar"
+      ]
+    },
+    {
+      "id": "VII.17",
+      "cu": "VII",
+      "de": "WSCompraPendiente",
+      "a": "SrvYoPago",
+      "mensaje": "pagar(numeroCompra, datosPago)",
+      "notas": [],
+      "operaciones": [
+        "pagar"
+      ]
+    },
+    {
+      "id": "VII.18",
+      "cu": "VII",
+      "de": "SrvYoPago",
+      "a": "RepoYoPago",
+      "mensaje": "buscarPendiente · registrarPagoConfirmado(...)",
+      "notas": [],
+      "operaciones": [
+        "buscarPendiente",
+        "registrarPagoConfirmado"
+      ]
+    },
+    {
+      "id": "VII.19",
+      "cu": "VII",
+      "de": "SrvYoPago",
+      "a": "IntegraSSO",
+      "mensaje": "reportarPago(cedula, numeroCompra, valorPagado, credencial)",
+      "notas": [],
+      "operaciones": [
+        "reportarPago"
+      ]
+    },
+    {
+      "id": "VII.20",
+      "cu": "VII",
+      "de": "IntegraSSO",
+      "a": "Nginx",
+      "mensaje": "POST /api/pagos/reporte",
+      "notas": [
+        "HTTPS"
+      ],
+      "operaciones": []
+    },
+    {
+      "id": "VII.21",
+      "cu": "VII",
+      "de": "Nginx",
+      "a": "WSGateway",
+      "mensaje": "reportarPago(cedula, numeroCompra, valorPagado, credencial)",
+      "notas": [],
+      "operaciones": [
+        "reportarPago"
+      ]
+    },
+    {
+      "id": "VII.22",
+      "cu": "VII",
+      "de": "WSGateway",
+      "a": "SrvSeguridadToken",
+      "mensaje": "validarYAutorizar(solicitudReportePago)",
+      "notas": [],
+      "operaciones": [
+        "validarYAutorizar"
+      ]
+    },
+    {
+      "id": "VII.23",
+      "cu": "VII",
+      "de": "SrvSeguridadToken",
+      "a": "SrvRuteo",
+      "mensaje": "enrutarReportePago(cedula, numeroCompra, valorPagado)",
+      "notas": [],
+      "operaciones": [
+        "enrutarReportePago"
+      ]
+    },
+    {
+      "id": "VII.24",
+      "cu": "VII",
+      "de": "SrvRuteo",
+      "a": "WSPagoYoPago",
+      "mensaje": "reportarPago(cedula, numeroCompra, valorPagado)",
+      "notas": [
+        "Java → .NET"
+      ],
+      "operaciones": [
+        "reportarPago"
+      ]
+    },
+    {
+      "id": "VII.25",
+      "cu": "VII",
+      "de": "WSPagoYoPago",
+      "a": "SrvPago",
+      "mensaje": "conciliarPago(cedula, numeroCompra, valorPagado)",
+      "notas": [],
+      "operaciones": [
+        "conciliarPago"
+      ]
+    },
+    {
+      "id": "VII.26",
+      "cu": "VII",
+      "de": "SrvPago",
+      "a": "RepoPago",
+      "mensaje": "obtenerPorCompra · confirmarSiPendiente(...)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPorCompra",
+        "confirmarSiPendiente"
+      ]
+    },
+    {
+      "id": "VII.27",
+      "cu": "VII",
+      "de": "SrvPago",
+      "a": "RepoOutboxPago",
+      "mensaje": "guardar(PagoConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VII.28",
+      "cu": "VII",
+      "de": "WorkerOutboxPago",
+      "a": "RepoOutboxPago",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VII.29",
+      "cu": "VII",
+      "de": "WorkerOutboxPago",
+      "a": "q.pagoConfirmado",
+      "mensaje": "publicar(PagoConfirmado)",
+      "notas": [
+        "AMQP · .NET → Java"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VII.30",
+      "cu": "VII",
+      "de": "q.pagoConfirmado",
+      "a": "ListenerPago",
+      "mensaje": "entregar(PagoConfirmado)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VII.31",
+      "cu": "VII",
+      "de": "ListenerPago",
+      "a": "SrvCompraSaga",
+      "mensaje": "procesarPago(numeroCompra, referenciaPago)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "procesarPago"
+      ]
+    },
+    {
+      "id": "VII.32a",
+      "cu": "VII",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "cambiarEstadoSiActual(ESPERANDO_PAGO → PAGO_CONFIRMADO)",
+      "notas": [
+        "r1 y r2",
+        "a: aprobado"
+      ],
+      "operaciones": [
+        "cambiarEstadoSiActual"
+      ]
+    },
+    {
+      "id": "VII.33a",
+      "cu": "VII",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(DespachoSolicitud)",
+      "notas": [
+        "r1 y r2",
+        "→ VIII"
+      ],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VII.32b",
+      "cu": "VII",
+      "de": "SrvCompraSaga",
+      "a": "SrvCompraSaga",
+      "mensaje": "compensar(numeroCompra, \"pago rechazado\")",
+      "notas": [
+        "r1 y r2",
+        "→X",
+        "b: rechazado"
+      ],
+      "operaciones": [
+        "compensar"
+      ]
+    },
+    {
+      "id": "VIII.1",
+      "cu": "VIII",
+      "de": "WorkerOutboxCompra",
+      "a": "RepoOutboxCompra",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VIII.2",
+      "cu": "VIII",
+      "de": "WorkerOutboxCompra",
+      "a": "q.despachoSolicitud",
+      "mensaje": "publicar(DespachoSolicitud)",
+      "notas": [
+        "r1 y r2",
+        "AMQP"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VIII.3",
+      "cu": "VIII",
+      "de": "q.despachoSolicitud",
+      "a": "ListenerDespachoSolicitud",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VIII.4",
+      "cu": "VIII",
+      "de": "ListenerDespachoSolicitud",
+      "a": "SrvDespacho",
+      "mensaje": "solicitarDespacho(numeroCompra, idBien, direccion)",
+      "notas": [],
+      "operaciones": [
+        "solicitarDespacho"
+      ]
+    },
+    {
+      "id": "VIII.5",
+      "cu": "VIII",
+      "de": "SrvDespacho",
+      "a": "RepoDespacho",
+      "mensaje": "existePorCompra · crear(Despacho)",
+      "notas": [],
+      "operaciones": [
+        "existePorCompra",
+        "crear"
+      ]
+    },
+    {
+      "id": "VIII.6",
+      "cu": "VIII",
+      "de": "SrvDespacho",
+      "a": "RepoOutboxDespacho",
+      "mensaje": "guardar(SolicitudInventario) · guardar(SolicitudEnvio)",
+      "notas": [],
+      "operaciones": [
+        "guardar",
+        "guardar"
+      ]
+    },
+    {
+      "id": "VIII.7",
+      "cu": "VIII",
+      "de": "WorkerOutboxDespacho",
+      "a": "RepoOutboxDespacho",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VIII.8a",
+      "cu": "VIII",
+      "de": "WorkerOutboxDespacho",
+      "a": "q.inventarioSolicitud",
+      "mensaje": "publicar(SolicitudInventario)",
+      "notas": [
+        "a: SIN"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VIII.9a",
+      "cu": "VIII",
+      "de": "q.inventarioSolicitud",
+      "a": "ListenerInventario",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VIII.10a",
+      "cu": "VIII",
+      "de": "ListenerInventario",
+      "a": "SrvInventario",
+      "mensaje": "registrarSalidaInventario(numeroCompra, idBien)",
+      "notas": [],
+      "operaciones": [
+        "registrarSalidaInventario"
+      ]
+    },
+    {
+      "id": "VIII.11a",
+      "cu": "VIII",
+      "de": "SrvInventario",
+      "a": "RepoInventario",
+      "mensaje": "existePorCompra · registrarSalida(...)",
+      "notas": [],
+      "operaciones": [
+        "existePorCompra",
+        "registrarSalida"
+      ]
+    },
+    {
+      "id": "VIII.12a",
+      "cu": "VIII",
+      "de": "SrvInventario",
+      "a": "RepoOutboxSIN",
+      "mensaje": "guardar(InventarioConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VIII.13a",
+      "cu": "VIII",
+      "de": "WorkerOutboxSIN",
+      "a": "RepoOutboxSIN",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VIII.14a",
+      "cu": "VIII",
+      "de": "WorkerOutboxSIN",
+      "a": "q.inventarioConfirmacion",
+      "mensaje": "publicar(InventarioConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VIII.15a",
+      "cu": "VIII",
+      "de": "q.inventarioConfirmacion",
+      "a": "ListenerConfInventario",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VIII.16a",
+      "cu": "VIII",
+      "de": "ListenerConfInventario",
+      "a": "SrvDespacho",
+      "mensaje": "confirmarInventario(numeroCompra)",
+      "notas": [],
+      "operaciones": [
+        "confirmarInventario"
+      ]
+    },
+    {
+      "id": "VIII.8b",
+      "cu": "VIII",
+      "de": "WorkerOutboxDespacho",
+      "a": "q.envioSolicitud",
+      "mensaje": "publicar(SolicitudEnvio)",
+      "notas": [
+        "b: SEN"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VIII.9b",
+      "cu": "VIII",
+      "de": "q.envioSolicitud",
+      "a": "ListenerEnvio",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VIII.10b",
+      "cu": "VIII",
+      "de": "ListenerEnvio",
+      "a": "SrvEnvio",
+      "mensaje": "programarEnvio(numeroCompra, idBien, direccion)",
+      "notas": [],
+      "operaciones": [
+        "programarEnvio"
+      ]
+    },
+    {
+      "id": "VIII.11b",
+      "cu": "VIII",
+      "de": "SrvEnvio",
+      "a": "RepoEnvio",
+      "mensaje": "existePorCompra · programar(...)",
+      "notas": [],
+      "operaciones": [
+        "existePorCompra",
+        "programar"
+      ]
+    },
+    {
+      "id": "VIII.12b",
+      "cu": "VIII",
+      "de": "SrvEnvio",
+      "a": "RepoOutboxSEN",
+      "mensaje": "guardar(EnvioConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VIII.13b",
+      "cu": "VIII",
+      "de": "WorkerOutboxSEN",
+      "a": "RepoOutboxSEN",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VIII.14b",
+      "cu": "VIII",
+      "de": "WorkerOutboxSEN",
+      "a": "q.envioConfirmacion",
+      "mensaje": "publicar(EnvioConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VIII.15b",
+      "cu": "VIII",
+      "de": "q.envioConfirmacion",
+      "a": "ListenerConfEnvio",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VIII.16b",
+      "cu": "VIII",
+      "de": "ListenerConfEnvio",
+      "a": "SrvDespacho",
+      "mensaje": "confirmarEnvio(numeroCompra)",
+      "notas": [],
+      "operaciones": [
+        "confirmarEnvio"
+      ]
+    },
+    {
+      "id": "VIII.17",
+      "cu": "VIII",
+      "de": "SrvDespacho",
+      "a": "RepoDespacho",
+      "mensaje": "marcarInventarioConfirmado / marcarEnvioConfirmado",
+      "notas": [],
+      "operaciones": [
+        "marcarInventarioConfirmado",
+        "marcarEnvioConfirmado"
+      ]
+    },
+    {
+      "id": "VIII.18",
+      "cu": "VIII",
+      "de": "SrvDespacho",
+      "a": "RepoOutboxDespacho",
+      "mensaje": "guardar(DespachoConfirmado) (solo si ambos confirmados)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "VIII.19",
+      "cu": "VIII",
+      "de": "WorkerOutboxDespacho",
+      "a": "RepoOutboxDespacho",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "VIII.20",
+      "cu": "VIII",
+      "de": "WorkerOutboxDespacho",
+      "a": "q.despachoConfirmado",
+      "mensaje": "publicar(DespachoConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "VIII.21",
+      "cu": "VIII",
+      "de": "q.despachoConfirmado",
+      "a": "ListenerConfDespacho",
+      "mensaje": "entregar(evento)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "VIII.22",
+      "cu": "VIII",
+      "de": "ListenerConfDespacho",
+      "a": "SrvCompraSaga",
+      "mensaje": "confirmarDespacho(numeroCompra)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "confirmarDespacho"
+      ]
+    },
+    {
+      "id": "VIII.23",
+      "cu": "VIII",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "cambiarEstadoSiActual(PAGO_CONFIRMADO → TERMINADA)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "cambiarEstadoSiActual"
+      ]
+    },
+    {
+      "id": "VIII.24",
+      "cu": "VIII",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(NotificacionCompraFinalizada)",
+      "notas": [
+        "r1 y r2",
+        "→ IX"
+      ],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "IX.1",
+      "cu": "IX",
+      "de": "q.notificacion",
+      "a": "ListenerNotificar",
+      "mensaje": "entregar(evento)",
+      "notas": [],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "IX.2",
+      "cu": "IX",
+      "de": "ListenerNotificar",
+      "a": "SrvNotificar",
+      "mensaje": "notificar(evento)",
+      "notas": [],
+      "operaciones": [
+        "notificar"
+      ]
+    },
+    {
+      "id": "IX.3",
+      "cu": "IX",
+      "de": "SrvNotificar",
+      "a": "RepoNotificar",
+      "mensaje": "yaEnviada(idEvento)",
+      "notas": [],
+      "operaciones": [
+        "yaEnviada"
+      ]
+    },
+    {
+      "id": "IX.4",
+      "cu": "IX",
+      "de": "SrvNotificar",
+      "a": "IntegraMail",
+      "mensaje": "enviarCorreo(destinatario, asunto, cuerpo)",
+      "notas": [],
+      "operaciones": [
+        "enviarCorreo"
+      ]
+    },
+    {
+      "id": "IX.5",
+      "cu": "IX",
+      "de": "IntegraMail",
+      "a": "CORREO",
+      "mensaje": "enviar(mensaje)",
+      "notas": [
+        "SMTP"
+      ],
+      "operaciones": [
+        "enviar"
+      ]
+    },
+    {
+      "id": "IX.6",
+      "cu": "IX",
+      "de": "SrvNotificar",
+      "a": "IntegraSMS",
+      "mensaje": "enviarSMS(numero, texto) (solo si el evento lo pide)",
+      "notas": [],
+      "operaciones": [
+        "enviarSMS"
+      ]
+    },
+    {
+      "id": "IX.7",
+      "cu": "IX",
+      "de": "IntegraSMS",
+      "a": "SMS GATEWAY",
+      "mensaje": "enviar(numero, texto)",
+      "notas": [
+        "HTTP"
+      ],
+      "operaciones": [
+        "enviar"
+      ]
+    },
+    {
+      "id": "IX.8",
+      "cu": "IX",
+      "de": "SrvNotificar",
+      "a": "RepoNotificar",
+      "mensaje": "registrarEnviada(idEvento, canal, resultado)",
+      "notas": [],
+      "operaciones": [
+        "registrarEnviada"
+      ]
+    },
+    {
+      "id": "X.1",
+      "cu": "X",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "cambiarEstado(→ CANCELADA, motivo)",
+      "notas": [
+        "r1 y r2",
+        "pago rechazado"
+      ],
+      "operaciones": [
+        "cambiarEstado"
+      ]
+    },
+    {
+      "id": "X.2",
+      "cu": "X",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(BienLiberado)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "X.3",
+      "cu": "X",
+      "de": "WorkerOutboxCompra",
+      "a": "RepoOutboxCompra",
+      "mensaje": "obtenerPendientes(tamañoLote)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "obtenerPendientes"
+      ]
+    },
+    {
+      "id": "X.4",
+      "cu": "X",
+      "de": "WorkerOutboxCompra",
+      "a": "q.LiberarBienSubasta",
+      "mensaje": "publicar(BienLiberado)",
+      "notas": [
+        "r1 y r2",
+        "AMQP"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    },
+    {
+      "id": "X.5a",
+      "cu": "X",
+      "de": "q.LiberarBienSubasta",
+      "a": "ListenerLiberarBienSub",
+      "mensaje": "entregar(BienLiberado)",
+      "notas": [
+        "a: MSSubasta"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "X.6a",
+      "cu": "X",
+      "de": "ListenerLiberarBienSub",
+      "a": "SrvSubasta",
+      "mensaje": "liberarBien(idSubasta, motivo)",
+      "notas": [],
+      "operaciones": [
+        "liberarBien"
+      ]
+    },
+    {
+      "id": "X.7a",
+      "cu": "X",
+      "de": "SrvSubasta",
+      "a": "RepoSubasta",
+      "mensaje": "liberarSiAdjudicada(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "liberarSiAdjudicada"
+      ]
+    },
+    {
+      "id": "X.8a",
+      "cu": "X",
+      "de": "SrvSubasta",
+      "a": "RepoOutboxSubasta",
+      "mensaje": "guardar(BienLiberadoConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "X.5b",
+      "cu": "X",
+      "de": "q.LiberarBienSubasta",
+      "a": "ListenerLiberarBienCat",
+      "mensaje": "entregar(BienLiberado)",
+      "notas": [
+        "b: MSCatalogo"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "X.6b",
+      "cu": "X",
+      "de": "ListenerLiberarBienCat",
+      "a": "SrvCatalogo",
+      "mensaje": "liberarBien(idSubasta, motivo)",
+      "notas": [],
+      "operaciones": [
+        "liberarBien"
+      ]
+    },
+    {
+      "id": "X.7b",
+      "cu": "X",
+      "de": "SrvCatalogo",
+      "a": "RepoCatalogo",
+      "mensaje": "liberarSiAdjudicada(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "liberarSiAdjudicada"
+      ]
+    },
+    {
+      "id": "X.8b",
+      "cu": "X",
+      "de": "SrvCatalogo",
+      "a": "RepoOutboxCatalogo",
+      "mensaje": "guardar(BienLiberadoConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "X.5c",
+      "cu": "X",
+      "de": "q.LiberarBienSubasta",
+      "a": "ListenerLiberarBienSus",
+      "mensaje": "entregar(BienLiberado)",
+      "notas": [
+        "c: MSSuscripcion"
+      ],
+      "operaciones": [
+        "entregar"
+      ]
+    },
+    {
+      "id": "X.6c",
+      "cu": "X",
+      "de": "ListenerLiberarBienSus",
+      "a": "SrvSuscripcion",
+      "mensaje": "liberarBien(idSubasta, motivo)",
+      "notas": [],
+      "operaciones": [
+        "liberarBien"
+      ]
+    },
+    {
+      "id": "X.7c",
+      "cu": "X",
+      "de": "SrvSuscripcion",
+      "a": "RepoSuscripcion",
+      "mensaje": "liberarSiAdjudicada(idSubasta)",
+      "notas": [],
+      "operaciones": [
+        "liberarSiAdjudicada"
+      ]
+    },
+    {
+      "id": "X.8c",
+      "cu": "X",
+      "de": "SrvSuscripcion",
+      "a": "RepoOutboxSuscripcion",
+      "mensaje": "guardar(BienLiberadoConfirmado)",
+      "notas": [],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "X.9",
+      "cu": "X",
+      "de": "SrvCompraSaga",
+      "a": "RepoCompra",
+      "mensaje": "cambiarEstadoSiActual(PAGO_CONFIRMADO → EN_REVISION)",
+      "notas": [
+        "r1 y r2",
+        "despacho agotado"
+      ],
+      "operaciones": [
+        "cambiarEstadoSiActual"
+      ]
+    },
+    {
+      "id": "X.10",
+      "cu": "X",
+      "de": "SrvCompraSaga",
+      "a": "RepoOutboxCompra",
+      "mensaje": "guardar(NotificacionRevisionManual) (no libera el bien)",
+      "notas": [
+        "r1 y r2"
+      ],
+      "operaciones": [
+        "guardar"
+      ]
+    },
+    {
+      "id": "X.11",
+      "cu": "X",
+      "de": "WorkerOutboxCompra",
+      "a": "q.notificacion",
+      "mensaje": "publicar(NotificacionRevisionManual)",
+      "notas": [
+        "r1 y r2",
+        "→ IX"
+      ],
+      "operaciones": [
+        "publicar"
+      ]
+    }
+  ],
+  "validacion": {
+    "flechas_vpp": 219,
+    "pasos_pdf": 214,
+    "diferencias": [
+      {
+        "paso": "VII.32b",
+        "problema": "sin flecha en el VPP con secuencias"
+      }
+    ],
+    "flechas_sin_paso": [],
+    "clases_en_pasos_sin_componente": []
+  }
+}
