@@ -4,8 +4,10 @@ Estas reglas mandan sobre cualquier otra preferencia, convención o "buena prác
 
 ## 1. Fuente única de verdad
 
-- **Única fuente:** el diagrama de despliegue **«Arquitectura Integrada JavaEE-.NET»** de `docs/enunciado/ProyectoSSO-Integrada-JavaEE-NET.vpp`
-  y los pasos de `docs/enunciado/casos-de-uso-arquitectura-integrada.pdf` (dibujados sobre ese mismo diagrama en `…-con-secuencias.vpp`).
+- **Única fuente:** el diagrama de despliegue **«Arquitectura Integrada JavaEE-.NET»**. Su versión impresa oficial es el pliego
+  **`docs/enunciado/arquitectura-integrada-pliego-100x70.pdf`** (máquinas, nodos, componentes, clases, conexiones físicas y flechas de los
+  pasos con su color). Los mismos datos, en forma legible por máquina, están en `ProyectoSSO-Integrada-JavaEE-NET.vpp`,
+  `…-con-secuencias.vpp` y en el texto de cada paso de `casos-de-uso-arquitectura-integrada.pdf`. Los cuatro coinciden 1:1 (el extractor lo comprueba).
 - **Prohibido usar** el diagrama EBC, el «Diagrama Fisico MS-SSO», el «Diagrama de componentes MS-SSO» y los diagramas DS: están desactualizados (no tienen .NET).
 - El contenido de esa fuente está volcado en `docs/modelo/modelo-canonico.json`. **No se edita a mano**: se regenera con `python3 -I tools/vpp/extraer_modelo.py`.
 - Si el diagrama no dice algo, **no se inventa**: se pregunta al usuario y se anota en `docs/modelo/observaciones.md`.

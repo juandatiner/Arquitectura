@@ -1,6 +1,21 @@
 # Arquitectura SSO — vista de despliegue y componentes
 
-Fuente: diagrama *Arquitectura Integrada JavaEE-.NET* del modelo VPP.
+Fuente: diagrama *Arquitectura Integrada JavaEE-.NET* — pliego impreso [`enunciado/arquitectura-integrada-pliego-100x70.pdf`](enunciado/arquitectura-integrada-pliego-100x70.pdf).
+
+## Colores por sistema (leyenda del pliego)
+
+| Sistema | Color |
+|---------|-------|
+| SSO (subastas) | azul claro |
+| YoPago (.NET) | rosado |
+| OFAC | naranja claro |
+| SIN (inventario) | celeste |
+| SEN (envíos) | cian |
+| MOM / colas RabbitMQ | amarillo |
+| AD · Correo · SMS | gris |
+| Máquinas físicas | gris muy claro |
+
+Líneas negras finas = conexiones físicas (HTTP, HTTPS, AMQP, JDBC, LDAP, SMTP). Flechas de color gruesas = pasos de los casos de uso.
 
 ## Máquinas
 

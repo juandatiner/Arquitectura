@@ -26,11 +26,30 @@ ENUNCIADO = RAIZ / "docs/enunciado"
 VPP = ENUNCIADO / "ProyectoSSO-Integrada-JavaEE-NET.vpp"
 VPP_SECUENCIAS = ENUNCIADO / "ProyectoSSO-Integrada-JavaEE-NET-con-secuencias.vpp"
 PDF = ENUNCIADO / "casos-de-uso-arquitectura-integrada.pdf"
+PLIEGO = ENUNCIADO / "arquitectura-integrada-pliego-100x70.pdf"
 SALIDA = RAIZ / "docs/modelo/modelo-canonico.json"
 DIAGRAMA = "Arquitectura Integrada%"
 
 CU = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"]
 PASO = re.compile(r"^\s*((?:%s)\.\d+[a-z]?(?:/[a-z])?m?)\s+(.+?)\s*→\s*(.+?)\s{2,}(.+)$" % "|".join(CU))
+# Leyenda del pliego 100x70
+COLORES_SISTEMA = {
+    "SSO (subastas)": "azul claro", "YoPago (.NET)": "rosado", "OFAC": "naranja claro",
+    "SIN (inventario)": "celeste", "SEN (envíos)": "cian", "MOM / colas RabbitMQ": "amarillo",
+    "AD · Correo · SMS": "gris", "Máquinas físicas": "gris muy claro",
+}
+COLORES_CU = {
+    "I": ["Autenticar cliente", "verde", "0,153,0"],
+    "II": ["Consultar catálogo y suscribirse", "naranja", "255,128,0"],
+    "III": ["Publicar y abrir subasta", "morado", "128,0,255"],
+    "IV": ["Registrar oferta y avisar", "fucsia", "230,0,126"],
+    "V": ["Cerrar subasta y crear compra", "verde azulado", "0,128,128"],
+    "VI": ["Iniciar compra y validar OFAC", "mostaza", "204,153,0"],
+    "VII": ["Pagar en YoPago (.NET)", "azul oscuro", "0,0,160"],
+    "VIII": ["Despachar con SIN y SEN", "oliva", "128,128,0"],
+    "IX": ["Notificar al cliente", "azul", "0,112,192"],
+    "X": ["Compensar la compra", "café", "128,64,0"],
+}
 # Destinos que no son clases de código propio
 NO_CODIGO = re.compile(r"^(Browser|Nginx|AD|CORREO|SMS GATEWAY|q\..+|DB .+)$")
 
@@ -161,6 +180,26 @@ def flechas_numeradas():
     return flechas
 
 
+def contrastar_pliego(componentes, infraestructura, pasos):
+    """El pliego 100x70 es la exportación impresa del diagrama: todo lo del modelo debe aparecer en él."""
+    if not PLIEGO.exists():
+        return {"pliego": "no encontrado"}
+    texto = subprocess.run(["pdftotext", "-raw", str(PLIEGO), "-"], check=True, capture_output=True, text=True).stdout
+    etiquetas = set(re.findall(r"\b((?:%s)\.\d+[a-z]?m?)\b" % "|".join(sorted(CU, key=len, reverse=True)), texto))
+    ids = set()
+    for p in pasos:
+        m = re.match(r"^(.+?)([a-z])/([a-z])$", p["id"])
+        ids.update([m.group(1) + m.group(2), m.group(1) + m.group(3)] if m else [p["id"]])
+    clases = {c for v in componentes.values() for c in v["clases"]}
+    nodos = {n["nodo"] for v in componentes.values() for n in v["nodos"]} | {n["nodo"] for n in infraestructura}
+    return {"pliego": PLIEGO.name,
+            "componentes_ausentes": sorted(c for c in componentes if c not in texto),
+            "clases_ausentes": sorted(c for c in clases if c not in texto),
+            "nodos_ausentes": sorted(n for n in nodos if n and n not in texto),
+            "pliego_pasos_sin_flecha": sorted(ids - etiquetas),
+            "pliego_flechas_sin_paso": sorted(etiquetas - ids)}
+
+
 def main():
     componentes, infraestructura, conexiones = arquitectura()
     pasos = pasos_pdf()
@@ -194,6 +233,8 @@ def main():
 
     salida = {
         "fuente": {"diagrama": "Arquitectura Integrada JavaEE-.NET", "vpp": VPP.name, "pdf": PDF.name},
+        "colores_sistema": COLORES_SISTEMA,
+        "colores_cu": COLORES_CU,
         "componentes": componentes,
         "infraestructura": infraestructura,
         "conexiones": conexiones,
@@ -201,7 +242,8 @@ def main():
         "pasos": pasos,
         "validacion": {"flechas_vpp": len(flechas), "pasos_pdf": len(pasos),
                        "diferencias": diferencias, "flechas_sin_paso": sobrantes,
-                       "clases_en_pasos_sin_componente": sin_componente},
+                       "clases_en_pasos_sin_componente": sin_componente,
+                       **contrastar_pliego(componentes, infraestructura, pasos)},
     }
     SALIDA.parent.mkdir(parents=True, exist_ok=True)
     SALIDA.write_text(json.dumps(salida, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
