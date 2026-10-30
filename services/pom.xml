@@ -29,6 +29,7 @@
         <module>apigateway</module>
         <module>msacceso</module>
         <module>mscatalogo</module>
+        <module>mscompra</module>
         <module>mssubasta</module>
         <module>mssuscripcion</module>
     </modules>
@@ -40,6 +41,7 @@
         <springdoc.version>3.2.0</springdoc.version>
         <jjwt.version>0.13.0</jjwt.version>
         <spotless.version>3.10.4</spotless.version>
+        <resilience4j.version>2.4.0</resilience4j.version>
         <jacoco.version>0.8.16</jacoco.version>
     </properties>
 
@@ -49,6 +51,11 @@
                 <groupId>com.tngtech.archunit</groupId>
                 <artifactId>archunit-junit5</artifactId>
                 <version>${archunit.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.resilience4j</groupId>
+                <artifactId>resilience4j-circuitbreaker</artifactId>
+                <version>${resilience4j.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.springdoc</groupId>
