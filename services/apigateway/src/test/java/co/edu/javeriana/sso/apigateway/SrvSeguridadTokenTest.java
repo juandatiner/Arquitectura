@@ -77,7 +77,13 @@ class SrvSeguridadTokenTest {
                         eq("S-1"),
                         eq(
                                 new IdentidadCliente(
-                                        "cliente1", "1010101010", null, null, null, "CLIENTE")),
+                                        "cliente1",
+                                        "1010101010",
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        "CLIENTE")),
                         eq(new BigDecimal("1500000")));
     }
 

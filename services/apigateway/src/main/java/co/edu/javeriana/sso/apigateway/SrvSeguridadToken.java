@@ -99,6 +99,7 @@ public class SrvSeguridadToken {
                     claims.get("nombre", String.class),
                     claims.get("celular", String.class),
                     claims.get("correo", String.class),
+                    claims.get("direccion", String.class),
                     claims.get("rol", String.class));
         } catch (ExpiredJwtException e) {
             throw new TokenInvalidoException("La sesión expiró, inicie sesión de nuevo");

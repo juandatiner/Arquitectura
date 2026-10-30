@@ -195,6 +195,56 @@ services:
       mom:
         condition: service_healthy
 
+  # DB SERVER :5432 · DB COMPRA · Máquina 2 (la comparten las dos réplicas)
+  db-compra:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: compra
+      POSTGRES_USER: compra
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-compra:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compra -d compra"]
+      interval: 5s
+      retries: 20
+
+  # MSCompra SERVER réplica 1 :8085 · MSCompra.jar · Máquina 2
+  mscompra-replica1:
+    build: &build-mscompra
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mscompra
+        ARTEFACTO: MSCompra
+        PUERTO: 8085
+    environment:
+      DB_URL: jdbc:postgresql://db-compra:5432/compra
+      DB_USUARIO: compra
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+      RUTA_MSVALIDACION: http://msvalidacion:8087
+    depends_on: &depende-mscompra
+      db-compra:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # MSCompra SERVER réplica 2 :8085 · MSCompra.jar · Máquina 3
+  mscompra-replica2:
+    build: *build-mscompra
+    environment:
+      DB_URL: jdbc:postgresql://db-compra:5432/compra
+      DB_USUARIO: compra
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+      RUTA_MSVALIDACION: http://msvalidacion:8087
+    depends_on: *depende-mscompra
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -251,4 +301,5 @@ volumes:
   db-catalogo:
   db-subasta:
   db-suscripcion:
+  db-compra:
   db-acceso:

@@ -43,6 +43,7 @@ public class SrvLogin {
                         .claim("nombre", cliente.nombre())
                         .claim("celular", cliente.celular())
                         .claim("correo", cliente.correo())
+                        .claim("direccion", cliente.direccion())
                         .claim("rol", cliente.rol().name())
                         .issuedAt(Date.from(ahora))
                         .expiration(Date.from(expira))
