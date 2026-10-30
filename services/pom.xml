@@ -30,10 +30,13 @@
         <module>msacceso</module>
         <module>mscatalogo</module>
         <module>mscompra</module>
+        <module>msdespacho</module>
         <module>mssubasta</module>
         <module>mssuscripcion</module>
         <module>msvalidacion</module>
         <module>ofacbackend</module>
+        <module>senbackend</module>
+        <module>sinbackend</module>
     </modules>
 
     <properties>

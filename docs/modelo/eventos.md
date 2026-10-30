@@ -15,6 +15,10 @@ Los campos van en el orden en que se declaran aquí. Fechas en ISO-8601 UTC. Mon
 | `q.pagoConfirmado` | `PagoConfirmado` | WorkerOutboxPago (VII.29, .NET → Java) | ListenerPago en **una** réplica de MSCompra (VII.30) | `idEvento`, `numeroCompra`, `cedula`, `valorPagado`, `referenciaPago`, `resultado` (`APROBADO`/`RECHAZADO`) |
 | `q.despachoSolicitud` | `DespachoSolicitud` | WorkerOutboxCompra (VIII.2) | ListenerDespachoSolicitud (VIII.3) | `idEvento`, `numeroCompra`, `idBien`, `descripcion`, `direccion`, `destinatario` |
 | `q.despachoConfirmado` | `DespachoConfirmado` | WorkerOutboxDespacho (VIII.20) | ListenerConfDespacho en **una** réplica de MSCompra (VIII.21) | `idEvento`, `numeroCompra` |
+| `q.inventarioSolicitud` | `SolicitudInventario` | WorkerOutboxDespacho (VIII.8a) | ListenerInventario de SIN (VIII.9a) | `idEvento`, `numeroCompra`, `idBien` |
+| `q.envioSolicitud` | `SolicitudEnvio` | WorkerOutboxDespacho (VIII.8b) | ListenerEnvio de SEN (VIII.9b) | `idEvento`, `numeroCompra`, `idBien`, `direccion` |
+| `q.inventarioConfirmacion` | `InventarioConfirmado` | WorkerOutboxSIN (VIII.14a) | ListenerConfInventario (VIII.15a) | `idEvento`, `numeroCompra`, `idBien` |
+| `q.envioConfirmacion` | `EnvioConfirmado` | WorkerOutboxSEN (VIII.14b) | ListenerConfEnvio (VIII.15b) | `idEvento`, `numeroCompra`, `fechaProgramada` |
 | `q.LiberarBienSubasta` | `BienLiberado` | WorkerOutboxCompra (X.4) | ListenerLiberarBienSub (X.5a), ListenerLiberarBienCat (X.5b), ListenerLiberarBienSus (X.5c) | `idEvento`, `numeroCompra`, `idSubasta`, `motivo` |
 
 Eventos sin cola (se guardan en el outbox con estado `REGISTRADO`, observación 8): `BienLiberadoConfirmado` (`idEvento`, `idSubasta`, `motivo`).
