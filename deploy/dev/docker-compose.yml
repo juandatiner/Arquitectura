@@ -157,6 +157,44 @@ services:
       mom:
         condition: service_healthy
 
+  # DB SERVER :5432 · DB Suscripcion · Máquina 2
+  db-suscripcion:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: suscripcion
+      POSTGRES_USER: suscripcion
+      POSTGRES_PASSWORD: ${DB_CLAVE:-suscripcion}
+    volumes:
+      - db-suscripcion:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U suscripcion -d suscripcion"]
+      interval: 5s
+      retries: 20
+
+  # MSSuscripcion SERVER :8084 · MSSuscripcion.jar · Máquina 2
+  mssuscripcion:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mssuscripcion
+        ARTEFACTO: MSSuscripcion
+    environment:
+      PORT: 8084
+      DB_URL: jdbc:postgresql://db-suscripcion:5432/suscripcion
+      DB_USUARIO: suscripcion
+      DB_CLAVE: ${DB_CLAVE:-suscripcion}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:-sso}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:-sso}
+    ports:
+      - "${MSSUSCRIPCION_PUERTO_HOST:-8084}:8084"
+    depends_on:
+      db-suscripcion:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -212,4 +250,5 @@ volumes:
   mom:
   db-catalogo:
   db-subasta:
+  db-suscripcion:
   db-acceso:

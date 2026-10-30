@@ -30,6 +30,7 @@
         <module>msacceso</module>
         <module>mscatalogo</module>
         <module>mssubasta</module>
+        <module>mssuscripcion</module>
     </modules>
 
     <properties>
