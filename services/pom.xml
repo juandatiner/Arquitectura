@@ -31,6 +31,7 @@
         <module>mscatalogo</module>
         <module>mscompra</module>
         <module>msdespacho</module>
+        <module>msnotificacion</module>
         <module>mssubasta</module>
         <module>mssuscripcion</module>
         <module>msvalidacion</module>
