@@ -1,0 +1,34 @@
+@model VistaPendientes
+@{ ViewData["Titulo"] = "Compras pendientes"; var pesos = System.Globalization.CultureInfo.GetCultureInfo("es-CO"); }
+<section class="tarjeta">
+    <h1>Compras SSO</h1>
+    <p>Cédula @Model.Nombre</p>
+    @if (Model.Compras.Count == 0)
+    {
+        <p>No tiene compras SSO.</p>
+    }
+    @foreach (var compra in Model.Compras)
+    {
+        <article class="compra @(compra.NumeroCompra == Model.Resaltada ? "resaltada" : "")">
+            <h2>Compra @compra.NumeroCompra</h2>
+            <p class="valor">@compra.ValorTotal.ToString("C0", pesos)</p>
+            <p>Estado: <strong>@compra.Estado</strong></p>
+            @if (compra.Estado == "PENDIENTE")
+            {
+                <form method="post" action="/pagar">
+                    <input type="hidden" name="numeroCompra" value="@compra.NumeroCompra">
+                    <label>Titular <input name="titular" required></label>
+                    <label>Medio de pago
+                        <select name="medio"><option value="PSE">PSE</option><option value="TARJETA">Tarjeta</option></select>
+                    </label>
+                    <button type="submit">Pagar</button>
+                </form>
+            }
+            else
+            {
+                <p>Referencia @compra.Referencia · reporte a SSO: @compra.Reporte</p>
+            }
+        </article>
+    }
+    <form method="post" action="/salir"><button class="secundario" type="submit">Salir</button></form>
+</section>

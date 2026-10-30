@@ -1,0 +1,12 @@
+@model string?
+@{ ViewData["Titulo"] = "Ingresar"; }
+<section class="tarjeta">
+    <h1>Ingrese a YoPago</h1>
+    <p>Identifíquese con su cédula y contraseña para ver sus compras SSO pendientes.</p>
+    <form method="post" action="/consultar">
+        <input type="hidden" name="compra" value="@Model">
+        <label>Cédula <input name="cedula" inputmode="numeric" autocomplete="username" required></label>
+        <label>Contraseña <input name="clave" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Ver mis compras</button>
+    </form>
+</section>

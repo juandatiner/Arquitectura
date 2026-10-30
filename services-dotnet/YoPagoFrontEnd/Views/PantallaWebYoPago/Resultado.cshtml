@@ -1,0 +1,16 @@
+@model ResultadoPago
+@{ ViewData["Titulo"] = "Pago realizado"; var pesos = System.Globalization.CultureInfo.GetCultureInfo("es-CO"); }
+<section class="tarjeta">
+    <h1>Pago realizado</h1>
+    <p>Compra <strong>@Model.NumeroCompra</strong> · @Model.ValorPagado.ToString("C0", pesos)</p>
+    <p>Referencia YoPago: <strong>@Model.Referencia</strong></p>
+    @if (Model.Reporte == "REPORTADO")
+    {
+        <p>SSO recibió su pago (@Model.ResultadoSso). Le llegará un mensaje al celular cuando la compra se complete.</p>
+    }
+    else
+    {
+        <p>Su pago quedó registrado. Estamos informándolo a SSO; le llegará un mensaje al celular.</p>
+    }
+    <form method="post" action="/salir"><button type="submit">Terminar</button></form>
+</section>
