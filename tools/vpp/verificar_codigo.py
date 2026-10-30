@@ -54,9 +54,9 @@ def error(componente, regla, texto):
 def declara(fuente, op, lenguaje):
     """True si `op` aparece como declaración de método (no como llamada)."""
     if lenguaje == "java":
-        patron = rf"(?m)^\s*(?:@\w+(?:\([^)]*\))?\s*)*(?:public|protected|private|static|final|synchronized|\s)*[\w<>\[\],.? ]+\s+{op}\s*\([^;{{]*\)\s*(?:throws [\w., ]+)?\s*\{{"
+        patron = rf"(?m)^\s*(?:@\w+(?:\([^)]*\))?\s*)*(?:public|protected|private|static|final|synchronized|\s)*[\w<>\[\],.? ]+\s+{op}\s*\([^;]*?\)\s*(?:throws [\w., ]+)?\s*\{{"
     elif lenguaje == "dotnet":
-        patron = rf"(?m)^\s*(?:\[[^\]]*\]\s*)*(?:public|protected|private|internal|static|async|virtual|override|\s)*[\w<>\[\],.? ]+\s+{op}\s*\([^;{{]*\)\s*(?:\{{|=>)"
+        patron = rf"(?m)^\s*(?:\[[^\]]*\]\s*)*(?:public|protected|private|internal|static|async|virtual|override|\s)*[\w<>\[\],.? ]+\s+{op}\s*\([^;]*?\)\s*(?:\{{|=>)"
     elif lenguaje == "android":
         patron = rf"(?m)^\s*(?:suspend\s+|private\s+|override\s+|public\s+)*fun\s+{op}\s*\("
     else:  # angular / typescript

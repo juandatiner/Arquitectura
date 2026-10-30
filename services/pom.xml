@@ -32,6 +32,8 @@
         <module>mscompra</module>
         <module>mssubasta</module>
         <module>mssuscripcion</module>
+        <module>msvalidacion</module>
+        <module>ofacbackend</module>
     </modules>
 
     <properties>
