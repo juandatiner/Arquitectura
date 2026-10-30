@@ -18,6 +18,9 @@ services:
       LDAP_ADMIN_PASSWORD: ${AD_ADMIN_CLAVE:?Falta AD_ADMIN_CLAVE en deploy/dev/.env}
     volumes:
       - ../ad/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+      # Datos y configuración persistentes: sin esto el AD pierde los usuarios al recrear el contenedor
+      - ad-datos:/var/lib/ldap
+      - ad-config:/etc/ldap/slapd.d
     ports:
       - "${AD_PUERTO_HOST:-389}:389"
     healthcheck:
@@ -245,6 +248,69 @@ services:
       RUTA_MSVALIDACION: http://msvalidacion:8087
     depends_on: *depende-mscompra
 
+  # DB SERVER :5432 · DB VALIDAR · Máquina 2
+  db-validar:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: validar
+      POSTGRES_USER: validar
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-validar:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U validar -d validar"]
+      interval: 5s
+      retries: 20
+
+  # MSValidacion SERVER :8087 · MSValidacion.jar · Máquina 2
+  msvalidacion:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msvalidacion
+        ARTEFACTO: MSValidacion
+        PUERTO: 8087
+    environment:
+      DB_URL: jdbc:postgresql://db-validar:5432/validar
+      DB_USUARIO: validar
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      RUTA_OFAC: http://ofacbackend:9001
+    depends_on:
+      db-validar:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB OFAC · Máquina 3
+  db-ofac:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ofac
+      POSTGRES_USER: ofac
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-ofac:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ofac -d ofac"]
+      interval: 5s
+      retries: 20
+
+  # OFAC SERVER :9001 · OFACBackEnd.jar · Máquina 3 (sistema externo)
+  ofacbackend:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: ofacbackend
+        ARTEFACTO: OFACBackEnd
+        PUERTO: 9001
+    environment:
+      DB_URL: jdbc:postgresql://db-ofac:5432/ofac
+      DB_USUARIO: ofac
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    depends_on:
+      db-ofac:
+        condition: service_healthy
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -297,9 +363,13 @@ secrets:
     file: ../secretos/token_privada.pem
 
 volumes:
+  ad-datos:
+  ad-config:
   mom:
   db-catalogo:
   db-subasta:
   db-suscripcion:
   db-compra:
+  db-validar:
+  db-ofac:
   db-acceso:
