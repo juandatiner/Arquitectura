@@ -10,6 +10,7 @@ Los campos van en el orden en que se declaran aquí. Fechas en ISO-8601 UTC. Mon
 | `q.subastaIniciada` | `SubastaIniciada` | WorkerOutboxSubasta (III.17) | ListenerEventoSubasta (III.18b) | `idEvento`, `idSubasta`, `idBien`, `descripcion`, `valorMinimo`, `fechaCierre` |
 | `q.cambioOfertaMayor` | `CambioOfertaMayor` | WorkerOutboxSubasta (IV.15) | ListenerEventoSubasta (IV.16) | `idEvento`, `idSubasta`, `descripcion`, `valor`, `cliente`, `anterior` (null si es la primera oferta) |
 | `q.subastaCerrada` | `SubastaCerrada` | WorkerOutboxSubasta (V.7) | ListenerSubastaCerrada en **una** réplica de MSCompra (V.8a/b) | `idEvento`, `idSubasta`, `idBien`, `descripcion`, `resultado` (`ADJUDICADA`/`DESIERTA`), `ganador` (null si desierta), `valor` |
+| `q.notificacion` | `Notificacion` | WorkerOutboxSuscripcion (III.23, IV.21); luego Compra y Pago | ListenerNotificar (IX.1) | `idEvento`, `origen`, `idSubasta`, `destinatario` `{nombre, correo, celular}`, `asunto`, `cuerpo`, `sms` (true = además del correo, SMS al celular: IX.6) |
 | `q.LiberarBienSubasta` | `BienLiberado` | WorkerOutboxCompra (X.4) | ListenerLiberarBienSub (X.5a), ListenerLiberarBienCat (X.5b), ListenerLiberarBienSus (X.5c) | `idEvento`, `numeroCompra`, `idSubasta`, `motivo` |
 
 Eventos sin cola (se guardan en el outbox con estado `REGISTRADO`, observación 8): `BienLiberadoConfirmado` (`idEvento`, `idSubasta`, `motivo`).

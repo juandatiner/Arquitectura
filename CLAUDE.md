@@ -50,6 +50,13 @@ Estas reglas mandan sobre cualquier otra preferencia, convención o "buena prác
 - Servicios desplegados **fuera del IDE**, en Docker, usando las tres máquinas con sus IP.
 - Entregable de código: `.zip` con todos los `pom.xml`.
 
+## 3b. Sin datos ni valores quemados
+
+- **Nada de demos**, atajos ni datos de ejemplo dentro del código o de las migraciones.
+- **Ningún dato** (bienes, subastas, usuarios, claves) va en el repositorio: se carga **al desplegar** desde archivos CSV que viven en la VM, con los scripts de `tools/carga/`. El repo solo trae plantillas con encabezados.
+- **Ningún valor por defecto** de claves, credenciales, hosts ni IP en `application.yml` / `appsettings.json`: todo llega por variable de entorno desde `deploy/maquina-N/.env`. Si falta, el servicio no arranca.
+- Las pruebas crean sus propios datos.
+
 ## 4. Verificación obligatoria
 
 Antes de cada commit:

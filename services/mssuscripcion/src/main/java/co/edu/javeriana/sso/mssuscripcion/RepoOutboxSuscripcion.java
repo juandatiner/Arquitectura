@@ -1,0 +1,78 @@
+package co.edu.javeriana.sso.mssuscripcion;
+
+import co.edu.javeriana.sso.mssuscripcion.modelo.Evento;
+import co.edu.javeriana.sso.mssuscripcion.modelo.EventoPendiente;
+import java.util.List;
+import java.util.UUID;
+import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.stereotype.Repository;
+import tools.jackson.databind.json.JsonMapper;
+
+/** Outbox transaccional en DB Suscripcion (ADR 0002). */
+@Repository
+public class RepoOutboxSuscripcion {
+
+    private final JdbcClient jdbc;
+    private final JsonMapper json;
+
+    public RepoOutboxSuscripcion(JdbcClient jdbc, JsonMapper json) {
+        this.jdbc = jdbc;
+        this.json = json;
+    }
+
+    /**
+     * Pasos III.21 / IV.19 (guardar(Notificacion)) y X.8c (guardar(BienLiberadoConfirmado)). Se
+     * ejecuta dentro de la transacción de SrvSuscripcion: el evento existe solo si el cambio de
+     * negocio se confirmó.
+     */
+    public void guardar(Evento evento) {
+        jdbc.sql(
+                        """
+                        INSERT INTO outbox (id_evento, tipo, cola, payload, estado)
+                        VALUES (:id, :tipo, :cola, CAST(:payload AS JSON), :estado)
+                        """)
+                .param("id", evento.idEvento())
+                .param("tipo", evento.getClass().getSimpleName())
+                .param("cola", evento.cola())
+                .param("payload", json.writeValueAsString(evento))
+                .param("estado", evento.cola() == null ? "REGISTRADO" : "PENDIENTE")
+                .update();
+    }
+
+    /**
+     * Pasos III.22 / IV.20 (WorkerOutboxSuscripcion → RepoOutboxSuscripcion). Bloquea el lote con
+     * SKIP LOCKED para que dos instancias nunca publiquen el mismo evento.
+     */
+    public List<EventoPendiente> obtenerPendientes(int tamañoLote) {
+        return jdbc.sql(
+                        """
+                        SELECT id_evento, tipo, cola, payload::text AS payload
+                          FROM outbox
+                         WHERE estado = 'PENDIENTE'
+                         ORDER BY creado_en
+                         LIMIT :lote
+                           FOR UPDATE SKIP LOCKED
+                        """)
+                .param("lote", tamañoLote)
+                .query(
+                        (rs, n) ->
+                                new EventoPendiente(
+                                        rs.getObject("id_evento", UUID.class),
+                                        rs.getString("tipo"),
+                                        rs.getString("cola"),
+                                        rs.getString("payload")))
+                .list();
+    }
+
+    public void marcarEnviado(UUID idEvento) {
+        jdbc.sql("UPDATE outbox SET estado = 'ENVIADO', enviado_en = now() WHERE id_evento = :id")
+                .param("id", idEvento)
+                .update();
+    }
+
+    public void registrarIntento(UUID idEvento) {
+        jdbc.sql("UPDATE outbox SET intentos = intentos + 1 WHERE id_evento = :id")
+                .param("id", idEvento)
+                .update();
+    }
+}
