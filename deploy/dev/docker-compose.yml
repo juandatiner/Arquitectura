@@ -311,6 +311,114 @@ services:
       db-ofac:
         condition: service_healthy
 
+  # DB SERVER :5432 · DB DESPACHO · Máquina 2
+  db-despacho:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: despacho
+      POSTGRES_USER: despacho
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-despacho:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U despacho -d despacho"]
+      interval: 5s
+      retries: 20
+
+  # MSDespacho SERVER :8088 · MSDespacho.jar · Máquina 2
+  msdespacho:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msdespacho
+        ARTEFACTO: MSDespacho
+        PUERTO: 8088
+    environment:
+      DB_URL: jdbc:postgresql://db-despacho:5432/despacho
+      DB_USUARIO: despacho
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+    depends_on:
+      db-despacho:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB SIN · Máquina 3
+  db-sin:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sin
+      POSTGRES_USER: sin
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-sin:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sin -d sin"]
+      interval: 5s
+      retries: 20
+
+  # SIN SERVER :9002 · SINBackEnd.jar · Máquina 3 (Sistema de Inventarios)
+  sinbackend:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: sinbackend
+        ARTEFACTO: SINBackEnd
+        PUERTO: 9002
+    environment:
+      DB_URL: jdbc:postgresql://db-sin:5432/sin
+      DB_USUARIO: sin
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+    depends_on:
+      db-sin:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB SEN · Máquina 3
+  db-sen:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: sen
+      POSTGRES_USER: sen
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-sen:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sen -d sen"]
+      interval: 5s
+      retries: 20
+
+  # SEN SERVER :9003 · SENBackEnd.jar · Máquina 3 (Sistema de Envíos)
+  senbackend:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: senbackend
+        ARTEFACTO: SENBackEnd
+        PUERTO: 9003
+    environment:
+      DB_URL: jdbc:postgresql://db-sen:5432/sen
+      DB_USUARIO: sen
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+    depends_on:
+      db-sen:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -372,4 +480,7 @@ volumes:
   db-compra:
   db-validar:
   db-ofac:
+  db-despacho:
+  db-sin:
+  db-sen:
   db-acceso:

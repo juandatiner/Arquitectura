@@ -1,0 +1,40 @@
+# MSDespacho.jar · puerto 8088 · Máquina 2
+# Sin valores por defecto de claves, hosts ni IP: llegan por variables de entorno (deploy/maquina-2/.env).
+server:
+  port: 8088
+
+spring:
+  application:
+    name: MSDespacho
+  datasource:
+    # DB DESPACHO (DB SERVER :5432)
+    url: ${DB_URL}
+    username: ${DB_USUARIO}
+    password: ${DB_CLAVE}
+  rabbitmq:
+    # MOM SERVER :5672 (RabbitMQ · Máquina 2)
+    host: ${MOM_HOST}
+    port: 5672
+    username: ${MOM_USUARIO}
+    password: ${MOM_CLAVE}
+    publisher-confirm-type: simple
+    listener:
+      simple:
+        missing-queues-fatal: false
+        prefetch: 10
+
+sso:
+  outbox:
+    intervalo: 1s
+    tamano-lote: 50
+    espera-confirmacion: 5s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
