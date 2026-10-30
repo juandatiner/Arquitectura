@@ -1,0 +1,55 @@
+# MSNotificacion.jar · nodo MSNotificacion SERVER :8089 · Máquina 2 · 10.43.100.238
+# Sin valores por defecto de claves, hosts ni IP: llegan por variables de entorno (deploy/maquina-2/.env).
+server:
+  port: 8089
+
+spring:
+  application:
+    name: MSNotificacion
+  datasource:
+    # DB NOTIFICACION (DB SERVER :5432)
+    url: ${DB_URL}
+    username: ${DB_USUARIO}
+    password: ${DB_CLAVE}
+  rabbitmq:
+    # MOM SERVER :5672 (RabbitMQ)
+    host: ${MOM_HOST}
+    port: 5672
+    username: ${MOM_USUARIO}
+    password: ${MOM_CLAVE}
+    listener:
+      simple:
+        missing-queues-fatal: false
+        prefetch: 5
+        # Correo o SMS caídos: reintenta con espera creciente; al agotar, el mensaje va a q.notificacion.dlq
+        retry:
+          enabled: true
+          max-attempts: 5
+          initial-interval: 2s
+          multiplier: 2
+          max-interval: 30s
+  mail:
+    # MAIL SERVER :1025 (SMTP · Máquina 3)
+    host: ${MAIL_HOST}
+    port: 1025
+    properties:
+      mail.smtp.connectiontimeout: 3000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+
+sso:
+  notificacion:
+    remitente: ${MAIL_REMITENTE}
+    url-sms: ${RUTA_SMS}
+    timeout-conexion: 2s
+    timeout-respuesta: 5s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

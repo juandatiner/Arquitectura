@@ -419,6 +419,71 @@ services:
       mom:
         condition: service_healthy
 
+  # MAIL SERVER :1025 (SMTP) · Máquina 3 · CORREO. UI de los correos recibidos en :8025
+  mail:
+    image: axllent/mailpit:v1.27
+    environment:
+      MP_DATABASE: /datos/mailpit.db
+    volumes:
+      - mail:/datos
+    ports:
+      - "${MAIL_UI_PUERTO_HOST:-8025}:8025"
+
+  # SMS SERVER :9004 (HTTP) · Máquina 3 · SMS GATEWAY
+  sms:
+    image: python:3.13-alpine
+    command: ["python", "-I", "/app/servidor.py"]
+    volumes:
+      - ../sms/servidor.py:/app/servidor.py:ro
+      - sms:/datos
+    ports:
+      - "${SMS_PUERTO_HOST:-9004}:9004"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9004/salud"]
+      interval: 10s
+      retries: 10
+
+  # DB SERVER :5432 · DB NOTIFICACION · Máquina 2
+  db-notificacion:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: notificacion
+      POSTGRES_USER: notificacion
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-notificacion:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U notificacion -d notificacion"]
+      interval: 5s
+      retries: 20
+
+  # MSNotificacion SERVER :8089 · MSNotificacion.jar · Máquina 2
+  msnotificacion:
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msnotificacion
+        ARTEFACTO: MSNotificacion
+        PUERTO: 8089
+    environment:
+      DB_URL: jdbc:postgresql://db-notificacion:5432/notificacion
+      DB_USUARIO: notificacion
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+      MAIL_HOST: mail
+      MAIL_REMITENTE: ${MAIL_REMITENTE:?Falta MAIL_REMITENTE en deploy/dev/.env}
+      RUTA_SMS: http://sms:9004
+    depends_on:
+      db-notificacion:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+      sms:
+        condition: service_healthy
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -483,4 +548,7 @@ volumes:
   db-despacho:
   db-sin:
   db-sen:
+  db-notificacion:
+  mail:
+  sms:
   db-acceso:
