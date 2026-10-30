@@ -484,6 +484,94 @@ services:
       sms:
         condition: service_healthy
 
+  # DB SERVER :5432 · DB PAGO · Máquina 3
+  db-pago:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: pago
+      POSTGRES_USER: pago
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-pago:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pago -d pago"]
+      interval: 5s
+      retries: 20
+
+  # MSPago SERVER :5086 · MSPago.dll (Kestrel .NET 8) · Máquina 3
+  mspago:
+    build:
+      context: ../../services-dotnet
+      dockerfile: Dockerfile
+      args:
+        PROYECTO: MSPago
+        PUERTO: 5086
+    environment:
+      DB_HOST: db-pago
+      DB_NOMBRE: pago
+      DB_USUARIO: pago
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      MOM_HOST: mom
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
+      TASA_IMPUESTO: ${TASA_IMPUESTO:?Falta TASA_IMPUESTO en deploy/dev/.env}
+      RUTA_YOPAGO: http://yopagobackend:5001
+      URL_PAGO: ${URL_PAGO:?Falta URL_PAGO en deploy/dev/.env}
+    depends_on:
+      db-pago:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB YOPAGO · Máquina 3
+  db-yopago:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: yopago
+      POSTGRES_USER: yopago
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+    volumes:
+      - db-yopago:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U yopago -d yopago"]
+      interval: 5s
+      retries: 20
+
+  # YoPago SERVER :5001 · YoPagoBackEnd.dll (Kestrel .NET 8) · Máquina 3 · sistema externo
+  yopagobackend:
+    build:
+      context: ../../services-dotnet
+      dockerfile: Dockerfile
+      args:
+        PROYECTO: YoPagoBackEnd
+        PUERTO: 5001
+    environment:
+      DB_HOST: db-yopago
+      DB_NOMBRE: yopago
+      DB_USUARIO: yopago
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
+      RUTA_SSO: https://balanceador:443
+      CERTIFICADO_SSO: /run/secrets/certificado_sso
+      CREDENCIAL_YOPAGO: ${CREDENCIAL_YOPAGO:?Falta CREDENCIAL_YOPAGO en deploy/dev/.env}
+    secrets:
+      - certificado_sso
+    depends_on:
+      db-yopago:
+        condition: service_healthy
+
+  # YoPagoWeb SERVER :5000 · YoPagoFrontEnd.dll (Kestrel .NET 8, MVC con Razor) · Máquina 1 (DMZ)
+  yopagofrontend:
+    build:
+      context: ../../services-dotnet
+      dockerfile: Dockerfile
+      args:
+        PROYECTO: YoPagoFrontEnd
+        PUERTO: 5000
+    environment:
+      RUTA_YOPAGO: http://yopagobackend:5001
+    ports:
+      - "${YOPAGOWEB_PUERTO_HOST:-5000}:5000"
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -530,12 +618,16 @@ services:
         condition: service_healthy
 
 secrets:
+  certificado_sso:
+    file: ../secretos/balanceador.crt
   token_publica:
     file: ../secretos/token_publica.pem
   token_privada:
     file: ../secretos/token_privada.pem
 
 volumes:
+  db-pago:
+  db-yopago:
   ad-datos:
   ad-config:
   mom:
