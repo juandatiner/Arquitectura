@@ -36,6 +36,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -54,6 +55,7 @@ import org.testcontainers.rabbitmq.RabbitMQContainer;
         })
 @AutoConfigureMockMvc
 @Testcontainers
+@Sql("/subastas-prueba.sql")
 @Import(MSSubastaIT.Colas.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MSSubastaIT {

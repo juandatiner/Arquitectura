@@ -33,7 +33,17 @@ import org.springframework.test.web.servlet.MockMvc;
  * Gateway de punta a punta: Nginx → WSGateway → SrvSeguridadToken → SrvRuteo → componente interno
  * (simulado con un servidor HTTP que registra lo que recibe).
  */
-@SpringBootTest
+@SpringBootTest(
+        properties = {
+            "RUTA_MSACCESO=x",
+            "RUTA_MSCATALOGO=x",
+            "RUTA_MSSUBASTA=x",
+            "RUTA_MSSUSCRIPCION=x",
+            "RUTA_BALANCEADOR_COMPRA=x",
+            "RUTA_MSPAGO=x",
+            "TOKEN_CLAVE_PUBLICA=x",
+            "CREDENCIAL_YOPAGO=x"
+        })
 @AutoConfigureMockMvc
 class APIGatewayIT {
 

@@ -37,3 +37,7 @@ local.properties
 # Claves y secretos
 deploy/secretos/
 *.pem
+
+# Python
+__pycache__/
+*.pyc

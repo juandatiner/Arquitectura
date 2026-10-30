@@ -1,6 +1,8 @@
 # Entorno de desarrollo: todo el sistema en una sola máquina.
 # Los nombres de servicio siguen los nodos del diagrama «Arquitectura Integrada JavaEE-.NET».
-# Antes de levantar: tools/scripts/generar-claves-token.sh deploy/secretos
+# Antes de levantar: cp deploy/dev/.env.example deploy/dev/.env (y llenar), tools/scripts/generar-claves-token.sh deploy/secretos,
+# tools/scripts/generar-certificado-tls.sh deploy/secretos y python3 -I tools/scripts/generar-usuario-mom.py <usuario> <clave> deploy/secretos/mom.
+# Después: cargar usuarios y subastas con tools/carga (ver tools/carga/README.md).
 #   docker compose -f deploy/dev/docker-compose.yml up -d --build
 
 name: sso-dev
@@ -13,13 +15,13 @@ services:
     environment:
       LDAP_ORGANISATION: SSO Javeriana
       LDAP_DOMAIN: sso.javeriana.edu.co
-      LDAP_ADMIN_PASSWORD: ${AD_ADMIN_CLAVE:-admin}
+      LDAP_ADMIN_PASSWORD: ${AD_ADMIN_CLAVE:?Falta AD_ADMIN_CLAVE en deploy/dev/.env}
     volumes:
       - ../ad/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
     ports:
       - "${AD_PUERTO_HOST:-389}:389"
     healthcheck:
-      test: ["CMD-SHELL", "ldapwhoami -x -H ldap://localhost -D uid=admin1,ou=usuarios,dc=sso,dc=javeriana,dc=edu,dc=co -w 'Admin1*'"]
+      test: ["CMD-SHELL", "ldapwhoami -x -H ldap://localhost -D cn=admin,dc=sso,dc=javeriana,dc=edu,dc=co -w \"$$LDAP_ADMIN_PASSWORD\""]
       interval: 5s
       retries: 20
 
@@ -46,7 +48,7 @@ services:
     environment:
       POSTGRES_DB: acceso
       POSTGRES_USER: acceso
-      POSTGRES_PASSWORD: ${DB_CLAVE:-acceso}
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
     volumes:
       - db-acceso:/var/lib/postgresql/data
     healthcheck:
@@ -62,11 +64,11 @@ services:
       args:
         MODULO: msacceso
         ARTEFACTO: MSAcceso
+        PUERTO: 8081
     environment:
-      PORT: 8081
       DB_URL: jdbc:postgresql://db-acceso:5432/acceso
       DB_USUARIO: acceso
-      DB_CLAVE: ${DB_CLAVE:-acceso}
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
       AD_URL: ldap://ad:389
       TOKEN_CLAVE_PRIVADA: /run/secrets/token_privada
     secrets:
@@ -85,7 +87,7 @@ services:
     environment:
       POSTGRES_DB: catalogo
       POSTGRES_USER: catalogo
-      POSTGRES_PASSWORD: ${DB_CLAVE:-catalogo}
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
     volumes:
       - db-catalogo:/var/lib/postgresql/data
     healthcheck:
@@ -101,14 +103,14 @@ services:
       args:
         MODULO: mscatalogo
         ARTEFACTO: MSCatalogo
+        PUERTO: 8082
     environment:
-      PORT: 8082
       DB_URL: jdbc:postgresql://db-catalogo:5432/catalogo
       DB_USUARIO: catalogo
-      DB_CLAVE: ${DB_CLAVE:-catalogo}
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
       MOM_HOST: mom
-      MOM_USUARIO: ${RABBITMQ_USUARIO:-sso}
-      MOM_CLAVE: ${RABBITMQ_CLAVE:-sso}
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
     ports:
       - "${MSCATALOGO_PUERTO_HOST:-8082}:8082"
     depends_on:
@@ -123,7 +125,7 @@ services:
     environment:
       POSTGRES_DB: subasta
       POSTGRES_USER: subasta
-      POSTGRES_PASSWORD: ${DB_CLAVE:-subasta}
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
     volumes:
       - db-subasta:/var/lib/postgresql/data
     healthcheck:
@@ -139,16 +141,14 @@ services:
       args:
         MODULO: mssubasta
         ARTEFACTO: MSSubasta
+        PUERTO: 8083
     environment:
-      PORT: 8083
       DB_URL: jdbc:postgresql://db-subasta:5432/subasta
       DB_USUARIO: subasta
-      DB_CLAVE: ${DB_CLAVE:-subasta}
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
       MOM_HOST: mom
-      MOM_USUARIO: ${RABBITMQ_USUARIO:-sso}
-      MOM_CLAVE: ${RABBITMQ_CLAVE:-sso}
-      TIMER_APERTURA: 5s
-      TIMER_CIERRE: 5s
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
     ports:
       - "${MSSUBASTA_PUERTO_HOST:-8083}:8083"
     depends_on:
@@ -163,7 +163,7 @@ services:
     environment:
       POSTGRES_DB: suscripcion
       POSTGRES_USER: suscripcion
-      POSTGRES_PASSWORD: ${DB_CLAVE:-suscripcion}
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
     volumes:
       - db-suscripcion:/var/lib/postgresql/data
     healthcheck:
@@ -179,14 +179,14 @@ services:
       args:
         MODULO: mssuscripcion
         ARTEFACTO: MSSuscripcion
+        PUERTO: 8084
     environment:
-      PORT: 8084
       DB_URL: jdbc:postgresql://db-suscripcion:5432/suscripcion
       DB_USUARIO: suscripcion
-      DB_CLAVE: ${DB_CLAVE:-suscripcion}
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/dev/.env}
       MOM_HOST: mom
-      MOM_USUARIO: ${RABBITMQ_USUARIO:-sso}
-      MOM_CLAVE: ${RABBITMQ_CLAVE:-sso}
+      MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/dev/.env}
+      MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/dev/.env}
     ports:
       - "${MSSUSCRIPCION_PUERTO_HOST:-8084}:8084"
     depends_on:
@@ -222,8 +222,8 @@ services:
       args:
         MODULO: apigateway
         ARTEFACTO: APIGateway
+        PUERTO: 8080
     environment:
-      PORT: 8080
       RUTA_MSACCESO: http://msacceso:8081
       RUTA_MSCATALOGO: http://mscatalogo:8082
       RUTA_MSSUBASTA: http://mssubasta:8083
@@ -231,7 +231,7 @@ services:
       RUTA_BALANCEADOR_COMPRA: http://balanceador:8085
       RUTA_MSPAGO: http://mspago:5086
       TOKEN_CLAVE_PUBLICA: /run/secrets/token_publica
-      CREDENCIAL_YOPAGO: ${CREDENCIAL_YOPAGO:-yopago-dev}
+      CREDENCIAL_YOPAGO: ${CREDENCIAL_YOPAGO:?Falta CREDENCIAL_YOPAGO en deploy/dev/.env}
     secrets:
       - token_publica
     ports:
