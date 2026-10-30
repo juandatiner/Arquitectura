@@ -1,6 +1,7 @@
 # APIGateway.jar · nodo APIGATEWAY SERVER :8080 · Máquina 1 · 10.43.99.2 (DMZ)
+# Sin valores por defecto de claves, hosts ni IP: llegan por variables de entorno (deploy/maquina-N/.env).
 server:
-  port: ${PORT:8080}
+  port: 8080
 
 spring:
   application:
@@ -9,19 +10,19 @@ spring:
 sso:
   # Flechas HTTP de SrvRuteo en el diagrama
   rutas:
-    ms-acceso: ${RUTA_MSACCESO:http://10.43.100.238:8081}
-    ms-catalogo: ${RUTA_MSCATALOGO:http://10.43.100.238:8082}
-    ms-subasta: ${RUTA_MSSUBASTA:http://10.43.100.238:8083}
-    ms-suscripcion: ${RUTA_MSSUSCRIPCION:http://10.43.100.238:8084}
+    ms-acceso: ${RUTA_MSACCESO}
+    ms-catalogo: ${RUTA_MSCATALOGO}
+    ms-subasta: ${RUTA_MSSUBASTA}
+    ms-suscripcion: ${RUTA_MSSUSCRIPCION}
     # Nginx (Máquina 1) · upstream msCompra least_conn → MSCompra réplica 1 (M2) y réplica 2 (M3)
-    balanceador-compra: ${RUTA_BALANCEADOR_COMPRA:http://balanceador:8085}
-    ms-pago: ${RUTA_MSPAGO:http://10.43.99.45:5086}
+    balanceador-compra: ${RUTA_BALANCEADOR_COMPRA}
+    ms-pago: ${RUTA_MSPAGO}
   token:
     emisor: MSAcceso
-    archivo-clave-publica: ${TOKEN_CLAVE_PUBLICA:/run/secrets/token_publica.pem}
+    archivo-clave-publica: ${TOKEN_CLAVE_PUBLICA}
   credencial-yo-pago: ${CREDENCIAL_YOPAGO}
-  timeout-conexion: ${TIMEOUT_CONEXION:2s}
-  timeout-respuesta: ${TIMEOUT_RESPUESTA:10s}
+  timeout-conexion: 2s
+  timeout-respuesta: 10s
 
 management:
   endpoints:

@@ -17,6 +17,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
@@ -26,9 +27,17 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
 /** CU I de punta a punta dentro de MSAcceso: AD real (OpenLDAP) y DB ACCESO real (PostgreSQL). */
-@SpringBootTest
+@SpringBootTest(
+        properties = {
+            "DB_URL=jdbc:postgresql://reemplazado-por-testcontainers/x",
+            "DB_USUARIO=x",
+            "DB_CLAVE=x",
+            "AD_URL=ldap://reemplazado",
+            "TOKEN_CLAVE_PRIVADA=reemplazado"
+        })
 @AutoConfigureMockMvc
 @Testcontainers
+@Sql("/clientes-prueba.sql")
 class MSAccesoIT {
 
     @Container @ServiceConnection
@@ -41,8 +50,11 @@ class MSAccesoIT {
                     .withEnv("LDAP_DOMAIN", "sso.javeriana.edu.co")
                     .withEnv("LDAP_ADMIN_PASSWORD", "admin")
                     .withCopyFileToContainer(
-                            MountableFile.forHostPath("../../deploy/ad/ldif/01-usuarios.ldif"),
-                            "/container/service/slapd/assets/config/bootstrap/ldif/custom/01-usuarios.ldif")
+                            MountableFile.forHostPath("../../deploy/ad/ldif/00-estructura.ldif"),
+                            "/container/service/slapd/assets/config/bootstrap/ldif/custom/00-estructura.ldif")
+                    .withCopyFileToContainer(
+                            MountableFile.forClasspathResource("usuarios-prueba.ldif"),
+                            "/container/service/slapd/assets/config/bootstrap/ldif/custom/02-usuarios-prueba.ldif")
                     .withExposedPorts(389)
                     .waitingFor(Wait.forLogMessage(".*slapd starting.*", 1))
                     .withStartupTimeout(Duration.ofMinutes(3));

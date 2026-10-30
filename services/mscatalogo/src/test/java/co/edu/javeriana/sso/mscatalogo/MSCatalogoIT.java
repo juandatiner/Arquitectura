@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,9 +36,18 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.rabbitmq.RabbitMQContainer;
 
 /** CU II, III y X.5b – X.8b con DB CATALOGO (PostgreSQL) y MOM SERVER (RabbitMQ) reales. */
-@SpringBootTest
+@SpringBootTest(
+        properties = {
+            "DB_URL=jdbc:postgresql://reemplazado-por-testcontainers/x",
+            "DB_USUARIO=x",
+            "DB_CLAVE=x",
+            "MOM_HOST=reemplazado-por-testcontainers",
+            "MOM_USUARIO=x",
+            "MOM_CLAVE=x"
+        })
 @AutoConfigureMockMvc
 @Testcontainers
+@Sql("/subastas-prueba.sql")
 @Import(MSCatalogoIT.Colas.class)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class MSCatalogoIT {

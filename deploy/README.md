@@ -34,7 +34,21 @@ docker compose ps
 
 Orden recomendado: **Máquina 3** (AD, OFAC, YoPago, bases) → **Máquina 2** (RabbitMQ, microservicios) → **Máquina 1** (Nginx, gateway, web).
 
-## 4. Verificar
+## 4. Cargar datos (una vez, en la VM)
+
+El código no trae datos. Con los CSV que viven en la VM (plantillas en `tools/carga/plantillas`):
+
+```bash
+# Máquina 3 (AD)
+AD_CONTENEDOR=<contenedor-ad> AD_CLAVE_ADMIN=<clave> python3 -I tools/carga/cargar_usuarios.py usuarios.csv --destino ad
+# Máquina 2 (DB ACCESO, DB CATALOGO, DB SUBASTA)
+DB_ACCESO_CONTENEDOR=<contenedor> python3 -I tools/carga/cargar_usuarios.py usuarios.csv --destino acceso
+DB_CATALOGO_CONTENEDOR=<contenedor> DB_SUBASTA_CONTENEDOR=<contenedor> python3 -I tools/carga/cargar_subastas.py subastas.csv
+```
+
+Ver `tools/carga/README.md`.
+
+## 5. Verificar
 
 ```bash
 ./scripts/smoke-test.sh   # recorre CU I → X contra la IP de Máquina 1

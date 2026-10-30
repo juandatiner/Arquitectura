@@ -1,21 +1,22 @@
 # MSSubasta.jar · nodo MSSubasta SERVER :8083 · Máquina 2 · 10.43.100.238
+# Sin valores por defecto de claves, hosts ni IP: llegan por variables de entorno (deploy/maquina-N/.env).
 server:
-  port: ${PORT:8083}
+  port: 8083
 
 spring:
   application:
     name: MSSubasta
   datasource:
     # DB SUBASTA (DB SERVER :5432)
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/subasta}
-    username: ${DB_USUARIO:subasta}
-    password: ${DB_CLAVE:subasta}
+    url: ${DB_URL}
+    username: ${DB_USUARIO}
+    password: ${DB_CLAVE}
   rabbitmq:
     # MOM SERVER :5672 (RabbitMQ) · Máquina 2
-    host: ${MOM_HOST:localhost}
-    port: ${MOM_PUERTO:5672}
-    username: ${MOM_USUARIO:sso}
-    password: ${MOM_CLAVE:sso}
+    host: ${MOM_HOST}
+    port: 5672
+    username: ${MOM_USUARIO}
+    password: ${MOM_CLAVE}
     publisher-confirm-type: simple
     listener:
       simple:
@@ -25,11 +26,11 @@ spring:
 
 sso:
   timers:
-    apertura: ${TIMER_APERTURA:15s}
-    cierre: ${TIMER_CIERRE:15s}
+    apertura: 15s
+    cierre: 15s
   outbox:
-    intervalo: ${OUTBOX_INTERVALO:1s}
-    tamano-lote: ${OUTBOX_TAMANO_LOTE:50}
+    intervalo: 1s
+    tamano-lote: 50
     espera-confirmacion: 5s
 
 management:

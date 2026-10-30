@@ -1,0 +1,7 @@
+# Solo para MSAccesoIT
+dn: uid=cliente1,ou=usuarios,dc=sso,dc=javeriana,dc=edu,dc=co
+objectClass: inetOrgPerson
+uid: cliente1
+cn: Ana Gómez
+sn: Gómez
+userPassword: Cliente1*

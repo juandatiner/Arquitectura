@@ -1,0 +1,5 @@
+# AD SERVER :389 (OpenLDAP) · solo estructura, sin usuarios.
+# Los usuarios se cargan al desplegar: python3 -I tools/carga/cargar_usuarios.py <usuarios.csv>
+dn: ou=usuarios,dc=sso,dc=javeriana,dc=edu,dc=co
+objectClass: organizationalUnit
+ou: usuarios
