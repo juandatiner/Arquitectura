@@ -11,7 +11,6 @@ Datos, claves e identificadores van entre `<...>`: nada de eso va en el reposito
 |---|---|---|
 | `SSOWeb.zip` (Angular) | En PR abierto, sin fusionar | #139 |
 | `deploy/maquina-N/docker-compose.yml` | En PR borrador, **nunca levantado** | #142 |
-| Exclusión del móvil del verificador | En PR abierto, sin fusionar | #140 |
 | Liberar bien: observación 16, pruebas de X.6–X.8 y Javadoc de `RepoCatalogo` | En PR abierto, sin fusionar | #141 |
 | `Makefile`, `make zip` y `tools/scripts/smoke-test.sh` | En PR borrador, sin fusionar | #143 |
 | E2E completo, `tools/scripts/e2e.sh` | En curso, aún sin PR | #65 |
@@ -311,44 +310,9 @@ Con S3, cliente C (`EN_ESTUDIO` en `ofac.csv`):
 
 No hay script para pasar de `EN_ESTUDIO` a `APROBADO`: `cargar_ofac.py` no borra filas.
 
-## 8. Cliente móvil: cómo tratarlo
+## 8. Alcance: solo web
 
-### 8.1 Los hechos
-
-- El enunciado dice: «El cliente diligencia (vía una aplicación angular –SPA- o desde un celular android)».
-- El diagrama y el VPP incluyen `SSOMobile.apk` con `PantallaMobileSubasta` y `ProxyWSSubastaMobile`, más 10 pasos `m`: I.2m, I.3m, II.2m, II.3m, III.2m,
-  III.3m, IV.2m, IV.3m, VI.2m y VI.3m.
-- **No se programó, por decisión del usuario** (2026-11-03). Consta en #140, que cierra #64. El diagrama, los `.vpp`, los PDF y `modelo-canonico.json`
-  no cambian.
-- La decisión es la observación 15 de #140, aún sin fusionar.
-- Es la única diferencia que reporta el verificador. Hoy `verificar_codigo.py --estricto` falla por ella en esta rama (`[R1] SSOMobile.apk`). Pasó en un ensayo
-  local con #139, #140, #141, #142 y #143 fusionados, y depende de que esos PR entren. Pasa porque #140 **excluye** el componente, no porque exista:
-  si el profesor pregunta, se dice así.
-- Los SMS al celular sí están implementados (CU IX). Son otra cosa: es la notificación que pide el enunciado, no el cliente Android.
-- La web no tiene diseño móvil (#139). No se debe presentar como sustituto abriéndola en un teléfono.
-
-### 8.2 Qué decir
-
-Tal cual, sin adornos:
-
-> «El diagrama tiene el componente `SSOMobile.apk`, pero no lo programamos: el cliente está implementado solo en web, con Angular. Fue una decisión
-> nuestra. El componente sigue dibujado porque el diagrama no se modificó.»
-
-Después se añade el motivo y el acuerdo con el profesor, solo si existen:
-
-- **PENDIENTE (P2):** motivo de la decisión. No está escrito en ningún lado y este guion no lo supone. Lo aporta el usuario.
-- **PENDIENTE (P1):** preguntar al profesor **antes** de la sustentación si la SPA sola cumple «o desde un celular android», y si afecta la nota. La frase
-  se puede leer como alternativa o como dos canales requeridos: este guion no toma partido, porque solo el profesor puede aclararlo.
-- **PENDIENTE (P3):** decidir qué se hace con el pliego impreso, que dibuja un componente sin código. Hay que decidirlo antes de imprimir (#73), porque
-  esa parte vale 30 %.
-
-### 8.3 Qué no decir
-
-Ninguno de estos argumentos tiene respaldo en el repositorio:
-
-- Que el enunciado no lo pide.
-- Que «se puede agregar fácil». Lo único comprobable es que los pasos `m` usan las mismas rutas `/api` de Nginx que la web; sirve como dato si preguntan, no como justificación.
-- Que el profesor lo aprobó, mientras no sea cierto.
+El sistema se entrega solo con cliente web (Angular). El cliente móvil no se programa, por decisión del usuario (observación 15). `SSOMobile.apk` sigue dibujado porque el diagrama no se modificó, y el verificador lo excluye. Los SMS al celular sí están implementados (CU IX): son la notificación que pide el enunciado.
 
 ## 9. Preguntas probables
 
@@ -429,7 +393,7 @@ Solo decisiones que constan en el repositorio. Si piden un motivo que no está a
 | Datos fuera del repositorio, cargados desde CSV | Regla del proyecto; el diagrama parte de subastas ya existentes | `CLAUDE.md` 3b, observación 9 |
 | `consultarMisCompras` por las flechas de VI.4–VI.8 | El diagrama no trae esa consulta y no se agregan flechas | Observación 6 |
 | Timer de MSCompra también dispara «despacho agotado» | El diagrama no dice qué dispara X.9 | Observación 12 |
-| Sin cliente móvil | Decisión del usuario; **motivo PENDIENTE (P2)** | Observación 15, #140 |
+| Sin cliente móvil | Decisión del usuario | Observación 15 |
 | Subasta `LIBERADA` no vuelve; subasta nueva del mismo `id_bien` | Decisión del usuario; el diagrama no define «disponible» ni tiene pasos para volver a ofertar | Observación 16, #141 |
 
 ## 11. Plan B
@@ -461,7 +425,6 @@ Diferencias con las VM:
 
 | # | Pendiente | Responsable |
 |---|---|---|
-| P1 | ¿La SPA sola cumple «o desde un celular android»? ¿Afecta la nota? | Usuario |
 | P17 | Fechas de entrega y sustentación (en blanco en el enunciado), y duración de la sustentación | Usuario |
 | P22 | «Todas las máquinas de todos los usuarios del grupo»: ¿tres VM cumplen, según el número de integrantes? | Usuario |
 
@@ -469,12 +432,10 @@ Diferencias con las VM:
 
 | # | Pendiente | Referencia |
 |---|---|---|
-| P2 | Motivo de no hacer el cliente móvil, para decirlo tal cual | #140 |
-| P3 | Qué hacer con el pliego y el VPP, que dibujan `SSOMobile.apk` | #73, #140 |
 | P5 | Valores de `.env`: `MEMORIA_*` (se desconoce la RAM de las VM, observación 17), `TASA_IMPUESTO` (el enunciado no da la tasa), `IMAGE_REGISTRY` | #142 |
 | P8 | Confirmar el túnel SSH a :8025 para los correos, y cómo alcanzar Mailpit, que el compose no publica en el host (5.3) | #142 |
 | P9 | Puertos 443 y 8085 del balanceador, que el diagrama no dibuja (observación 18) | #142 |
-| P23 | Numeración ya decidida (móvil 15, liberar bien 16, compose 17 y 18), pero quedan referencias por corregir: los `.env.example` de #142 citan «#15» por memoria (es la 17), y `SrvPago.cs` cita una «observación 15» sobre el contacto, que ahora es la del móvil | #142, `SrvPago.cs` |
+| P23 | Numeración ya decidida (15 sin móvil, liberar bien 16, compose 17 y 18), pero quedan referencias por corregir: los `.env.example` de #142 citan «#15» por memoria (es la 17), y `SrvPago.cs` cita una «observación 15» sobre el contacto, que ahora es la del móvil | #142, `SrvPago.cs` |
 
 ### Por comprobar en las VM
 
