@@ -572,6 +572,11 @@ services:
     ports:
       - "${YOPAGOWEB_PUERTO_HOST:-5000}:5000"
 
+  # SSOWeb SERVER :80 · SSOWeb.zip (Angular servido por Nginx) · Máquina 1 (DMZ)
+  ssoweb:
+    build:
+      context: ../../frontend/sso-web
+
   # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 (DMZ)
   balanceador:
     image: nginx:1.29-alpine
@@ -590,6 +595,7 @@ services:
       - "${BALANCEADOR_HTTPS_PUERTO_HOST:-443}:443"
     depends_on:
       - apigateway
+      - ssoweb
 
   # APIGATEWAY SERVER :8080 · APIGateway.jar · Máquina 1 (DMZ)
   apigateway:
