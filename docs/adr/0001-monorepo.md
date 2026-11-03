@@ -4,7 +4,7 @@
 - Fecha: 2026-10-29
 
 ## Contexto
-El sistema tiene 11 artefactos Java, 3 .NET, una SPA Angular y una app Android. El equipo es pequeño, la entrega es un único `.zip` con los `pom.xml`, y los contratos de eventos se comparten entre servicios.
+El sistema tiene 11 artefactos Java, 3 .NET, una SPA Angular. El equipo es pequeño, la entrega es un único `.zip` con los `pom.xml`, y los contratos de eventos se comparten entre servicios.
 
 ## Decisión
 Un solo repositorio. Java en un `pom.xml` padre (`services/pom.xml`) con un módulo por componente Java del diagrama. .NET 8 en `services-dotnet/SSO.Dotnet.sln` con un proyecto por `.dll` del diagrama. Frontends en `frontend/`.

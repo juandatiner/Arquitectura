@@ -41,8 +41,10 @@ UBICACION = {
     "YoPagoBackEnd.dll": ("dotnet", "services-dotnet/YoPagoBackEnd"),
     "YoPagoFrontEnd.dll": ("dotnet", "services-dotnet/YoPagoFrontEnd"),
     "SSOWeb.zip": ("angular", "frontend/sso-web"),
-    "SSOMobile.apk": ("android", "frontend/sso-mobile"),
 }
+
+# Componentes del diagrama que no se programan por decisión del usuario (observación 15).
+EXCLUIDOS = {"SSOMobile.apk"}
 
 errores, pendientes = [], []
 
@@ -57,8 +59,6 @@ def declara(fuente, op, lenguaje):
         patron = rf"(?m)^\s*(?:@\w+(?:\([^)]*\))?\s*)*(?:public|protected|private|static|final|synchronized|\s)*[\w<>\[\],.? ]+\s+{op}\s*\([^;]*?\)\s*(?:throws [\w., ]+)?\s*\{{"
     elif lenguaje == "dotnet":
         patron = rf"(?m)^\s*(?:\[[^\]]*\]\s*)*(?:public|protected|private|internal|static|async|virtual|override|\s)*[\w<>\[\],.? ]+\s+{op}\s*\([^;]*?\)\s*(?:\{{|=>)"
-    elif lenguaje == "android":
-        patron = rf"(?m)^\s*(?:suspend\s+|private\s+|override\s+|public\s+)*fun\s+{op}\s*\("
     else:  # angular / typescript
         patron = rf"(?m)^\s*(?:public\s+|private\s+|protected\s+|async\s+)*{op}\s*\([^;]*\)\s*(?::\s*[^{{]+)?\{{"
     return re.search(patron, fuente) is not None
@@ -112,6 +112,8 @@ def puerto_configurado(lenguaje, carpeta):
 
 def main():
     for artefacto, datos in MODELO["componentes"].items():
+        if artefacto in EXCLUIDOS:
+            continue
         if artefacto not in UBICACION:
             error(artefacto, "R1", "componente del diagrama sin ubicación en el repositorio")
             continue
@@ -123,10 +125,8 @@ def main():
             tipos, raiz = clases_java(carpeta, artefacto)
         elif lenguaje == "dotnet":
             tipos, raiz = clases_dotnet(carpeta, artefacto)
-        elif lenguaje == "angular":
-            tipos, raiz = clases_por_declaracion(carpeta / "src", ".ts", r"export\s+class\s+(\w+)")
         else:
-            tipos, raiz = clases_por_declaracion(carpeta / "app/src/main", ".kt", r"(?m)^\s*(?:\w+\s+)*class\s+(\w+)")
+            tipos, raiz = clases_por_declaracion(carpeta / "src", ".ts", r"export\s+class\s+(\w+)")
 
         if tipos is None:
             (error if ESTRICTO else lambda a, r, t: pendientes.append(a))(artefacto, "R1", f"no existe {raiz.relative_to(RAIZ)}")
