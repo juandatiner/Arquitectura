@@ -4,15 +4,16 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
+DIST ?= dist
 COMPOSE_DEV := docker compose -f deploy/dev/docker-compose.yml
 SECRETOS_DEV := deploy/secretos/token_privada.pem deploy/secretos/token_publica.pem \
 	deploy/secretos/balanceador.crt deploy/secretos/balanceador.key deploy/secretos/mom/usuarios.json
 
 # Sin el SDK de .NET instalado se usa el contenedor oficial (la versión la fija services-dotnet/global.json).
-DOTNET ?= $(shell command -v dotnet >/dev/null 2>&1 && echo dotnet || echo "docker run --rm -v $(CURDIR)/services-dotnet:/src -w /src mcr.microsoft.com/dotnet/sdk:8.0 dotnet")
+DOTNET ?= $(shell command -v dotnet >/dev/null 2>&1 && echo dotnet || echo "docker run --rm -v $(CURDIR):/src -w /src/services-dotnet mcr.microsoft.com/dotnet/sdk:8.0 dotnet")
 
 .PHONY: help verificar build build-java build-dotnet build-web test test-java test-dotnet test-web \
-	up down logs images images-local export smoke
+	up down logs images images-local export smoke zip
 
 help: ## Lista los objetivos
 	@grep -hE '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -64,3 +65,9 @@ export: ## Genera dist/images-maquina-N.tar para copiar por scp: make export IMA
 
 smoke: ## Prueba de humo de solo lectura contra Máquina 1: make smoke MAQUINA1_IP=...
 	tools/scripts/smoke-test.sh
+
+zip: ## Genera $(DIST)/SSO-codigo.zip desde el último commit y lo verifica
+	@mkdir -p $(DIST)
+	@test -z "$$(git status --porcelain --untracked-files=no)" || echo "AVISO: hay cambios sin commit; el zip solo lleva el último commit" >&2
+	git archive --format=zip --prefix=SSO-codigo/ -o $(DIST)/SSO-codigo.zip HEAD -- . ':(exclude)frontend/sso-mobile'
+	python3 -I tools/scripts/verificar-zip.py $(DIST)/SSO-codigo.zip
