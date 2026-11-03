@@ -58,7 +58,7 @@ completa, pero **sin `secretos`**: cada VM recibe solo los suyos.
 
 ```bash
 rsync -a --exclude secretos --exclude dev deploy usuario@IP:~/sso/
-rsync -a --relative tools/carga usuario@IP:~/sso/
+rsync -a --relative tools/carga tools/scripts/check-red.sh usuario@IP:~/sso/
 # Copiar a ~/sso/deploy/secretos/ los archivos de la tabla, con la misma estructura
 ssh usuario@IP
 cd ~/sso/deploy/maquina-N && cp .env.example .env   # llenar: nada trae valor
@@ -87,6 +87,14 @@ DB_CATALOGO_CONTENEDOR=<contenedor> DB_SUBASTA_CONTENEDOR=<contenedor> python3 -
 Ver `tools/carga/README.md`.
 
 ## 5. Verificar
+
+Con los tres stacks arriba, en cada VM, [`tools/scripts/check-red.sh`](../tools/scripts/check-red.sh) comprueba con `nc -zv` los puertos de la tabla
+del paso 1 que esa máquina usa de las otras. Termina en un código distinto de cero si alguno falla. Los puertos 80 y 5000 de Máquina 1 no están: los usa el navegador, no otra máquina.
+
+```bash
+cd ~/sso
+env $(grep -E '^MAQUINA[123]_IP=' deploy/maquina-N/.env) tools/scripts/check-red.sh N
+```
 
 ```bash
 ./scripts/smoke-test.sh   # recorre CU I → X contra la IP de Máquina 1
