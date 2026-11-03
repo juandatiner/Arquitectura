@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Componente MSPago.dll · nodo MSPago SERVER :5086 (Kestrel .NET 8) · Máquina 3 · 10.43.99.45 -->
+  <PropertyGroup>
+    <AssemblyName>MSPago</AssemblyName>
+    <RootNamespace>MSPago</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="9.0.5" />
+    <PackageReference Include="Dapper" Version="2.1.89" />
+    <PackageReference Include="dbup-postgresql" Version="6.1.5" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Migrations\*.sql" />
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+</Project>

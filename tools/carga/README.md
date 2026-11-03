@@ -7,6 +7,7 @@ El código no trae datos. Los usuarios y las subastas se cargan desde archivos C
 |---|---|---|
 | `cargar_usuarios.py` | AD (OpenLDAP, Máquina 3) + DB ACCESO (Máquina 2) | `plantillas/usuarios.csv` |
 | `cargar_subastas.py` | DB CATALOGO + DB SUBASTA (Máquina 2) | `plantillas/subastas.csv` |
+| `cargar_yopago.py` | DB YOPAGO (Máquina 3, sistema externo): usuarios de YoPago con clave PBKDF2-SHA256 | `plantillas/yopago.csv` |
 | `cargar_ofac.py` | DB OFAC (Máquina 3, sistema externo): personas REPORTADAS o EN_ESTUDIO | `plantillas/ofac.csv` |
 
 - Validan cada fila antes de cargar; si una falla, no cargan nada.

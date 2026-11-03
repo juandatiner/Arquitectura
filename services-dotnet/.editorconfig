@@ -1,0 +1,5 @@
+root = false
+
+[*.cs]
+# Los métodos conservan el nombre exacto del diagrama (camelCase): prepararPago, conciliarPago…
+dotnet_diagnostic.IDE1006.severity = none

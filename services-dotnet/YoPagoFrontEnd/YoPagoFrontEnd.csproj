@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <!-- Componente YoPagoFrontEnd.dll · nodo YoPagoWeb SERVER :5000 (Kestrel .NET 8) · Máquina 1 · 10.43.99.2 (DMZ) -->
+  <!-- ASP.NET Core MVC con Razor. Solo presentación: ninguna regla de negocio (enunciado). -->
+  <PropertyGroup>
+    <AssemblyName>YoPagoFrontEnd</AssemblyName>
+    <RootNamespace>YoPagoFrontEnd</RootNamespace>
+  </PropertyGroup>
+</Project>

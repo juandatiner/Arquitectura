@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YoPago · @ViewData["Titulo"]</title>
+    <link rel="stylesheet" href="~/css/yopago.css">
+</head>
+<body>
+<header><span class="marca">YoPago</span><span class="sub">Pagos de compras SSO</span></header>
+<main>
+    @if (ViewData["Error"] is string error)
+    {
+        <p class="error" role="alert">@error</p>
+    }
+    @RenderBody()
+</main>
+</body>
+</html>
