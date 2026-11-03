@@ -1,0 +1,205 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSCompra.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSCompra SERVER replica 1 :8085, MSCompra SERVER replica 2 :8085."
+servers:
+  - url: "http://10.43.100.238:8085"
+    description: "MSCompra SERVER replica 1 :8085 · MAQUINA 2 · 10.43.100.238"
+  - url: "http://10.43.99.45:8085"
+    description: "MSCompra SERVER replica 2 :8085 · MAQUINA 3 · 10.43.99.45"
+paths:
+  "/compras/iniciar":
+    post:
+      operationId: iniciarCompra
+      summary: WSCompra.iniciarCompra
+      description: "Pasos VI.8 (Nginx → WSCompra iniciarCompra(numeroCompra, cliente)) y VI.9 (→ SrvCompraSaga). Se llega por Nginx (upstream msCompra, least_conn) a cualquiera de las dos réplicas."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudInicioCompra"
+      responses:
+        "202":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CompraIniciada"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "403":
+          description: CompraAjenaException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: CompraNoEncontradaException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "409":
+          description: CompraNoIniciableException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/compras":
+    get:
+      operationId: consultarCompras
+      summary: WSCompra.consultarCompras
+      description: "VI.1 consultarMisCompras por la flecha Nginx → WSCompra (observación 6)."
+      security: []
+      parameters:
+        - name: cedula
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Compra"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Cliente:
+      type: object
+      required:
+        - usuario
+        - cedula
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        direccion:
+          type: string
+        rol:
+          type: string
+    Compra:
+      type: object
+      properties:
+        numeroCompra:
+          type: string
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+        valorOfertado:
+          type: number
+        estado:
+          "$ref": "#/components/schemas/EstadoCompra"
+        motivo:
+          type: string
+        intentosOfac:
+          type: integer
+        creadaEn:
+          type: string
+          format: date-time
+    CompraIniciada:
+      type: object
+      properties:
+        numeroCompra:
+          type: string
+        estado:
+          "$ref": "#/components/schemas/EstadoCompra"
+        mensaje:
+          type: string
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoCompra:
+      type: string
+      enum:
+        - CREADA
+        - EN_VALIDACION
+        - ESPERANDO_PAGO
+        - PAGO_CONFIRMADO
+        - TERMINADA
+        - CANCELADA
+        - EN_REVISION
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    SolicitudInicioCompra:
+      type: object
+      required:
+        - numeroCompra
+        - cliente
+      properties:
+        numeroCompra:
+          type: string
+        cliente:
+          "$ref": "#/components/schemas/Cliente"

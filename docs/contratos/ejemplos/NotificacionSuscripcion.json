@@ -1,0 +1,13 @@
+{
+  "idEvento": "00000000-0000-0000-0000-000000000000",
+  "origen": "<origen>",
+  "idSubasta": "<idSubasta>",
+  "destinatario": {
+    "nombre": "<nombre>",
+    "correo": "<correo>",
+    "celular": "<celular>"
+  },
+  "asunto": "<asunto>",
+  "cuerpo": "<cuerpo>",
+  "sms": false
+}

@@ -1,0 +1,8 @@
+{
+  "idEvento": "00000000-0000-0000-0000-000000000000",
+  "idSubasta": "<idSubasta>",
+  "idBien": "<idBien>",
+  "descripcion": "<descripcion>",
+  "valorMinimo": 1.0,
+  "fechaCierre": "2000-01-01T00:00:00Z"
+}

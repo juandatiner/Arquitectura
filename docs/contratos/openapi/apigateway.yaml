@@ -1,0 +1,731 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: APIGateway.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: APIGATEWAY SERVER :8080."
+servers:
+  - url: "http://10.43.99.2:8080"
+    description: "APIGATEWAY SERVER :8080 · MAQUINA 1 · 10.43.99.2"
+paths:
+  "/api/acceso/login":
+    post:
+      operationId: autenticar
+      summary: WSGateway.autenticar
+      description: "Pasos I.4 (Nginx → WSGateway) e I.5 (→ SrvSeguridadToken evaluarAcceso)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Credenciales"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RespuestaAcceso"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "401":
+          description: "msacceso: CredencialesInvalidasException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "403":
+          description: "msacceso: ClienteNoRegistradoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException; msacceso: AdNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/catalogo":
+    get:
+      operationId: consultarCatalogo
+      summary: WSGateway.consultarCatalogo
+      description: "Pasos II.4 (Nginx → WSGateway, GET /api/catalogo) e II.5 (→ validarYAutorizar)."
+      security:
+        - token: []
+      parameters:
+        - name: texto
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: categoria
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: tamano
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PaginaCatalogo"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/suscripciones":
+    post:
+      operationId: suscribirse
+      summary: WSGateway.suscribirse
+      description: "Pasos II.4 (Nginx → WSGateway, POST /api/suscripciones) e II.5."
+      security:
+        - token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/CriterioSuscripcion"
+      responses:
+        "201":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Suscripcion"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/suscripciones/{idSuscripcion}":
+    delete:
+      operationId: cancelarSuscripcion
+      summary: WSGateway.cancelarSuscripcion
+      description: "Pasos II.4 e II.5, camino b de II.7b (cancelarSuscripcion)."
+      security:
+        - token: []
+      parameters:
+        - name: idSuscripcion
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Suscripcion"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: "mssuscripcion: SuscripcionNoEncontradaException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/catalogo/publicar":
+    post:
+      operationId: publicarNuevaSubasta
+      summary: WSGateway.publicarNuevaSubasta
+      description: "Pasos III.4 (Nginx → WSGateway, POST /api/catalogo/publicar) e III.5."
+      security:
+        - token: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Publicacion"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SubastaPublicada"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "403":
+          description: "WSGateway: AccesoDenegadoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: "mscatalogo: SubastaNoEncontradaException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "409":
+          description: "mscatalogo: SubastaNoPublicableException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/subastas/{idSubasta}/ofertas":
+    post:
+      operationId: registrarOferta
+      summary: WSGateway.registrarOferta
+      description: "Pasos IV.4 (Nginx → WSGateway, POST /api/subastas/{id}/ofertas) e IV.5."
+      security:
+        - token: []
+      parameters:
+        - name: idSubasta
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Oferta"
+      responses:
+        "202":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OfertaRegistrada"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "409":
+          description: "mssubasta: CONFLICTO_CONCURRENTE (propiedad motivo)"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "422":
+          description: "mssubasta: SUBASTA_NO_ABIERTA, FUERA_DE_PLAZO, MENOR_AL_MINIMO o NO_SUPERA_OFERTA_MAYOR (propiedad motivo)"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/compras":
+    get:
+      operationId: consultarMisCompras
+      summary: WSGateway.consultarMisCompras
+      description: "VI.1 consultarMisCompras sobre las flechas de VI.4 – VI.8 (observación 6)."
+      security:
+        - token: []
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/Compra"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/compras/{numeroCompra}/iniciar":
+    post:
+      operationId: iniciarCompra
+      summary: WSGateway.iniciarCompra
+      description: "Pasos VI.4 (Nginx → WSGateway, POST /api/compras/{numero}/iniciar) y VI.5."
+      security:
+        - token: []
+      parameters:
+        - name: numeroCompra
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "202":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CompraIniciada"
+        "401":
+          description: "WSGateway: TokenInvalidoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "403":
+          description: "mscompra: CompraAjenaException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: "mscompra: CompraNoEncontradaException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "409":
+          description: "mscompra: CompraNoIniciableException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/api/pagos/reporte":
+    post:
+      operationId: reportarPago
+      summary: WSGateway.reportarPago
+      description: "Pasos VII.21 (Nginx → WSGateway, POST /api/pagos/reporte desde YoPago) y VII.22. Solo por HTTPS: Nginx responde 403 a esta ruta en el puerto 80. Se autentica con el campo `credencial`, no con token."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ReportePago"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ResultadoConciliacion"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "403":
+          description: "WSGateway: AccesoDenegadoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: "mspago: PagoNoEncontradoException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: "WSGateway: ServicioNoDisponibleException"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Cliente:
+      type: object
+      required:
+        - usuario
+        - cedula
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        rol:
+          type: string
+    Cliente_mscompra:
+      type: object
+      required:
+        - usuario
+        - cedula
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        direccion:
+          type: string
+        rol:
+          type: string
+    Compra:
+      type: object
+      properties:
+        numeroCompra:
+          type: string
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        cliente:
+          "$ref": "#/components/schemas/Cliente_mscompra"
+        valorOfertado:
+          type: number
+        estado:
+          "$ref": "#/components/schemas/EstadoCompra"
+        motivo:
+          type: string
+        intentosOfac:
+          type: integer
+        creadaEn:
+          type: string
+          format: date-time
+    CompraIniciada:
+      type: object
+      properties:
+        numeroCompra:
+          type: string
+        estado:
+          "$ref": "#/components/schemas/EstadoCompra"
+        mensaje:
+          type: string
+    Credenciales:
+      type: object
+      required:
+        - usuario
+        - clave
+      properties:
+        usuario:
+          type: string
+        clave:
+          type: string
+    CriterioSuscripcion:
+      type: object
+      required:
+        - tipo
+        - valor
+      properties:
+        tipo:
+          type: string
+        valor:
+          type: string
+    DatosCliente:
+      type: object
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        direccion:
+          type: string
+        rol:
+          "$ref": "#/components/schemas/Rol"
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoCompra:
+      type: string
+      enum:
+        - CREADA
+        - EN_VALIDACION
+        - ESPERANDO_PAGO
+        - PAGO_CONFIRMADO
+        - TERMINADA
+        - CANCELADA
+        - EN_REVISION
+    EstadoOferta:
+      type: string
+      enum:
+        - REGISTRADA
+        - SUPERADA
+        - GANADORA
+        - PERDEDORA
+    EstadoSubasta:
+      type: string
+      enum:
+        - PENDIENTE
+        - PUBLICADA
+        - LIBERADA
+    EstadoSuscripcion:
+      type: string
+      enum:
+        - ACTIVA
+        - CANCELADA
+    Oferta:
+      type: object
+      required:
+        - valor
+      properties:
+        valor:
+          type: number
+          exclusiveMinimum: 0
+    OfertaRegistrada:
+      type: object
+      properties:
+        idOferta:
+          type: integer
+        idSubasta:
+          type: string
+        valor:
+          type: number
+        estado:
+          "$ref": "#/components/schemas/EstadoOferta"
+        mensaje:
+          type: string
+    PaginaCatalogo:
+      type: object
+      properties:
+        contenido:
+          type: array
+          items:
+            "$ref": "#/components/schemas/SubastaPublicada"
+        pagina:
+          type: integer
+        tamano:
+          type: integer
+        total:
+          type: integer
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    Publicacion:
+      type: object
+      required:
+        - idSubasta
+      properties:
+        idSubasta:
+          type: string
+    ReportePago:
+      type: object
+      required:
+        - cedula
+        - numeroCompra
+        - valorPagado
+        - credencial
+      properties:
+        cedula:
+          type: string
+        numeroCompra:
+          type: string
+        valorPagado:
+          type: number
+          exclusiveMinimum: 0
+        credencial:
+          type: string
+    RespuestaAcceso:
+      type: object
+      properties:
+        token:
+          type: string
+        expira:
+          type: string
+          format: date-time
+        cliente:
+          "$ref": "#/components/schemas/DatosCliente"
+    ResultadoConciliacion:
+      type: object
+      required:
+        - numeroCompra
+        - resultado
+      properties:
+        numeroCompra:
+          type: string
+        resultado:
+          type: string
+        referenciaPago:
+          type:
+            - string
+            - "null"
+    Rol:
+      type: string
+      enum:
+        - CLIENTE
+        - ADMIN
+    SubastaPublicada:
+      type: object
+      properties:
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        categoria:
+          type: string
+        valorMinimo:
+          type: number
+        fechaInicio:
+          type: string
+          format: date-time
+        fechaCierre:
+          type: string
+          format: date-time
+        estado:
+          "$ref": "#/components/schemas/EstadoSubasta"
+    Suscripcion:
+      type: object
+      properties:
+        idSuscripcion:
+          type: string
+          format: uuid
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+        tipo:
+          "$ref": "#/components/schemas/TipoSuscripcion"
+        valor:
+          type: string
+        estado:
+          "$ref": "#/components/schemas/EstadoSuscripcion"
+        creadaEn:
+          type: string
+          format: date-time
+    TipoSuscripcion:
+      type: string
+      enum:
+        - NUEVAS_SUBASTAS
+        - CAMBIOS_OFERTA
+  securitySchemes:
+    token:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Token RS256 emitido por MSAcceso.

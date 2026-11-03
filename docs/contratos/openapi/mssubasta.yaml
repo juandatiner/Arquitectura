@@ -1,0 +1,149 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSSubasta.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSSubasta SERVER :8083."
+servers:
+  - url: "http://10.43.100.238:8083"
+    description: "MSSubasta SERVER :8083 · MAQUINA 2 · 10.43.100.238"
+paths:
+  "/subastas/ofertas":
+    post:
+      operationId: registrarOferta
+      summary: WSSubasta.registrarOferta
+      description: "Pasos IV.7 (SrvRuteo → WSSubasta) y IV.8 (WSSubasta → SrvSubasta). Una subasta inexistente lanza SubastaNoEncontradaException, que hoy no tiene manejador: responde 500."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudOferta"
+      responses:
+        "202":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/OfertaRegistrada"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "409":
+          description: "CONFLICTO_CONCURRENTE (propiedad motivo)"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "422":
+          description: "SUBASTA_NO_ABIERTA, FUERA_DE_PLAZO, MENOR_AL_MINIMO o NO_SUPERA_OFERTA_MAYOR (propiedad motivo)"
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Cliente:
+      type: object
+      required:
+        - usuario
+        - cedula
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        rol:
+          type: string
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoOferta:
+      type: string
+      enum:
+        - REGISTRADA
+        - SUPERADA
+        - GANADORA
+        - PERDEDORA
+    OfertaRegistrada:
+      type: object
+      properties:
+        idOferta:
+          type: integer
+        idSubasta:
+          type: string
+        valor:
+          type: number
+        estado:
+          "$ref": "#/components/schemas/EstadoOferta"
+        mensaje:
+          type: string
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    SolicitudOferta:
+      type: object
+      required:
+        - idSubasta
+        - cliente
+        - valor
+      properties:
+        idSubasta:
+          type: string
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+        valor:
+          type: number
+          exclusiveMinimum: 0

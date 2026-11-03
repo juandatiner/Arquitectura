@@ -1,0 +1,145 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSAcceso.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSAcceso SERVER :8081."
+servers:
+  - url: "http://10.43.100.238:8081"
+    description: "MSAcceso SERVER :8081 · MAQUINA 2 · 10.43.100.238"
+paths:
+  "/acceso/login":
+    post:
+      operationId: autenticar
+      summary: WSAcceso.autenticar
+      description: "Pasos I.7 (SrvRuteo → WSAcceso) y I.8 (WSAcceso → SrvLogin)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Credenciales"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RespuestaAcceso"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "401":
+          description: CredencialesInvalidasException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "403":
+          description: ClienteNoRegistradoException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "503":
+          description: AdNoDisponibleException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Credenciales:
+      type: object
+      required:
+        - usuario
+        - clave
+      properties:
+        usuario:
+          type: string
+        clave:
+          type: string
+    DatosCliente:
+      type: object
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        direccion:
+          type: string
+        rol:
+          "$ref": "#/components/schemas/Rol"
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    RespuestaAcceso:
+      type: object
+      properties:
+        token:
+          type: string
+        expira:
+          type: string
+          format: date-time
+        cliente:
+          "$ref": "#/components/schemas/DatosCliente"
+    Rol:
+      type: string
+      enum:
+        - CLIENTE
+        - ADMIN
