@@ -83,6 +83,15 @@ DB_CATALOGO_CONTENEDOR=<contenedor> DB_SUBASTA_CONTENEDOR=<contenedor> python3 -
 
 Ver `tools/carga/README.md`.
 
+## Ver los correos (Mailpit)
+
+La UI de Mailpit solo escucha en el loopback de Máquina 3. Desde tu equipo:
+
+```bash
+ssh -L 8025:127.0.0.1:8025 usuario@IP-MAQUINA-3
+# abrir http://localhost:8025
+```
+
 ## 5. Verificar
 
 ```bash
