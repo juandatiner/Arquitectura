@@ -16,11 +16,13 @@ Abrir en el firewall los puertos de la tabla de `docs/arquitectura.md`.
 
 ```bash
 echo $GHCR_TOKEN | docker login ghcr.io -u juandatiner --password-stdin
-make images        # docker buildx --platform linux/amd64 ... --push
+make images IMAGE_REGISTRY=ghcr.io/juandatiner IMAGE_TAG=<etiqueta>   # docker buildx --platform linux/amd64 ... --push
 ```
 
-Sin registro: `make export` genera `dist/images-maquina-N.tar` y luego
-`scp dist/images-maquina-N.tar vm:` + `docker load -i images-maquina-N.tar`.
+`IMAGE_REGISTRY` e `IMAGE_TAG` deben coincidir con los de `deploy/maquina-N/.env`. Para construir sin publicar: `make images-local` (mismas variables; `s=<componente>` limita a uno).
+
+Sin registro, `make export` (mismas variables) genera `dist/images-maquina-N.tar` a partir de `deploy/maquina-N/docker-compose.yml`; si ese archivo no existe, falla sin exportar nada. Luego
+`scp dist/images-maquina-N.tar vm:` + `docker load -i images-maquina-N.tar`, y en el paso 3 se omite `docker compose pull`.
 
 ## 3. Arrancar cada máquina
 
@@ -50,6 +52,11 @@ Ver `tools/carga/README.md`.
 
 ## 5. Verificar
 
+En cada VM, `docker compose ps` debe mostrar los contenedores `healthy`. Luego, desde la máquina de desarrollo:
+
 ```bash
-./scripts/smoke-test.sh   # recorre CU I → X contra la IP de Máquina 1
+make smoke MAQUINA1_IP=<ip>                                       # entrada pública: SSOWeb, token, HTTPS de VII.20, YoPagoWeb
+make smoke MAQUINA1_IP=<ip> SMOKE_USUARIO=<u> SMOKE_CLAVE=<c>     # además login, catálogo y mis compras
 ```
+
+La prueba es de solo lectura y cubre los CU I y II y el camino hasta `WSCompra`. Los CU III a X crean datos y se prueban aparte, con los CSV cargados en el paso 4.
