@@ -14,7 +14,7 @@ Abrir en el firewall solo estos puertos (son los únicos que publica cada `docke
 
 | Máquina | Puerto | Quién entra |
 |---------|--------|-------------|
-| 1 | 80, 5000 | Navegador; móvil (80) |
+| 1 | 80, 5000 | Navegador |
 | 1 | 443 | `IntegraSSO`, Máquina 3 (VII.20) |
 | 2 | 8081, 8082, 8083, 8084 | `SrvRuteo`, Máquina 1 |
 | 2 | 8085 | Nginx, Máquina 1 |

@@ -1,6 +1,6 @@
 # MAQUINA 1 (DMZ): entrada pública y presentación. Nodos del diagrama «Arquitectura Integrada JavaEE-.NET».
 # La IP de cada máquina llega por deploy/maquina-1/.env (ver .env.example y deploy/README.md).
-# Puertos publicados: 80 y 443 (navegador, móvil y IntegraSSO de Máquina 3) y 5000 (navegador).
+# Puertos publicados: 80 y 443 (navegador e IntegraSSO de Máquina 3) y 5000 (navegador).
 # APIGateway :8080, SSOWeb :80 y la entrada :8085 del balanceador solo se usan dentro de esta máquina.
 
 name: sso-maquina-1
