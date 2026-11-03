@@ -13,7 +13,7 @@ SECRETOS_DEV := deploy/secretos/token_privada.pem deploy/secretos/token_publica.
 DOTNET ?= $(shell command -v dotnet >/dev/null 2>&1 && echo dotnet || echo "docker run --rm -v $(CURDIR):/src -w /src/services-dotnet mcr.microsoft.com/dotnet/sdk:8.0 dotnet")
 
 .PHONY: help verificar build build-java build-dotnet build-web test test-java test-dotnet test-web \
-	up down logs images images-local export smoke zip contratos contratos-comprobar
+	up down logs images images-local export smoke zip contratos contratos-comprobar readmes readmes-comprobar
 
 help: ## Lista los objetivos
 	@grep -hE '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-14s %s\n", $$1, $$2}'
@@ -71,6 +71,12 @@ contratos: ## Regenera docs/contratos (OpenAPI, AsyncAPI y ejemplos) desde el c�
 
 contratos-comprobar: ## Falla si docs/contratos no coincide con el código
 	python3 -I tools/docs/generar_contratos.py --comprobar
+
+readmes: ## Regenera el README de cada componente desde el código
+	python3 -I tools/docs/generar_readmes.py
+
+readmes-comprobar: ## Falla si algún README de componente no coincide con el código
+	python3 -I tools/docs/generar_readmes.py --comprobar
 
 zip: ## Genera $(DIST)/SSO-codigo.zip desde el último commit y lo verifica
 	@mkdir -p $(DIST)
