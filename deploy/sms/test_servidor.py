@@ -72,6 +72,10 @@ class PruebaSimuladorSms(unittest.TestCase):
         self.assertEqual(self.pedir("POST", "/sms", {**SMS, "numero": "abc"})[0], 400)
         self.assertEqual(self.pedir("GET", "/control/falla")[1]["errores_503"], 1)
 
+    def test_cuerpo_json_que_no_es_objeto_es_400(self):
+        estado, _ = self.pedir("POST", "/sms", [])
+        self.assertEqual(estado, 400)
+
     def test_errores_503_contados_no_guardan_y_luego_se_recupera(self):
         self.assertEqual(self.pedir("PUT", "/control/falla", {"errores_503": 2})[0], 200)
 

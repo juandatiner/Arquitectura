@@ -86,7 +86,7 @@ class Pasarela(BaseHTTPRequestHandler):
         try:
             sms = json.loads(self._leer_cuerpo())
             numero, texto = str(sms["numero"]), str(sms["texto"])
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, TypeError):
             return self._responder(400, {"detalle": "se esperaba {numero, texto}"})
         if not re.fullmatch(r"\+?\d{7,15}", numero) or not texto:
             return self._responder(400, {"detalle": "número o texto inválido"})
