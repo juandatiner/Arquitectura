@@ -35,8 +35,9 @@ public class WorkerOutboxDespacho {
     }
 
     /**
-     * Pasos VIII.7, VIII.19 (→ RepoOutboxDespacho obtenerPendientes), VIII.8a (→ q.inventarioSolicitud
-     * publicar), VIII.8b (→ q.envioSolicitud publicar) y VIII.20 (→ q.despachoConfirmado publicar).
+     * Pasos VIII.7, VIII.19 (→ RepoOutboxDespacho obtenerPendientes), VIII.8a (→
+     * q.inventarioSolicitud publicar), VIII.8b (→ q.envioSolicitud publicar) y VIII.20 (→
+     * q.despachoConfirmado publicar).
      */
     @Scheduled(fixedDelayString = "${sso.outbox.intervalo:1s}")
     @Transactional
