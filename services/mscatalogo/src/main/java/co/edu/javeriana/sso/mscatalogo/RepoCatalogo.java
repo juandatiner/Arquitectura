@@ -88,8 +88,9 @@ public class RepoCatalogo {
     }
 
     /**
-     * Paso X.7b (SrvCatalogo → RepoCatalogo). Devuelve el bien al catálogo cuando la compra se
-     * compensa. Idempotente.
+     * Paso X.7b (SrvCatalogo → RepoCatalogo). Marca la subasta LIBERADA cuando la compra se
+     * compensa: sale del catálogo y el bien vuelve a ofertarse con una subasta nueva (observación
+     * 16). Idempotente.
      *
      * @return true si cambió el estado (filasAfectadas = 1)
      */
