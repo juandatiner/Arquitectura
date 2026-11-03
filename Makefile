@@ -81,5 +81,5 @@ readmes-comprobar: ## Falla si algún README de componente no coincide con el c�
 zip: ## Genera $(DIST)/SSO-codigo.zip desde el último commit y lo verifica
 	@mkdir -p $(DIST)
 	@test -z "$$(git status --porcelain --untracked-files=no)" || echo "AVISO: hay cambios sin commit; el zip solo lleva el último commit" >&2
-	git archive --format=zip --prefix=SSO-codigo/ -o $(DIST)/SSO-codigo.zip HEAD -- . ':(exclude)frontend/sso-mobile'
+	git archive --format=zip --prefix=SSO-codigo/ -o $(DIST)/SSO-codigo.zip HEAD
 	python3 -I tools/scripts/verificar-zip.py $(DIST)/SSO-codigo.zip

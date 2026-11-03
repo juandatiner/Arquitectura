@@ -13,7 +13,6 @@ from pathlib import Path, PurePosixPath
 RAIZ = Path(__file__).resolve().parents[2]
 
 CARPETAS_PROHIBIDAS = {"target", "node_modules", "bin", "obj", "dist", ".angular", ".git", ".claude", "secretos"}
-RUTAS_PROHIBIDAS = ("frontend/sso-mobile/",)  # Alcance: solo web
 EXTENSIONES_PROHIBIDAS = {".pem", ".key", ".crt", ".p12", ".pfx", ".jks", ".apk", ".jar", ".dll", ".log"}
 PERMITIDOS = {"services/.mvn/wrapper/maven-wrapper.jar"}
 OBLIGATORIOS = ("pom.xml", "*/pom.xml", "*.sln", "*Dockerfile", "*docker-compose*.yml", "*README.md", "*.csproj")
@@ -34,8 +33,6 @@ def problemas_de_ruta(ruta):
     carpetas = set(camino.parts[:-1])
     if carpetas & CARPETAS_PROHIBIDAS:
         errores.append(f"carpeta prohibida: {ruta}")
-    if ruta.startswith(RUTAS_PROHIBIDAS):
-        errores.append(f"fuera de alcance: {ruta}")
     if camino.name == ".env" or (camino.name.startswith(".env.") and camino.name != ".env.example"):
         errores.append(f"archivo de entorno: {ruta}")
     if camino.suffix.lower() in EXTENSIONES_PROHIBIDAS:
@@ -58,7 +55,7 @@ def main():
                 errores.append(f"perdió el permiso de ejecución: {ruta}")
 
     versionados = subprocess.run(
-        ["git", "ls-files", "--", *OBLIGATORIOS, *EJECUTABLES, ":(exclude)frontend/sso-mobile"],
+        ["git", "ls-files", "--", *OBLIGATORIOS, *EJECUTABLES],
         cwd=RAIZ, check=True, capture_output=True, text=True,
     ).stdout.split()
     errores += [f"falta: {ruta}" for ruta in versionados if ruta not in entradas]
