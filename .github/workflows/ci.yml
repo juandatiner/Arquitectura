@@ -16,6 +16,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: python3 -I tools/vpp/verificar_codigo.py
+      - name: Contratos y README al día con el código
+        run: |
+          python3 -I tools/docs/generar_contratos.py --comprobar
+          python3 -I tools/docs/generar_readmes.py --comprobar
 
   changes:
     runs-on: ubuntu-latest
