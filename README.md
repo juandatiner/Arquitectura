@@ -12,7 +12,7 @@ Proyecto del curso *Arquitectura de Software* — Pontificia Universidad Javeria
 
 ```
                     ┌──────────────── MÁQUINA 1 · 10.43.99.2 (DMZ) ────────────────┐
- Browser / Android ─▶ Nginx :80 ─▶ APIGateway :8080          SSOWeb :80 · YoPagoWeb :5000
+ Browser ─▶ Nginx :80 ─▶ APIGateway :8080          SSOWeb :80 · YoPagoWeb :5000
                     └───────────────────────────┬──────────────────────────────────┘
                                                 │ HTTP (red interna)
  ┌──────────── MÁQUINA 2 · 10.43.100.238 ───────▼───────┐   ┌──────── MÁQUINA 3 · 10.43.99.45 ────────┐
@@ -32,7 +32,6 @@ Detalle completo: [`docs/arquitectura.md`](docs/arquitectura.md) · Decisiones: 
 | Microservicios Java | Java 21 · Spring Boot (Tomcat embebido) · Spring Data JPA · Spring AMQP · Flyway |
 | Microservicios .NET | .NET 8 (Kestrel) · ASP.NET Core · EF Core · RabbitMQ.Client |
 | Front web | Angular (SPA) servida por Nginx |
-| Móvil | Android (Kotlin) |
 | Mensajería | RabbitMQ (AMQP) con patrón Outbox transaccional |
 | Datos | PostgreSQL — una base por servicio, sin acceso cruzado |
 | Identidad | OpenLDAP simulando Active Directory · JWT emitido por MSAcceso |
@@ -43,7 +42,7 @@ Detalle completo: [`docs/arquitectura.md`](docs/arquitectura.md) · Decisiones: 
 ```
 services/        componentes Java del diagrama (Maven multi-módulo), incluidos OFACBackEnd, SINBackEnd y SENBackEnd
 services-dotnet/ MSPago, YoPagoBackEnd y YoPagoFrontEnd (.NET 8)
-frontend/        sso-web → SSOWeb.zip (Angular) · sso-mobile → SSOMobile.apk (Android)
+frontend/        sso-web → SSOWeb.zip (Angular)
 tools/           extractor del modelo VPP, verificador de código y simulador SMS
 deploy/          docker-compose y .env por máquina
 docs/            arquitectura, ADR, enunciado, modelo VPP y modelo canónico

@@ -19,12 +19,6 @@ node_modules/
 dist/
 .angular/
 
-# Android
-.gradle/
-build/
-local.properties
-*.apk
-
 # Entorno
 .env
 !.env.example

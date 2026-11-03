@@ -1,6 +1,6 @@
 # BALANCEADOR DE CARGAS :80 (Nginx) · Máquina 1 · 10.43.99.2 (DMZ)
 # Flechas del diagrama:
-#   ProxyWSSubastaWeb / ProxyWSSubastaMobile → Nginx (HTTP)   pasos I.3, II.3, III.3, IV.3, VI.3
+#   ProxyWSSubastaWeb → Nginx (HTTP)   pasos I.3, II.3, III.3, IV.3, VI.3
 #   IntegraSSO (YoPago)                     → Nginx (HTTPS)  paso VII.20
 #   Nginx → WSGateway (HTTP)                                  pasos I.4, II.4, III.4, IV.4, VI.4, VII.21
 #   SrvRuteo → Nginx → WSCompra réplica 1 y 2 (least_conn)   pasos VI.7, VI.8

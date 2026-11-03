@@ -16,12 +16,12 @@ Estas reglas mandan sobre cualquier otra preferencia, convención o "buena prác
 
 | Elemento del diagrama | Cómo aparece en el código |
 |---|---|
-| Componente (`MSAcceso.jar`, `MSPago.dll`, `SSOWeb.zip`, `SSOMobile.apk`) | Artefacto con ese nombre exacto (`<finalName>`, `AssemblyName`, nombre del zip/apk) |
+| Componente (`MSAcceso.jar`, `MSPago.dll`, `SSOWeb.zip`) | Artefacto con ese nombre exacto (`<finalName>`, `AssemblyName`, nombre del zip) |
 | Clase dentro del componente | Clase con el **mismo nombre exacto**, mayúsculas incluidas |
 | Mensaje de un paso (`SrvLogin → IntegraLoginAD validarCredenciales(usuario, clave)`) | Método del destino con el **mismo nombre y los mismos parámetros en el mismo orden**; lo invoca la clase origen |
 | Nodo `:puerto` | Puerto del servidor |
 | Máquina e IP | `deploy/maquina-N` con esa IP |
-| Estereotipo del nodo (`Tomcat embebido`, `Kestrel .NET 8`, `Nginx`, `PostgreSQL`, `RabbitMQ`, `OpenLDAP`, `SMTP`, `Android`) | Tecnología de ejecución |
+| Estereotipo del nodo (`Tomcat embebido`, `Kestrel .NET 8`, `Nginx`, `PostgreSQL`, `RabbitMQ`, `OpenLDAP`, `SMTP`) | Tecnología de ejecución |
 | Conexión (`HTTP`, `HTTP/REST`, `HTTPS`, `AMQP`, `JDBC`, `LDAP`, `SMTP`) | Protocolo real usado entre esas dos clases |
 | Cola `q.xxx` | Cola RabbitMQ con ese nombre exacto |
 | Estados (`EN_VALIDACION`, `ESPERANDO_PAGO`, `PAGO_CONFIRMADO`, `TERMINADA`, `CANCELADA`, `EN_REVISION`, `APROBADO`, `RECHAZADO`, `ENPROCESO`) | Enum con esos literales exactos |
@@ -37,12 +37,13 @@ Estas reglas mandan sobre cualquier otra preferencia, convención o "buena prác
 |---|---|---|---|
 | SSO: login, catálogo, subastas, ofertas, mis compras, publicar (admin) | `SSOWeb.zip` en Nginx :80 (Máquina 1) | **Angular**: compila a HTML/JS/CSS estáticos, se empaquetan en `SSOWeb.zip` y Nginx los sirve tal cual | `PantallaWebSubasta`, `ProxyWSSubastaWeb` |
 | YoPago: consultar compra pendiente y pagar | `YoPagoFrontEnd.dll` en Kestrel .NET 8 :5000 (Máquina 1) | **ASP.NET Core MVC con Razor** (cubre la presentación .NET del enunciado) | `PantallaWebYoPago` (controlador MVC con `[Controller]`, vistas en `Views/PantallaWebYoPago/`), `ProxyWSYoPagoWeb` |
-| SSO móvil | `SSOMobile.apk` (Android) | Android / Kotlin | `PantallaMobileSubasta`, `ProxyWSSubastaMobile` |
+
+**Sin móvil (decisión del usuario):** `SSOMobile.apk` y sus clases aparecen en el diagrama, pero no se programan: solo vista web. Ver `docs/modelo/observaciones.md`.
 
 ## 3. Requisitos del enunciado (`docs/enunciado/enunciado-proyecto-*.docx`)
 
 - Todo en **Spring Boot**, salvo lo que el diagrama marca `.dll` / `Kestrel .NET 8` (.NET 8).
-- **Prohibida la lógica de negocio en los front end** (`SSOWeb`, `SSOMobile`, `YoPagoFrontEnd`): solo presentación y llamadas `Proxy*`.
+- **Prohibida la lógica de negocio en los front end** (`SSOWeb`, `YoPagoFrontEnd`): solo presentación y llamadas `Proxy*`.
 - Presentación y negocio en **máquinas separadas**; la web en el perímetro aislado (Máquina 1, DMZ).
 - **Bases de datos distintas** por sistema; ningún servicio se conecta a la base de otro.
 - Diseño tolerante a caídas de red y de OFAC (`APROBADO` / `RECHAZADO` / `ENPROCESO`).
