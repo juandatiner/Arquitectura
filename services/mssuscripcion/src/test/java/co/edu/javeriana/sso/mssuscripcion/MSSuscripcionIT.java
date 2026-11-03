@@ -97,6 +97,10 @@ class MSSuscripcionIT {
         mvc.perform(suscribir("1111", "NUEVAS_SUBASTAS", "VEHICULOS"))
                 .andExpect(status().isCreated());
         mvc.perform(suscribir("2222", "NUEVAS_SUBASTAS", "TODAS")).andExpect(status().isCreated());
+        mvc.perform(suscribir("4444", "NUEVAS_SUBASTAS", "INMUEBLES"))
+                .andExpect(status().isCreated());
+        mvc.perform(suscribir("5555", "CAMBIOS_OFERTA", "SUB-0002"))
+                .andExpect(status().isCreated());
         String primera =
                 mvc.perform(suscribir("3333", "CAMBIOS_OFERTA", "SUB-0001"))
                         .andExpect(status().isCreated())
@@ -145,6 +149,7 @@ class MSSuscripcionIT {
 
         String aviso = recibir(1).get(0);
         assertThat(aviso).contains("3003333").contains("\"sms\":true").contains("99.000.000");
+        assertThat(rabbit.receive("q.notificacion", 1500)).isNull();
     }
 
     @Test
@@ -154,6 +159,15 @@ class MSSuscripcionIT {
         mvc.perform(cancelar(idSuscripcionCambios, "3333"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("CANCELADA"));
+
+        publicar(
+                "q.cambioOfertaMayor",
+                "CambioOfertaMayor",
+                "{\"idEvento\":\""
+                        + UUID.randomUUID()
+                        + "\",\"idSubasta\":\"SUB-0001\",\"descripcion\":\"Camioneta\","
+                        + "\"valor\":100000000,\"cliente\":{\"usuario\":\"u9\",\"cedula\":\"9999\"},\"anterior\":null}");
+        assertThat(rabbit.receive("q.notificacion", 1500)).isNull();
     }
 
     @Test
