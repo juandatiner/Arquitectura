@@ -5,6 +5,7 @@ using YoPagoBackEnd.config;
 
 // Componente YoPagoBackEnd.dll · nodo YoPago SERVER :5001 (Kestrel .NET 8) · Máquina 3 · sistema externo
 var builder = WebApplication.CreateBuilder(args);
+builder.AgregarTrazabilidad();
 
 var cadena = new NpgsqlConnectionStringBuilder
 {
@@ -38,6 +39,7 @@ builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+app.UsarTrazabilidad();
 Migraciones.Aplicar(cadena);
 app.UseExceptionHandler(errores => errores.Run(async contexto =>
 {

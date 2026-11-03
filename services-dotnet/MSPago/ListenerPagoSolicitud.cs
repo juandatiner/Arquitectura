@@ -21,6 +21,10 @@ public sealed class ListenerPagoSolicitud(ConexionMom mom, IServiceScopeFactory 
         var consumidor = new AsyncEventingBasicConsumer(canal);
         consumidor.ReceivedAsync += async (_, entrega) =>
         {
+            object? recibido = null;
+            entrega.BasicProperties.Headers?.TryGetValue(Correlacion.CabeceraAmqp, out recibido);
+            using var ambito = Correlacion.Abrir(Correlacion.Normalizar(recibido));
+            log.LogInformation("mensaje recibido {Cola} {Tipo} {IdMensaje}", Cola, entrega.BasicProperties.Type, entrega.BasicProperties.MessageId);
             try
             {
                 await entregar(JsonSerializer.Deserialize<PagoSolicitud>(entrega.Body.Span, Json.Opciones)!);
