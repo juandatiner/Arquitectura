@@ -15,9 +15,7 @@ import co.edu.javeriana.sso.mscatalogo.modelo.NuevaSubasta;
 import co.edu.javeriana.sso.mscatalogo.modelo.SubastaNoPublicableException;
 import co.edu.javeriana.sso.mscatalogo.modelo.SubastaPublicada;
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.Instant;
-import java.time.ZoneOffset;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -30,8 +28,7 @@ class SrvCatalogoTest {
 
     private final RepoCatalogo repoCatalogo = mock(RepoCatalogo.class);
     private final RepoOutboxCatalogo repoOutbox = mock(RepoOutboxCatalogo.class);
-    private final SrvCatalogo srvCatalogo =
-            new SrvCatalogo(repoCatalogo, repoOutbox, Clock.fixed(AHORA, ZoneOffset.UTC));
+    private final SrvCatalogo srvCatalogo = new SrvCatalogo(repoCatalogo, repoOutbox);
 
     private static SubastaPublicada subasta(EstadoSubasta estado) {
         return new SubastaPublicada(
@@ -47,8 +44,7 @@ class SrvCatalogoTest {
 
     @Test
     void publicarGuardaNuevaSubastaEnElOutbox() {
-        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001", "admin1", AHORA))
-                .thenReturn(true);
+        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001", "admin1")).thenReturn(true);
         when(repoCatalogo.obtener("SUB-0001"))
                 .thenReturn(Optional.of(subasta(EstadoSubasta.PUBLICADA)));
 
@@ -63,8 +59,7 @@ class SrvCatalogoTest {
 
     @Test
     void publicarUnaYaPublicadaNoGeneraEvento() {
-        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001", "admin1", AHORA))
-                .thenReturn(false);
+        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001", "admin1")).thenReturn(false);
         when(repoCatalogo.obtener("SUB-0001"))
                 .thenReturn(Optional.of(subasta(EstadoSubasta.PUBLICADA)));
 
