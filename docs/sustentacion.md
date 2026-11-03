@@ -12,8 +12,10 @@ Datos, claves e identificadores van entre `<...>`: nada de eso va en el reposito
 | `SSOWeb.zip` (Angular) | En PR abierto, sin fusionar | #139 |
 | `deploy/maquina-N/docker-compose.yml` | En PR borrador, **nunca levantado** | #142 |
 | Exclusión del móvil del verificador | En PR abierto, sin fusionar | #140 |
-| Pruebas de X.6–X.8 de liberar bien | En PR borrador | #141 |
-| Prueba E2E I → X y `scripts/smoke-test.sh` | En curso; el script no existe | #65 |
+| Liberar bien: observación 16, pruebas de X.6–X.8 y Javadoc de `RepoCatalogo` | En PR abierto, sin fusionar | #141 |
+| `Makefile`, `make zip` y `tools/scripts/smoke-test.sh` | En PR borrador, sin fusionar | #143 |
+| E2E completo, `tools/scripts/e2e.sh` | En curso, aún sin PR | #65 |
+| Comprobación de red, `tools/scripts/check-red.sh` | En curso, aún sin PR | #68 |
 | Escenarios de falla con evidencia | Sin hacer | #66 |
 | Recorrido en Chrome real, CU I a VI | Hecho contra el stack local en Docker | Descripción de #139 |
 | CU VII a X en pantalla, de punta a punta | Sin comprobar. Solo pruebas de integración por servicio (ej. `MSCompraIT`) | **PENDIENTE (P12)** |
@@ -66,6 +68,9 @@ arriba: el `docker compose ps` que vale es el final, en las tres máquinas.
 
 Antes de empezar se comprueba que la hora de M2 esté bien (`date`): la apertura y el cierre de las subastas dependen de ella.
 
+Al terminar, desde la máquina de desarrollo y solo con #143 fusionado: `make smoke MAQUINA1_IP=10.43.99.2`. Es de solo lectura y comprueba la entrada pública; con
+`SMOKE_USUARIO` y `SMOKE_CLAVE`, también login, catálogo y mis compras. No recorre el flujo I a X. Según #143, aún no se ha probado contra el sistema real.
+
 **PENDIENTE (P4):** este orden nunca se ha ejecutado. **PENDIENTE (P5):** faltan valores de `.env` sin definir, como `MEMORIA_*` y `TASA_IMPUESTO`.
 
 ## 4. Carga de datos con `tools/carga`
@@ -115,15 +120,15 @@ Los scripts validan todo antes de cargar y son idempotentes. **PENDIENTE (P7):**
 lista `PUBLICADA`, así que sin publicar no sale en pantalla. Además MSSubasta abre y cierra por sus timers aunque nadie la haya publicado: si se
 olvida ese paso, la subasta corre invisible y termina `DESIERTA`.
 
-**Una subasta `LIBERADA` no vuelve.** Tras la compensación queda `LIBERADA`, sale del catálogo y no admite ofertas. Para volver a subastar el bien se
-carga una **subasta nueva**:
+**Una subasta `LIBERADA` no vuelve.** Tras la compensación queda `LIBERADA`, sale del catálogo y no admite ofertas. Para volver a ofertar el bien se
+carga una **subasta nueva del mismo `id_bien`** y el administrador la publica. Es decisión del usuario, en la observación 16 de #141, aún sin fusionar:
 
 - `id_subasta` siempre nuevo: `cargar_subastas.py` no modifica una subasta que ya existe, y `compra.id_subasta` es único.
-- Si el bien ya se despachó (compra `TERMINADA`), también `id_bien` nuevo: `salida_inventario.id_bien` es único en DB SIN.
-- Mismos descripción, categoría y valor mínimo si se repite `id_bien`: DB CATALOGO conserva los del bien ya cargado, y DB SUBASTA toma los del CSV.
+- Mismos descripción, categoría y valor mínimo: DB CATALOGO conserva los del bien ya cargado, y DB SUBASTA toma los del CSV.
+- Un bien liberado nunca llegó a despacharse, así que repetir su `id_bien` no choca en DB SIN. Es distinto al repetir el ensayo con un bien de una compra
+  `TERMINADA`: ahí se necesita `id_bien` nuevo, porque `salida_inventario.id_bien` es único.
 
-**PENDIENTE (P11):** esta regla está en este guion, pero la observación de #141 aún la lista como opción por decidir, y el criterio de #59 dice lo
-contrario («el bien vuelve a estar disponible en el catálogo»).
+**PENDIENTE (P11):** cargar esa subasta nueva en vivo no se ha probado; #141 cubre con prueba de integración la parte de Catálogo.
 
 ## 5. Recorrido por casos de uso en la web
 
@@ -197,9 +202,14 @@ docker compose exec db-sin psql -U sin -d sin -c "SELECT * FROM salida_inventari
 docker compose exec db-sen psql -U sen -d sen -c "SELECT * FROM envio"
 ```
 
-**PENDIENTE (P8): el correo no se puede mostrar hoy en las VM.** `deploy/maquina-3/docker-compose.yml` no publica la interfaz de Mailpit (:8025), y
-#142 lo deja como duda abierta. Esto afecta a III, V y IX: el enunciado pide «correos a los ganadores», y ese aviso solo va por correo. Mientras no
-se decida, la única evidencia en las VM es `notificacion_enviada`.
+**PENDIENTE (P8): el correo aún no se puede mostrar en las VM.** Afecta a III, V y IX: el enunciado pide «correos a los ganadores», y ese aviso solo va por
+correo. La recomendación es un **túnel SSH a :8025, por confirmar**. El túnel no basta por sí solo: `deploy/maquina-3/docker-compose.yml` de #142 no publica
+ese puerto en el host, así que `ssh -L 8025:localhost:8025` no llegaría a Mailpit. Hace falta una de estas dos cosas, ninguna probada:
+
+- Publicar el puerto solo en local (`127.0.0.1:8025:8025`) en ese compose. Es un cambio en #142.
+- Apuntar el túnel a la IP del contenedor `mail` en M3, sin cambiar el compose.
+
+Mientras no se confirme, la única evidencia en las VM es `notificacion_enviada`.
 
 **PENDIENTE (P16):** ninguno de estos comandos se ha probado en las VM.
 
@@ -310,8 +320,10 @@ No hay script para pasar de `EN_ESTUDIO` a `APROBADO`: `cargar_ofac.py` no borra
   III.3m, IV.2m, IV.3m, VI.2m y VI.3m.
 - **No se programó, por decisión del usuario** (2026-11-03). Consta en #140, que cierra #64. El diagrama, los `.vpp`, los PDF y `modelo-canonico.json`
   no cambian.
-- Esta es la única diferencia conocida entre el código y el diagrama. Hoy `verificar_codigo.py --estricto` falla por ella (`[R1] SSOMobile.apk`) mientras
-  #140 no entre.
+- La decisión es la observación 15 de #140, aún sin fusionar.
+- Es la única diferencia que reporta el verificador. Hoy `verificar_codigo.py --estricto` falla por ella en esta rama (`[R1] SSOMobile.apk`). Pasó en un ensayo
+  local con #139, #140, #141, #142 y #143 fusionados, y depende de que esos PR entren. Pasa porque #140 **excluye** el componente, no porque exista:
+  si el profesor pregunta, se dice así.
 - Los SMS al celular sí están implementados (CU IX). Son otra cosa: es la notificación que pide el enunciado, no el cliente Android.
 - La web no tiene diseño móvil (#139). No se debe presentar como sustituto abriéndola en un teléfono.
 
@@ -369,7 +381,8 @@ constancia, sin publicarse (observación 8). Un despacho sin confirmar en 30 min
 Porque el diagrama no lo dibuja: VI.22b y VI.23b solo cancelan y notifican. `BienLiberado` únicamente sale de `compensar`.
 
 **¿Un bien liberado vuelve a subastarse?**
-No por sí solo. Queda `LIBERADA`, sin catálogo ni ofertas, y se carga una subasta nueva. El diagrama no tiene pasos de reapertura. Ver **PENDIENTE (P11)**.
+No por sí solo. Queda `LIBERADA`, sin catálogo ni ofertas. Se oferta de nuevo con una subasta nueva del mismo `id_bien`, cargada con `cargar_subastas.py` y publicada
+por el administrador. El diagrama no tiene pasos de reapertura y no se añadieron (observación 16, #141).
 
 **¿Cómo se garantizan bases separadas?**
 Una instancia PostgreSQL por servicio: 8 en M2 y 5 en M3, cada una en una red Docker privada con su servicio, sin publicar al host. La excepción es DB COMPRA, publicada en M2 para la
@@ -416,8 +429,8 @@ Solo decisiones que constan en el repositorio. Si piden un motivo que no está a
 | Datos fuera del repositorio, cargados desde CSV | Regla del proyecto; el diagrama parte de subastas ya existentes | `CLAUDE.md` 3b, observación 9 |
 | `consultarMisCompras` por las flechas de VI.4–VI.8 | El diagrama no trae esa consulta y no se agregan flechas | Observación 6 |
 | Timer de MSCompra también dispara «despacho agotado» | El diagrama no dice qué dispara X.9 | Observación 12 |
-| Sin cliente móvil | Decisión del usuario; **motivo PENDIENTE (P2)** | #140 |
-| Subasta `LIBERADA` no vuelve; se carga una nueva | **PENDIENTE (P11)** de registrar | #141 |
+| Sin cliente móvil | Decisión del usuario; **motivo PENDIENTE (P2)** | Observación 15, #140 |
+| Subasta `LIBERADA` no vuelve; subasta nueva del mismo `id_bien` | Decisión del usuario; el diagrama no define «disponible» ni tiene pasos para volver a ofertar | Observación 16, #141 |
 
 ## 11. Plan B
 
@@ -458,18 +471,17 @@ Diferencias con las VM:
 |---|---|---|
 | P2 | Motivo de no hacer el cliente móvil, para decirlo tal cual | #140 |
 | P3 | Qué hacer con el pliego y el VPP, que dibujan `SSOMobile.apk` | #73, #140 |
-| P5 | Valores de `.env`: `MEMORIA_*` (se desconoce la RAM de las VM), `TASA_IMPUESTO` (el enunciado no da la tasa), `IMAGE_REGISTRY` | #142 |
-| P8 | Cómo mostrar los correos en las VM: publicar :8025 u otra vía | #142 |
-| P9 | Puertos 443 y 8085 del balanceador, que el diagrama no dibuja | #142 |
-| P11 | Registrar que `LIBERADA` no vuelve: la observación sigue pendiente y el criterio de #59 dice lo contrario | #141, #59 |
-| P23 | Tres PR usan el número de «observación 15» con temas distintos (#140 móvil, #141 liberar, #142 memoria), y `SrvPago.cs` ya cita una observación 15 que no existe en la base. Renumerar al fusionar | #140, #141, #142 |
+| P5 | Valores de `.env`: `MEMORIA_*` (se desconoce la RAM de las VM, observación 17), `TASA_IMPUESTO` (el enunciado no da la tasa), `IMAGE_REGISTRY` | #142 |
+| P8 | Confirmar el túnel SSH a :8025 para los correos, y cómo alcanzar Mailpit, que el compose no publica en el host (5.3) | #142 |
+| P9 | Puertos 443 y 8085 del balanceador, que el diagrama no dibuja (observación 18) | #142 |
+| P23 | Numeración ya decidida (móvil 15, liberar bien 16, compose 17 y 18), pero quedan referencias por corregir: los `.env.example` de #142 citan «#15» por memoria (es la 17), y `SrvPago.cs` cita una «observación 15» sobre el contacto, que ahora es la del móvil | #142, `SrvPago.cs` |
 
 ### Por comprobar en las VM
 
 | # | Pendiente | Referencia |
 |---|---|---|
 | P4 | Nada desplegado: Docker, imágenes, `up -d`, estado healthy y orden M3 → M2 → M1 | #68, #69, #70, #71 |
-| P6 | Firewall, aislamiento real de la DMZ y segmentación de red. `scripts/check-red.sh` no existe | #68 |
+| P6 | Firewall, aislamiento real de la DMZ y segmentación de red. `tools/scripts/check-red.sh` sigue en curso, aún sin PR | #68 |
 | P7 | `tools/carga` en las VM, incluidos `python3` y `docker compose ps -q` | #142 |
 | P10 | Contenido de los CSV y tiempos de `fecha_inicio` y `fecha_cierre` | Ensayo |
 | P16 | Comandos de apoyo de 5.3 y 7, incluido el log de `upstream=` | Ensayo |
@@ -478,11 +490,12 @@ Diferencias con las VM:
 
 | # | Pendiente | Referencia |
 |---|---|---|
-| P12 | CU VII a X en pantalla de punta a punta. `scripts/smoke-test.sh`, citado en `deploy/README.md`, no existe | #65 |
-| P13 | Fusionar la web y el compose, de los que depende todo el guion | #139, #142 |
+| P12 | CU VII a X en pantalla de punta a punta. `tools/scripts/e2e.sh` sigue en curso, aún sin PR. `tools/scripts/smoke-test.sh` (#143) no lo sustituye: es de solo lectura y no recorre el flujo | #65, #143 |
+| P11 | Fusionar la decisión de liberar bien, y cargar en vivo una subasta nueva del mismo `id_bien` | #141 |
+| P13 | Fusionar los PR de los que depende el guion, y con ellos el modo estricto. Al fusionar, unificar `deploy/README.md`, que #142 y #143 cambian por separado | #139, #140, #141, #142, #143 |
 | P14 | Escenarios de falla sobre el sistema completo, y calibrar sus tiempos. `docs/escenarios-falla.md` no existe | #66 |
 | P15 | Reporte con valor distinto (7.3) por la ruta completa hasta `LIBERADA` en las tres bases | #65, #66 |
 | P18 | VPP con revisión cruzada e impresión en papel gigante | #73 |
-| P19 | `.zip` de entrega. `make zip` no existe: no hay `Makefile` | #74, #23 |
+| P19 | Generar el `.zip` de entrega. `Makefile` y `make zip` están en #143, sin fusionar | #143, #74 |
 | P20 | Capturas y logs del aporte grupal en `docs/aporte-grupal.md` | #72 |
 | P21 | Grabar el video del plan B | #75 |
