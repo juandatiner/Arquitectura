@@ -4,6 +4,7 @@ import co.edu.javeriana.sso.mssubasta.modelo.MotivoRechazo;
 import co.edu.javeriana.sso.mssubasta.modelo.OfertaNoRegistradaException;
 import co.edu.javeriana.sso.mssubasta.modelo.OfertaRegistrada;
 import co.edu.javeriana.sso.mssubasta.modelo.SolicitudOferta;
+import co.edu.javeriana.sso.mssubasta.modelo.SubastaNoEncontradaException;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
@@ -46,6 +47,11 @@ public class WSSubasta {
 
     public OfertaNoRegistradaException ofertaNoRegistrada(MotivoRechazo motivo, String detalle) {
         return new OfertaNoRegistradaException(motivo, detalle);
+    }
+
+    @ExceptionHandler(SubastaNoEncontradaException.class)
+    ProblemDetail noEncontrada(SubastaNoEncontradaException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, e.getMessage());
     }
 
     @ExceptionHandler(OfertaNoRegistradaException.class)
