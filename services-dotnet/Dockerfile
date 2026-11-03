@@ -7,7 +7,7 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS construccion
 ARG PROYECTO
 WORKDIR /src
 COPY . .
-RUN --mount=type=cache,target=/root/.nuget/packages \
+RUN --mount=type=cache,target=/root/.nuget/packages,sharing=locked \
     dotnet publish ${PROYECTO}/${PROYECTO}.csproj -c Release -o /app
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-alpine
