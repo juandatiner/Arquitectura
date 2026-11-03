@@ -1,0 +1,8 @@
+# Perfil dev: publica /v3/api-docs y /swagger-ui.html en el puerto del servicio. Nunca en las VM.
+springdoc:
+  # Filtros llega como texto, categoria, pagina y tamano, no como un objeto
+  default-flat-param-object: true
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

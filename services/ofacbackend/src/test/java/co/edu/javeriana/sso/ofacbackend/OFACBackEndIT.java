@@ -4,11 +4,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.util.List;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
@@ -46,5 +49,33 @@ class OFACBackEndIT {
     @Test
     void cedulaInvalidaDevuelve400() throws Exception {
         mvc.perform(get("/ofac/abc")).andExpect(status().isBadRequest());
+    }
+
+    /** La documentación de la API no existe fuera del perfil dev (#25). */
+    @Test
+    void sinPerfilDevLaDocumentacionDeLaApiNoExiste() throws Exception {
+        for (String ruta :
+                List.of(
+                        "/v3/api-docs",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/webjars/swagger-ui/index.html")) {
+            mvc.perform(get(ruta)).andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @ActiveProfiles("dev")
+    class ConPerfilDev {
+
+        @Autowired MockMvc mvcDev;
+
+        @Test
+        void publicaOpenApiYSwaggerUi() throws Exception {
+            mvcDev.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paths['/ofac/{cedula}']").exists());
+            mvcDev.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+        }
     }
 }

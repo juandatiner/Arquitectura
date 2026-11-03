@@ -8,8 +8,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.Duration;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -28,6 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
@@ -174,5 +177,36 @@ class MSCatalogoIT {
         return post("/catalogo/publicar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"idSubasta\":\"" + idSubasta + "\",\"admin\":" + ADMIN + "}");
+    }
+
+    /** La documentación de la API no existe fuera del perfil dev (#25). */
+    @Test
+    void sinPerfilDevLaDocumentacionDeLaApiNoExiste() throws Exception {
+        for (String ruta :
+                List.of(
+                        "/v3/api-docs",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/webjars/swagger-ui/index.html")) {
+            mvc.perform(get(ruta)).andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @ActiveProfiles("dev")
+    class ConPerfilDev {
+
+        @Autowired MockMvc mvcDev;
+
+        @Test
+        void publicaOpenApiYSwaggerUi() throws Exception {
+            mvcDev.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paths['/catalogo']").exists())
+                    .andExpect(
+                            jsonPath("$.paths['/catalogo'].get.parameters[?(@.name=='texto')]")
+                                    .exists());
+            mvcDev.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+        }
     }
 }

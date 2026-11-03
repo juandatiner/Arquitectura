@@ -33,4 +33,28 @@ Son manuales, en tablas de `tools/docs/generar_contratos.py`, tres datos que el 
 - `YoPagoFrontEnd` devuelve vistas Razor: sus rutas están en su README.
 - `SSOWeb` no expone API: sus llamadas están en su README.
 - El nodo `SMS SERVER :9004` está descrito en `deploy/sms/servidor.py`.
-- springdoc y Swagger UI no están activados en los servicios Java: estos archivos son la referencia.
+
+## springdoc y Swagger UI (perfil dev)
+
+Los 8 componentes Java con API HTTP traen springdoc: `APIGateway`, `MSAcceso`, `MSCatalogo`, `MSCompra`, `MSSubasta`, `MSSuscripcion`, `MSValidacion` y `OFACBackEnd`.
+Los componentes solo AMQP (`MSDespacho`, `MSNotificacion`, `SINBackEnd`, `SENBackEnd`) no lo traen porque no tienen API que documentar. Los componentes .NET tampoco: su contrato está en estos archivos.
+
+Está **cerrado por defecto**: sin el perfil `dev`, `/v3/api-docs`, `/swagger-ui.html` y `/webjars/**` responden 404. Ningún compose activa ese perfil. Los servicios no tienen autenticación propia en su puerto y en Máquina 2 ese puerto se publica, así que no se activa en las VM.
+
+Para consultarlo en un componente que corre en desarrollo, con sus variables de entorno cargadas:
+
+```bash
+SPRING_PROFILES_ACTIVE=dev java -jar <componente>/target/<Artefacto>.jar
+# http://localhost:<puerto>/v3/api-docs
+# http://localhost:<puerto>/swagger-ui.html
+```
+
+Las rutas solo existen en el puerto del servicio: el balanceador envía `/api/` a `WSGateway` y el resto a `SSOWeb`, y `SrvRuteo` solo llama rutas fijas de negocio.
+
+Estos YAML siguen siendo la referencia. Las rutas, los métodos y los cuerpos de entrada de `/v3/api-docs` coinciden con ellos, pero springdoc no describe:
+
+- Los errores por operación: solo muestra la respuesta correcta.
+- Las respuestas de `WSGateway`: devuelve `ResponseEntity<String>`, así que aparecen como `200` de tipo `string`, aunque el componente interno responda 201 o 202 con otro cuerpo.
+- `/actuator/health`.
+
+Además, springdoc muestra la cabecera `Authorization` como parámetro de `WSGateway`.
