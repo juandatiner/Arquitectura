@@ -26,7 +26,10 @@ Abrir en el firewall solo estos puertos (son los únicos que publica cada `docke
 
 ## 2. Construir y publicar imágenes (máquina de desarrollo)
 
-Con `deploy/maquina-N/.env` lleno en la máquina de desarrollo (ver paso 3). Todas las imágenes son `linux/amd64`.
+Las publica en GHCR [`release.yml`](../.github/workflows/release.yml) al subir una etiqueta `vX.Y.Z` (o a mano con `gh workflow run release.yml --ref vX.Y.Z`),
+con los tags `X.Y.Z`, `X.Y` y `latest`. En el `.env` de cada VM: `IMAGE_REGISTRY=ghcr.io/juandatiner` e `IMAGE_TAG` con uno de esos tags.
+
+Para construirlas desde la máquina de desarrollo, con `deploy/maquina-N/.env` lleno (ver paso 3). Todas las imágenes son `linux/amd64`.
 
 ```bash
 echo $GHCR_TOKEN | docker login ghcr.io -u juandatiner --password-stdin
