@@ -27,3 +27,9 @@ management:
     health:
       probes:
         enabled: true
+
+# Logs JSON en consola; el correlationId sale como campo propio
+logging:
+  structured:
+    format:
+      console: logstash

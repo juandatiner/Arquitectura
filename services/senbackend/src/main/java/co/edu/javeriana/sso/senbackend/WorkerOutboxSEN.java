@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.senbackend;
 
+import co.edu.javeriana.sso.senbackend.config.Correlacion;
 import co.edu.javeriana.sso.senbackend.config.PropiedadesOutbox;
 import co.edu.javeriana.sso.senbackend.modelo.EventoPendiente;
 import java.nio.charset.StandardCharsets;
@@ -63,6 +64,7 @@ public class WorkerOutboxSEN {
                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                         .setContentEncoding(StandardCharsets.UTF_8.name())
                         .setMessageId(evento.idEvento().toString())
+                        .setHeader(Correlacion.CABECERA_AMQP, evento.correlationId())
                         .setType(evento.tipo())
                         .setDeliveryMode(
                                 org.springframework.amqp.core.MessageDeliveryMode.PERSISTENT)

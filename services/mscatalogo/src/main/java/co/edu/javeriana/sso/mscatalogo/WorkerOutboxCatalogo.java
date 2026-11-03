@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.mscatalogo;
 
+import co.edu.javeriana.sso.mscatalogo.config.Correlacion;
 import co.edu.javeriana.sso.mscatalogo.config.PropiedadesOutbox;
 import co.edu.javeriana.sso.mscatalogo.modelo.EventoPendiente;
 import java.nio.charset.StandardCharsets;
@@ -68,6 +69,7 @@ public class WorkerOutboxCatalogo {
                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                         .setContentEncoding(StandardCharsets.UTF_8.name())
                         .setMessageId(evento.idEvento().toString())
+                        .setHeader(Correlacion.CABECERA_AMQP, evento.correlationId())
                         .setType(evento.tipo())
                         .setDeliveryMode(
                                 org.springframework.amqp.core.MessageDeliveryMode.PERSISTENT)

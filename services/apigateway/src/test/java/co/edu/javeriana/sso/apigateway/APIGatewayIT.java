@@ -3,6 +3,7 @@ package co.edu.javeriana.sso.apigateway;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -20,8 +21,11 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -48,6 +52,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class APIGatewayIT {
 
     static final AtomicReference<String> RECIBIDO = new AtomicReference<>();
+    static final AtomicReference<String> CORRELACION_RECIBIDA = new AtomicReference<>();
     static final HttpServer INTERNO;
     static final KeyPair CLAVES;
 
@@ -57,6 +62,8 @@ class APIGatewayIT {
             INTERNO.createContext(
                     "/",
                     intercambio -> {
+                        CORRELACION_RECIBIDA.set(
+                                intercambio.getRequestHeaders().getFirst("X-Correlation-Id"));
                         RECIBIDO.set(
                                 intercambio.getRequestMethod()
                                         + " "
@@ -151,6 +158,44 @@ class APIGatewayIT {
         mvc.perform(post("/api/compras/C-42/iniciar").header(HttpHeaders.AUTHORIZATION, token()))
                 .andExpect(status().isAccepted());
         assertThat(RECIBIDO.get()).startsWith("POST /compras/iniciar {\"numeroCompra\":\"C-42\"");
+    }
+
+    @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    void elCorrelationIdPasaEnCabeceraSinTocarElCuerpoYSaleEnElLogJson(CapturedOutput salida)
+            throws Exception {
+        mvc.perform(
+                        post("/api/acceso/login")
+                                .header("X-Correlation-Id", "desde-nginx-1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"usuario\":\"cliente1\",\"clave\":\"Cliente1*\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(header().string("X-Correlation-Id", "desde-nginx-1"));
+
+        assertThat(CORRELACION_RECIBIDA).hasValue("desde-nginx-1");
+        assertThat(RECIBIDO.get())
+                .isEqualTo("POST /acceso/login {\"usuario\":\"cliente1\",\"clave\":\"Cliente1*\"}");
+        assertThat(salida.getOut())
+                .contains("\"correlationId\":\"desde-nginx-1\"")
+                .contains("\"ruta\":\"/api/acceso/login\"")
+                .doesNotContain("Cliente1*");
+    }
+
+    @Test
+    void sinCorrelationIdElGatewayCreaUnoYLoEnviaAlComponente() throws Exception {
+        String creado =
+                mvc.perform(
+                                post("/api/subastas/S-7/ofertas")
+                                        .header(HttpHeaders.AUTHORIZATION, token())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"valor\":1}"))
+                        .andExpect(status().isAccepted())
+                        .andReturn()
+                        .getResponse()
+                        .getHeader("X-Correlation-Id");
+
+        assertThat(creado).isNotBlank();
+        assertThat(CORRELACION_RECIBIDA).hasValue(creado);
     }
 
     @Test

@@ -24,7 +24,9 @@ class WorkerOutboxCatalogoTest {
         UUID id = UUID.randomUUID();
         when(repo.obtenerPendientes(50))
                 .thenReturn(
-                        List.of(new EventoPendiente(id, "NuevaSubasta", "q.nuevaSubasta", "{}")));
+                        List.of(
+                                new EventoPendiente(
+                                        id, "NuevaSubasta", "q.nuevaSubasta", "{}", "abc-12345")));
         when(rabbit.invoke(any()))
                 .thenThrow(new AmqpConnectException(new java.net.ConnectException()));
 
