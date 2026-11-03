@@ -63,6 +63,8 @@ services:
       - mail:/datos
     ports:
       - "1025:1025"
+      # UI de correos solo en loopback de la VM: se consulta con túnel SSH, no desde otra máquina
+      - "127.0.0.1:8025:8025"
 
   # SMS SERVER :9004 (HTTP) · SMS GATEWAY
   sms:
