@@ -310,8 +310,9 @@ def _tipos_amqp(modulo, registro):
     """Valores de la propiedad AMQP type: los literales Notificacion* del servicio o el nombre del record."""
     tipos = set()
     if registro.startswith("Notificacion"):
-        for ruta in f.carpeta(modulo).rglob("Srv*"):
-            tipos |= set(re.findall(r'"(Notificacion\w*)"', ruta.read_text(encoding="utf-8")))
+        for ruta in f._fuentes(modulo):
+            if ruta.stem.startswith("Srv"):
+                tipos |= set(re.findall(r'"(Notificacion\w*)"', ruta.read_text(encoding="utf-8")))
     return sorted(tipos) or [registro]
 
 
