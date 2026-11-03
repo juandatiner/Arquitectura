@@ -4,13 +4,13 @@ using YoPagoBackEnd.modelo;
 namespace YoPagoBackEnd;
 
 /// <summary>Integración con SSO: reporta el pago a Nginx (BALANCEADOR DE CARGAS, Máquina 1) por HTTPS.</summary>
-public class IntegraSSO(HttpClient http, string credencial)
+public class IntegraSSO(HttpClient http)
 {
     /// <summary>
     /// Pasos VII.19 (SrvYoPago → IntegraSSO reportarPago(cedula, numeroCompra, valorPagado, credencial)) y VII.20
     /// (→ Nginx POST /api/pagos/reporte, HTTPS). La credencial identifica a YoPago ante el APIGateway.
     /// </summary>
-    public virtual async Task<RespuestaSso> reportarPago(string cedula, string numeroCompra, decimal valorPagado)
+    public virtual async Task<RespuestaSso> reportarPago(string cedula, string numeroCompra, decimal valorPagado, string credencial)
     {
         try
         {

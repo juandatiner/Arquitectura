@@ -16,9 +16,9 @@ var cadena = new NpgsqlConnectionStringBuilder
 
 // HTTPS hacia SSO (VII.20) confiando solo en el certificado del balanceador (certificado fijado, sin desactivar la validación).
 using var certificadoSso = new X509Certificate2(Entorno.Requerida("CERTIFICADO_SSO"));
-var credencial = Entorno.Requerida("CREDENCIAL_YOPAGO");
 
 builder.Services.AddSingleton(NpgsqlDataSource.Create(cadena));
+builder.Services.AddSingleton(new OpcionesYoPago(Entorno.Requerida("CREDENCIAL_YOPAGO")));
 builder.Services.AddScoped<UnidadDeTrabajo>();
 builder.Services.AddScoped<RepoYoPago>();
 builder.Services.AddScoped<SrvYoPago>();
@@ -32,7 +32,7 @@ builder.Services.AddHttpClient("sso", http =>
         ServerCertificateCustomValidationCallback = (_, certificado, _, _) =>
             certificado is not null && certificado.RawData.AsSpan().SequenceEqual(certificadoSso.RawData),
     });
-builder.Services.AddScoped(s => new IntegraSSO(s.GetRequiredService<IHttpClientFactory>().CreateClient("sso"), credencial));
+builder.Services.AddScoped(s => new IntegraSSO(s.GetRequiredService<IHttpClientFactory>().CreateClient("sso")));
 builder.Services.AddHostedService<ReintentoReportes>();
 builder.Services.AddControllers();
 builder.Services.AddProblemDetails();

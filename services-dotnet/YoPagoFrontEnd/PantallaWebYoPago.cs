@@ -15,21 +15,26 @@ public sealed class PantallaWebYoPago(ProxyWSYoPagoWeb proxyWSYoPagoWeb) : Contr
     [HttpGet("")]
     public IActionResult Ingresar(string? compra) => View("Ingresar", compra);
 
-    /// <summary>Paso VII.14 (Browser → PantallaWebYoPago consultarCompraPendiente(numeroCompra)) y VII.15 (→ ProxyWSYoPagoWeb).</summary>
+    /// <summary>
+    /// Paso VII.14 (Browser → PantallaWebYoPago consultarCompraPendiente(numeroCompra)) y VII.15 (→ ProxyWSYoPagoWeb).
+    /// La cédula y la clave llegan en el formulario de ingreso, fuera del mensaje del paso (observación 22).
+    /// </summary>
     [HttpPost("consultar")]
-    public async Task<IActionResult> consultarCompraPendiente(string cedula, string clave, string? compra)
+    public async Task<IActionResult> consultarCompraPendiente(string? numeroCompra)
     {
+        var cedula = CampoFormulario(Cedula);
+        var clave = CampoFormulario(Clave);
         try
         {
-            var compras = await proxyWSYoPagoWeb.consultarCompraPendiente(cedula, clave, null);
-            HttpContext.Session.SetString(Cedula, cedula);
-            HttpContext.Session.SetString(Clave, clave);
-            return View("Pendientes", new VistaPendientes(cedula, compras, compra));
+            var compras = await proxyWSYoPagoWeb.consultarCompraPendiente(cedula!, clave!, null);
+            HttpContext.Session.SetString(Cedula, cedula!);
+            HttpContext.Session.SetString(Clave, clave!);
+            return View("Pendientes", new VistaPendientes(cedula!, compras, numeroCompra));
         }
         catch (RespuestaYoPagoException e)
         {
             ViewData["Error"] = e.Message;
-            return View("Ingresar", compra);
+            return View("Ingresar", numeroCompra);
         }
     }
 
@@ -61,4 +66,7 @@ public sealed class PantallaWebYoPago(ProxyWSYoPagoWeb proxyWSYoPagoWeb) : Contr
         HttpContext.Session.Clear();
         return RedirectToAction(nameof(Ingresar));
     }
+
+    private string? CampoFormulario(string nombre) =>
+        Request.HasFormContentType ? Request.Form[nombre].FirstOrDefault() : null;
 }
