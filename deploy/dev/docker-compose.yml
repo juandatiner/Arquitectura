@@ -433,6 +433,10 @@ services:
   sms:
     image: python:3.13-alpine
     command: ["python", "-I", "/app/servidor.py"]
+    environment:
+      # Modo de falla para probar reintentos; apagado salvo que se defina en deploy/dev/.env
+      SMS_FALLA_LATENCIA_MS: ${SMS_FALLA_LATENCIA_MS:-0}
+      SMS_FALLA_ERRORES_503: ${SMS_FALLA_ERRORES_503:-0}
     volumes:
       - ../sms/servidor.py:/app/servidor.py:ro
       - sms:/datos
