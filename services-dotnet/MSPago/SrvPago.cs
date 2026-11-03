@@ -19,7 +19,7 @@ public class SrvPago(
     /// Pasos VII.4 (ListenerPagoSolicitud → SrvPago prepararPago(numeroCompra, cedula, valorOfertado)),
     /// VII.5 (→ RepoPago existe), VII.6 (→ IntegraYoPago registrarPendiente(cedula, numeroCompra, valorTotal)),
     /// VII.10 (→ RepoPago guardar(Pago)) y VII.11 (→ RepoOutboxPago guardar(NotificacionPago)).
-    /// <paramref name="contacto"/>: a quién avisar el valor y la URL de pago (observación 15).
+    /// <paramref name="contacto"/>: a quién avisar el valor y la URL de pago (observación 20: pendiente de decisión).
     /// </summary>
     public virtual async Task prepararPago(string numeroCompra, string cedula, decimal valorOfertado, Destinatario? contacto)
     {
