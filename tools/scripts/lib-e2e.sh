@@ -13,7 +13,9 @@
 #   SMS_URL          SMS SERVER (Máquina 3)                         http://localhost:9004
 #   MOM_API_URL      consola de MOM SERVER (Máquina 2)              http://localhost:15672
 #   M2_PREFIJO, M3_PREFIJO          prefijo de los contenedores de cada máquina   sso-dev-
-#   M2_DOCKER_HOST, M3_DOCKER_HOST  en las tres máquinas, el DOCKER_HOST de cada una (ej. ssh://usuario@IP)
+#   M1_PREFIJO                      prefijo de los contenedores de Máquina 1      el de M2_PREFIJO
+#   M1_DOCKER_HOST, M2_DOCKER_HOST, M3_DOCKER_HOST  en las tres máquinas, el DOCKER_HOST de cada una (ej. ssh://usuario@IP); vacío si es esta
+#   M2_IP, M3_IP                    en las tres máquinas, IP de cada réplica de MSCompra (escenario replica)
 
 RAIZ=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
 SSO_ENV_FILE=${SSO_ENV_FILE:-$RAIZ/deploy/dev/.env}
@@ -83,11 +85,17 @@ codigo_es() { # codigo_es <descripción> <código>: comprueba la última petici�
 }
 
 # ---------- Docker ----------
-en_maquina_3() { case "$1" in ad | db-ofac | db-sin | db-sen | db-pago | db-yopago) return 0 ;; *) return 1 ;; esac; }
-contenedor() { if en_maquina_3 "$1"; then echo "${M3_PREFIJO}$1-1"; else echo "${M2_PREFIJO}$1-1"; fi; } # contenedor <servicio>
+en_maquina_1() { case "$1" in balanceador | ssoweb | apigateway | yopagofrontend) return 0 ;; *) return 1 ;; esac; }
+en_maquina_3() { case "$1" in ad | mail | sms | mscompra-replica2 | ofacbackend | sinbackend | senbackend | mspago | yopagobackend | db-ofac | db-sin | db-sen | db-pago | db-yopago) return 0 ;; *) return 1 ;; esac; }
+contenedor() { # contenedor <servicio>
+    if en_maquina_1 "$1"; then echo "${M1_PREFIJO:-$M2_PREFIJO}$1-1"
+    elif en_maquina_3 "$1"; then echo "${M3_PREFIJO}$1-1"
+    else echo "${M2_PREFIJO}$1-1"; fi
+}
 docker_de() { # docker_de <servicio> <argumentos de docker...>: en la máquina del servicio
     local servicio=$1 destino=${M2_DOCKER_HOST:-}
     shift
+    if en_maquina_1 "$servicio"; then destino=${M1_DOCKER_HOST:-}; fi
     if en_maquina_3 "$servicio"; then destino=${M3_DOCKER_HOST:-}; fi
     if [ -n "$destino" ]; then DOCKER_HOST=$destino docker "$@"; else docker "$@"; fi
 }

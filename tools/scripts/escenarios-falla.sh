@@ -1,35 +1,33 @@
 #!/usr/bin/env bash
-# Escenarios de falla contra deploy/dev (issue #66). Evidencia y conclusiones: docs/escenarios-falla.md.
-# Detiene y arranca solo servicios del proyecto compose de desarrollo; al salir vuelve a arrancar lo que detuvo.
+# Escenarios de falla contra deploy/dev o las tres máquinas (issue #66; variables en lib-e2e.sh). Evidencia y conclusiones: docs/escenarios-falla.md.
+# Detiene y arranca solo contenedores del proyecto; al salir vuelve a arrancar lo que detuvo.
 #
 # Uso: tools/scripts/escenarios-falla.sh [ofac|rabbitmq|replica|yopago|sso|fanout|dlq ...]   (sin argumentos: todos)
 set -uo pipefail
 # shellcheck disable=SC1091
 . "$(dirname "$0")/lib-e2e.sh"
-[ -z "${M2_DOCKER_HOST:-}${M3_DOCKER_HOST:-}" ] || { echo "Estos escenarios son solo para deploy/dev" >&2; exit 2; }
 
 DETENIDOS=""
-dc() { docker compose -f "$RAIZ/deploy/dev/docker-compose.yml" --env-file "$SSO_ENV_FILE" "$@"; }
 detener() {
-    dc stop "$@" >/dev/null 2>&1
+    for servicio in "$@"; do docker_de "$servicio" stop "$(contenedor "$servicio")" >/dev/null 2>&1; done
     DETENIDOS="$DETENIDOS $*"
     nota "detenido: $*"
 }
 arrancar() {
-    dc start "$@" >/dev/null 2>&1
+    for servicio in "$@"; do docker_de "$servicio" start "$(contenedor "$servicio")" >/dev/null 2>&1; done
     nota "arrancado: $*"
     for servicio in "$@"; do
         DETENIDOS=$(echo "$DETENIDOS" | tr ' ' '\n' | grep -vx "$servicio" | tr '\n' ' ')
     done
 }
 restaurar() {
-    # shellcheck disable=SC2086
-    if [ -n "$(echo $DETENIDOS)" ]; then dc start $DETENIDOS >/dev/null 2>&1; fi
+    local servicio
+    for servicio in $DETENIDOS; do docker_de "$servicio" start "$(contenedor "$servicio")" >/dev/null 2>&1; done
     rm -rf "$TRABAJO"
 }
 trap restaurar EXIT
 trap 'exit 130' INT TERM
-sano() { [ "$(docker inspect -f '{{.State.Health.Status}}' "$(contenedor "$1")" 2>/dev/null)" = healthy ]; }
+sano() { [ "$(docker_de "$1" inspect -f '{{.State.Health.Status}}' "$(contenedor "$1")" 2>/dev/null)" = healthy ]; }
 marca_tiempo() { date -u +%Y-%m-%dT%H:%M:%SZ; }
 
 # ---------- Preparación ----------
@@ -80,7 +78,7 @@ escenario_ofac() {
     esperar "al menos 2 reintentos registrados" 90 intentos_ofac_al_menos 13 2
     igual "la compra sigue" EN_VALIDACION "$(campo_compra 13 13 estado)"
     nota "reintentos: $(sql compra "SELECT intentos_ofac, proximo_intento - now() FROM compra WHERE numero_compra = '$(campo_compra 13 13 numeroCompra)'")"
-    nota "MSCompra: $(docker logs --since 2m "$(contenedor mscompra-replica1)" 2>&1 | grep -c 'sin respuesta') avisos 'sin respuesta' en la réplica 1, $(docker logs --since 2m "$(contenedor mscompra-replica2)" 2>&1 | grep -c 'sin respuesta') en la réplica 2"
+    nota "MSCompra: $(docker_de mscompra-replica1 logs --since 2m "$(contenedor mscompra-replica1)" 2>&1 | grep -c 'sin respuesta') avisos 'sin respuesta' en la réplica 1, $(docker_de mscompra-replica2 logs --since 2m "$(contenedor mscompra-replica2)" 2>&1 | grep -c 'sin respuesta') en la réplica 2"
 
     # Agotar los 8 intentos tarda unos 25 min: se adelanta el contador solo de la compra de esta prueba.
     sql compra "UPDATE compra SET intentos_ofac = 7, proximo_intento = now() WHERE numero_compra = '$(campo_compra 14 14 numeroCompra)'" >/dev/null
@@ -139,7 +137,7 @@ escenario_rabbitmq() {
 }
 
 # ---------- Réplica de MSCompra apagada ----------
-upstreams_desde() { docker logs --since "$1" "$(contenedor balanceador)" 2>/dev/null | grep -E '"[A-Z]+ /compras' | grep -oE 'upstream=[^=]+ tiempo' | sed 's/ tiempo//' | sort | uniq -c; }
+upstreams_desde() { docker_de balanceador logs --since "$1" "$(contenedor balanceador)" 2>/dev/null | grep -E '"[A-Z]+ /compras' | grep -oE 'upstream=[^=]+ tiempo' | sed 's/ tiempo//' | sort | uniq -c; }
 ambas_atienden() { # ambas_atienden <ip1> <ip2>: las dos réplicas reciben peticiones
     local desde
     desde=$(marca_tiempo)
@@ -147,7 +145,13 @@ ambas_atienden() { # ambas_atienden <ip1> <ip2>: las dos réplicas reciben petic
     upstreams_desde "$desde" | grep -q "$1" && upstreams_desde "$desde" | grep -q "$2"
 }
 consumidores_son() { [ "$(consumidores_en "$1")" = "$2" ]; }
-ip_de() { docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$(contenedor "$1")"; }
+ip_de() { # En las tres máquinas Nginx ve cada réplica por la IP de su máquina
+    case "$1:${M2_IP:-}" in
+        mscompra-replica1:?*) echo "$M2_IP"; return ;;
+        mscompra-replica2:?*) echo "$M3_IP"; return ;;
+    esac
+    docker_de "$1" inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "$(contenedor "$1")"
+}
 escenario_replica() {
     seccion "Réplica 1 de MSCompra apagada: la réplica 2 atiende HTTP y colas"
     nuevo_lote
@@ -199,7 +203,7 @@ escenario_replica() {
 }
 
 # ---------- YoPago caído ----------
-mspago_reintenta() { [ "$(docker logs --since "$1" "$(contenedor mspago)" 2>&1 | grep -c 'Pago no preparado')" -ge "$2" ]; }
+mspago_reintenta() { [ "$(docker_de mspago logs --since "$1" "$(contenedor mspago)" 2>&1 | grep -c 'Pago no preparado')" -ge "$2" ]; }
 escenario_yopago() {
     seccion "YoPago caído: MSPago reintenta"
     preparar_compras 19 20
@@ -288,7 +292,7 @@ publicar_bien_liberado() { # publicar_bien_liberado <cuerpo>: directo al exchang
     mom_api -H 'Content-Type: application/json' -X POST "$MOM_API_URL/api/exchanges/%2F/q.LiberarBienSubasta/publish" -d \
         "$(jq -nc --arg p "$1" --arg id "$(uuidgen 2>/dev/null || echo "$EJECUCION")" '{routing_key:"",payload:$p,payload_encoding:"string",properties:{content_type:"application/json",content_encoding:"UTF-8",type:"BienLiberado",message_id:$id,delivery_mode:2}}')" | jq -c .
 }
-fallos_listener() { docker logs --since "$2" "$(contenedor "$1")" 2>&1 | grep -c 'Execution of Rabbit message listener failed'; }
+fallos_listener() { docker_de "$1" logs --since "$2" "$(contenedor "$1")" 2>&1 | grep -c 'Execution of Rabbit message listener failed'; }
 dlq_todas_son() { # dlq_todas_son <valor por cola>
     local cola
     for cola in $COLAS_LIBERAR; do mensajes_son "$cola.dlq" "$1" || return 1; done
@@ -310,7 +314,7 @@ escenario_dlq() {
         done
     else
         nota "profundidad: $(colas | jq -c '[.[] | select(.name | contains("LiberarBien"))]')"
-        for cola in $COLAS_LIBERAR; do docker exec "$(contenedor mom)" rabbitmqctl -q purge_queue "$cola" >/dev/null; done
+        for cola in $COLAS_LIBERAR; do docker_de mom exec "$(contenedor mom)" rabbitmqctl -q purge_queue "$cola" >/dev/null; done
         nota "colas de liberar bien purgadas tras la prueba"
     fi
     for servicio in mssubasta mscatalogo mssuscripcion; do

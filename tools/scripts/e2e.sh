@@ -6,7 +6,7 @@
 #
 # Uso (variables en lib-e2e.sh):
 #   tools/scripts/e2e.sh
-# En las tres máquinas, con los mismos pasos (sin probar todavía contra las VM):
+# En las tres máquinas, con los mismos pasos:
 #   SSO_ENV_FILE=... SSO_URL=http://<M1> SSO_HTTPS_URL=https://<M1> MAILPIT_URL=http://<M3>:8025 SMS_URL=http://<M3>:9004 \
 #   MOM_API_URL=http://<M2>:15672 M2_DOCKER_HOST=ssh://<usuario>@<M2> M3_DOCKER_HOST=ssh://<usuario>@<M3> \
 #   M2_PREFIJO=sso-maquina-2- M3_PREFIJO=sso-maquina-3- tools/scripts/e2e.sh
