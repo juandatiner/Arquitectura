@@ -110,6 +110,13 @@ class MSSubastaIT {
     }
 
     @Test
+    @Order(2)
+    void ofertaASubastaInexistenteDevuelve404() throws Exception {
+        mvc.perform(oferta("SUB-NO-EXISTE", "cliente1", "1010101010", "1000"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
     @Order(3)
     void ofertaValidaSeRegistraYEmiteCambioOfertaMayor() throws Exception {
         mvc.perform(oferta("SUB-0001", "cliente1", "1010101010", "95000000"))
