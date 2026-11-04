@@ -223,18 +223,19 @@ escenario_yopago() {
     pagar_en_web 19
     terminada 19
 
-    seccion "YoPago caído más que los reintentos de la cola (x-delivery-limit)"
+    seccion "YoPago caído mucho tiempo: MSPago sigue reintentando y no pierde la solicitud"
     numero=$(campo_compra 20 20 numeroCompra)
     dlq_base=$(mensajes_en q.pagoSolicitud.dlq)
+    desde=$(marca_tiempo)
     detener yopagobackend
-    local inicio_caida=$SECONDS
     iniciar_compra 20 20
     esperar "compra 20 en ESPERANDO_PAGO" 30 estado_compra_es 20 20 ESPERANDO_PAGO
-    esperar "la solicitud de pago cae a q.pagoSolicitud.dlq" 90 mensajes_son q.pagoSolicitud.dlq "$((dlq_base + 1))"
-    nota "llegó a la DLQ $((SECONDS - inicio_caida))s después de apagar YoPago"
+    sleep 90
+    esperar "MSPago sigue reintentando pasados 90 s" 10 mspago_reintenta "$desde" 8
+    igual "la solicitud no cae a la DLQ" "$dlq_base" "$(mensajes_en q.pagoSolicitud.dlq)"
     igual "la compra espera sin perderse" ESPERANDO_PAGO "$(campo_compra 20 20 estado)"
     arrancar yopagobackend
-    esperar "al volver YoPago, la solicitud regresa sola de la DLQ y el pago se prepara" 180 sql_es pago "SELECT estado FROM pago WHERE numero_compra = '$numero'" PENDIENTE
+    esperar "al volver YoPago, el pago se prepara solo" 60 sql_es pago "SELECT estado FROM pago WHERE numero_compra = '$numero'" PENDIENTE
     esperar "SMS con el enlace de pago" 30 hay_sms 20 "Pague en YoPago"
     pagar_en_web 20
     terminada 20
