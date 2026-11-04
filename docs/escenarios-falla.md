@@ -9,7 +9,8 @@ Las líneas de evidencia son salida real del script en `deploy/dev` (2026-11-03,
 | RabbitMQ reiniciado | Pasa |
 | Réplica 1 de MSCompra apagada | Pasa. En las VM, 40 de 40 respuestas 200 durante el apagado, en 4 corridas; el 504 solo se vio en `deploy/dev` |
 | YoPago caído, menos de unos 30 s | Pasa |
-| YoPago caído más que los reintentos (66 s en las VM) | La compra **queda detenida** hasta reprocesar la DLQ a mano |
+| YoPago caído más que los reintentos (66 s en las VM) | Pasa: la solicitud va a `q.pagoSolicitud.dlq`, vuelve a la cola cada 60 s y la compra sigue sola al volver YoPago |
+| MSValidacion caído | Pasa: la compra reintenta en `EN_VALIDACION` y avanza sola al volver |
 | Fanout de `q.LiberarBienSubasta` | Pasa |
 | `BienLiberado` con JSON inválido | No hay reencolado infinito: llega a la DLQ |
 | APIGateway caído al reportar el pago | Pasa: YoPago guarda el reporte `PENDIENTE` y lo envía solo al volver |
@@ -124,4 +125,4 @@ Un JSON válido sin `idSubasta` (`{"sinIdSubasta":true}`) se confirma y se desca
 
 ## Sin verificar
 
-- MSValidacion caído, como caso distinto de OFAC caído.
+- Reinicio completo de una VM.

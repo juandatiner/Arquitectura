@@ -261,7 +261,9 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {
-        "x-queue-type": "quorum"
+        "x-queue-type": "quorum",
+        "x-message-ttl": 60000,
+        "x-dead-letter-exchange": "q.pagoSolicitud"
       }
     },
     {

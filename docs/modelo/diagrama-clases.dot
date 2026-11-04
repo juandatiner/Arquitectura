@@ -1,0 +1,241 @@
+digraph clases {
+  graph [rankdir=LR, fontname="Helvetica", labelloc=t, fontsize=30, nodesep=0.25, ranksep=1.2, label="SSO · Todas las clases por componente (Arquitectura Integrada JavaEE-.NET)"];
+  node [shape=plain, fontname="Helvetica", fontsize=11];
+  edge [fontname="Helvetica", fontsize=9, color="#546E7A"];
+  subgraph cluster_0 {
+    label="APIGateway.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "SrvRuteo" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvRuteo</B></TD></TR><HR/><TR><TD ALIGN="LEFT">enrutarConsultaCatalogo</TD></TR><TR><TD ALIGN="LEFT">enrutarInicioCompra</TD></TR><TR><TD ALIGN="LEFT">enrutarLogin</TD></TR><TR><TD ALIGN="LEFT">enrutarOferta</TD></TR><TR><TD ALIGN="LEFT">enrutarPublicacion</TD></TR><TR><TD ALIGN="LEFT">enrutarReportePago</TD></TR><TR><TD ALIGN="LEFT">enrutarSuscripcion</TD></TR></TABLE>>];
+    "SrvSeguridadToken" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvSeguridadToken</B></TD></TR><HR/><TR><TD ALIGN="LEFT">evaluarAcceso</TD></TR><TR><TD ALIGN="LEFT">validarYAutorizar</TD></TR></TABLE>>];
+    "WSGateway" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSGateway</B></TD></TR><HR/><TR><TD ALIGN="LEFT">autenticar</TD></TR><TR><TD ALIGN="LEFT">consultarCatalogo</TD></TR><TR><TD ALIGN="LEFT">iniciarCompra</TD></TR><TR><TD ALIGN="LEFT">publicarNuevaSubasta</TD></TR><TR><TD ALIGN="LEFT">registrarOferta</TD></TR><TR><TD ALIGN="LEFT">reportarPago</TD></TR><TR><TD ALIGN="LEFT">suscribirse</TD></TR></TABLE>>];
+  }
+  subgraph cluster_1 {
+    label="MSAcceso.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "IntegraLoginAD" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraLoginAD</B></TD></TR><HR/><TR><TD ALIGN="LEFT">validarCredenciales</TD></TR></TABLE>>];
+    "RepoLogin" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoLogin</B></TD></TR><HR/><TR><TD ALIGN="LEFT">obtenerDatosCliente</TD></TR></TABLE>>];
+    "SrvLogin" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvLogin</B></TD></TR><HR/><TR><TD ALIGN="LEFT">autenticar</TD></TR></TABLE>>];
+    "WSAcceso" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSAcceso</B></TD></TR><HR/><TR><TD ALIGN="LEFT">autenticar</TD></TR></TABLE>>];
+  }
+  subgraph cluster_2 {
+    label="MSCatalogo.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "ListenerLiberarBienCat" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerLiberarBienCat</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoCatalogo" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoCatalogo</B></TD></TR><HR/><TR><TD ALIGN="LEFT">buscarSubastasPublicadas</TD></TR><TR><TD ALIGN="LEFT">liberarSiAdjudicada</TD></TR><TR><TD ALIGN="LEFT">publicarSiPendienteYEnFecha</TD></TR></TABLE>>];
+    "RepoOutboxCatalogo" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxCatalogo</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "SrvCatalogo" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvCatalogo</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultarCatalogo</TD></TR><TR><TD ALIGN="LEFT">liberarBien</TD></TR><TR><TD ALIGN="LEFT">publicarNuevaSubasta</TD></TR></TABLE>>];
+    "WSCatalogo" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSCatalogo</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultarCatalogo</TD></TR><TR><TD ALIGN="LEFT">publicarNuevaSubasta</TD></TR></TABLE>>];
+    "WorkerOutboxCatalogo" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxCatalogo</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_3 {
+    label="MSCompra.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "IntegraValidacion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraValidacion</B></TD></TR><HR/><TR><TD ALIGN="LEFT">validar</TD></TR></TABLE>>];
+    "ListenerConfDespacho" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerConfDespacho</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "ListenerPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "ListenerSubastaCerrada" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerSubastaCerrada</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoCompra" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoCompra</B></TD></TR><HR/><TR><TD ALIGN="LEFT">cambiarEstado</TD></TR><TR><TD ALIGN="LEFT">cambiarEstadoSiActual</TD></TR><TR><TD ALIGN="LEFT">crear</TD></TR><TR><TD ALIGN="LEFT">existePorSubasta</TD></TR><TR><TD ALIGN="LEFT">obtener</TD></TR><TR><TD ALIGN="LEFT">registrarIntento</TD></TR><TR><TD ALIGN="LEFT">tomarPendientesValidacion</TD></TR></TABLE>>];
+    "RepoOutboxCompra" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxCompra</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "SrvCompraSaga" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvCompraSaga</B></TD></TR><HR/><TR><TD ALIGN="LEFT">compensar</TD></TR><TR><TD ALIGN="LEFT">confirmarDespacho</TD></TR><TR><TD ALIGN="LEFT">iniciarCompra</TD></TR><TR><TD ALIGN="LEFT">iniciarSaga</TD></TR><TR><TD ALIGN="LEFT">procesarPago</TD></TR><TR><TD ALIGN="LEFT">validarComprasPendientes</TD></TR></TABLE>>];
+    "TimerValidacionOFAC" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>TimerValidacionOFAC</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+    "WSCompra" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSCompra</B></TD></TR><HR/><TR><TD ALIGN="LEFT">iniciarCompra</TD></TR></TABLE>>];
+    "WorkerOutboxCompra" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxCompra</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_4 {
+    label="MSDespacho.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "ListenerConfEnvio" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerConfEnvio</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "ListenerConfInventario" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerConfInventario</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "ListenerDespachoSolicitud" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerDespachoSolicitud</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoDespacho" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoDespacho</B></TD></TR><HR/><TR><TD ALIGN="LEFT">crear</TD></TR><TR><TD ALIGN="LEFT">existePorCompra</TD></TR><TR><TD ALIGN="LEFT">marcarEnvioConfirmado</TD></TR><TR><TD ALIGN="LEFT">marcarInventarioConfirmado</TD></TR></TABLE>>];
+    "RepoOutboxDespacho" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxDespacho</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "SrvDespacho" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvDespacho</B></TD></TR><HR/><TR><TD ALIGN="LEFT">confirmarEnvio</TD></TR><TR><TD ALIGN="LEFT">confirmarInventario</TD></TR><TR><TD ALIGN="LEFT">solicitarDespacho</TD></TR></TABLE>>];
+    "WorkerOutboxDespacho" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxDespacho</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_5 {
+    label="MSNotificacion.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "IntegraMail" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraMail</B></TD></TR><HR/><TR><TD ALIGN="LEFT">enviarCorreo</TD></TR></TABLE>>];
+    "IntegraSMS" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraSMS</B></TD></TR><HR/><TR><TD ALIGN="LEFT">enviarSMS</TD></TR></TABLE>>];
+    "ListenerNotificar" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerNotificar</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoNotificar" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoNotificar</B></TD></TR><HR/><TR><TD ALIGN="LEFT">registrarEnviada</TD></TR><TR><TD ALIGN="LEFT">yaEnviada</TD></TR></TABLE>>];
+    "SrvNotificar" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvNotificar</B></TD></TR><HR/><TR><TD ALIGN="LEFT">notificar</TD></TR></TABLE>>];
+  }
+  subgraph cluster_6 {
+    label="MSPago.dll"; style=filled; fillcolor="#F8BBD0"; fontsize=18;
+    "IntegraYoPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraYoPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">registrarPendiente</TD></TR></TABLE>>];
+    "ListenerPagoSolicitud" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerPagoSolicitud</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoOutboxPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "RepoPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">confirmarSiPendiente</TD></TR><TR><TD ALIGN="LEFT">existe</TD></TR><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPorCompra</TD></TR></TABLE>>];
+    "SrvPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">conciliarPago</TD></TR><TR><TD ALIGN="LEFT">prepararPago</TD></TR></TABLE>>];
+    "WSPagoYoPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSPagoYoPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">reportarPago</TD></TR></TABLE>>];
+    "WorkerOutboxPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_7 {
+    label="MSSubasta.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "ListenerLiberarBienSub" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerLiberarBienSub</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoOferta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOferta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardarOferta</TD></TR><TR><TD ALIGN="LEFT">marcarResultado</TD></TR><TR><TD ALIGN="LEFT">obtenerOfertaMayor</TD></TR></TABLE>>];
+    "RepoOutboxSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "RepoSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">abrirSiProgramadaYEnPlazo</TD></TR><TR><TD ALIGN="LEFT">actualizarVersionSiAbiertaYEnPlazo</TD></TR><TR><TD ALIGN="LEFT">adjudicar</TD></TR><TR><TD ALIGN="LEFT">buscarVencidas</TD></TR><TR><TD ALIGN="LEFT">declararDesierta</TD></TR><TR><TD ALIGN="LEFT">liberarSiAdjudicada</TD></TR><TR><TD ALIGN="LEFT">obtenerEstadoYVersion</TD></TR><TR><TD ALIGN="LEFT">tomarParaCierre</TD></TR></TABLE>>];
+    "SrvSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">abrirSubastaProgramada</TD></TR><TR><TD ALIGN="LEFT">cerrarSubastasVencidas</TD></TR><TR><TD ALIGN="LEFT">liberarBien</TD></TR><TR><TD ALIGN="LEFT">registrarOferta</TD></TR></TABLE>>];
+    "TimerAperturaSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>TimerAperturaSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+    "TimerCierreSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>TimerCierreSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+    "WSSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">ofertaNoRegistrada</TD></TR><TR><TD ALIGN="LEFT">registrarOferta</TD></TR></TABLE>>];
+    "WorkerOutboxSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_8 {
+    label="MSSuscripcion.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "ListenerEventoSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerEventoSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "ListenerLiberarBienSus" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerLiberarBienSus</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoOutboxSuscripcion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxSuscripcion</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "RepoSuscripcion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoSuscripcion</B></TD></TR><HR/><TR><TD ALIGN="LEFT">activarSuscripcion</TD></TR><TR><TD ALIGN="LEFT">buscarSuscriptores</TD></TR><TR><TD ALIGN="LEFT">cancelarSuscripcion</TD></TR><TR><TD ALIGN="LEFT">liberarSiAdjudicada</TD></TR><TR><TD ALIGN="LEFT">yaProcesado</TD></TR></TABLE>>];
+    "SrvSuscripcion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvSuscripcion</B></TD></TR><HR/><TR><TD ALIGN="LEFT">cancelarSuscripcion</TD></TR><TR><TD ALIGN="LEFT">liberarBien</TD></TR><TR><TD ALIGN="LEFT">procesarEvento</TD></TR><TR><TD ALIGN="LEFT">suscribirse</TD></TR></TABLE>>];
+    "WSSuscripcion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSSuscripcion</B></TD></TR><HR/><TR><TD ALIGN="LEFT">cancelarSuscripcion</TD></TR><TR><TD ALIGN="LEFT">suscribirse</TD></TR></TABLE>>];
+    "WorkerOutboxSuscripcion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxSuscripcion</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_9 {
+    label="MSValidacion.jar"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "IntegraOFAC" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraOFAC</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultar</TD></TR></TABLE>>];
+    "RepoValidar" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoValidar</B></TD></TR><HR/><TR><TD ALIGN="LEFT">buscarResultado</TD></TR><TR><TD ALIGN="LEFT">guardarResultado</TD></TR></TABLE>>];
+    "SrvValidarOFAC" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvValidarOFAC</B></TD></TR><HR/><TR><TD ALIGN="LEFT">validar</TD></TR></TABLE>>];
+    "WSValidacion" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSValidacion</B></TD></TR><HR/><TR><TD ALIGN="LEFT">validar</TD></TR></TABLE>>];
+  }
+  subgraph cluster_10 {
+    label="OFACBackEnd.jar"; style=filled; fillcolor="#FFE0B2"; fontsize=18;
+    "RepoOFAC" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOFAC</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultarReporte</TD></TR></TABLE>>];
+    "SrvValidacionOFAC" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvValidacionOFAC</B></TD></TR><HR/><TR><TD ALIGN="LEFT">validarCedula</TD></TR></TABLE>>];
+    "WSOfac" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSOfac</B></TD></TR><HR/><TR><TD ALIGN="LEFT">validarCedula</TD></TR></TABLE>>];
+  }
+  subgraph cluster_11 {
+    label="SENBackEnd.jar"; style=filled; fillcolor="#B2EBF2"; fontsize=18;
+    "ListenerEnvio" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerEnvio</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoEnvio" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoEnvio</B></TD></TR><HR/><TR><TD ALIGN="LEFT">existePorCompra</TD></TR><TR><TD ALIGN="LEFT">programar</TD></TR></TABLE>>];
+    "RepoOutboxSEN" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxSEN</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "SrvEnvio" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvEnvio</B></TD></TR><HR/><TR><TD ALIGN="LEFT">programarEnvio</TD></TR></TABLE>>];
+    "WorkerOutboxSEN" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxSEN</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_12 {
+    label="SINBackEnd.jar"; style=filled; fillcolor="#B3E5FC"; fontsize=18;
+    "ListenerInventario" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ListenerInventario</B></TD></TR><HR/><TR><TD ALIGN="LEFT">entregar</TD></TR></TABLE>>];
+    "RepoInventario" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoInventario</B></TD></TR><HR/><TR><TD ALIGN="LEFT">existePorCompra</TD></TR><TR><TD ALIGN="LEFT">registrarSalida</TD></TR></TABLE>>];
+    "RepoOutboxSIN" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoOutboxSIN</B></TD></TR><HR/><TR><TD ALIGN="LEFT">guardar</TD></TR><TR><TD ALIGN="LEFT">obtenerPendientes</TD></TR></TABLE>>];
+    "SrvInventario" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvInventario</B></TD></TR><HR/><TR><TD ALIGN="LEFT">registrarSalidaInventario</TD></TR></TABLE>>];
+    "WorkerOutboxSIN" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WorkerOutboxSIN</B></TD></TR><HR/><TR><TD ALIGN="LEFT"> </TD></TR></TABLE>>];
+  }
+  subgraph cluster_14 {
+    label="SSOWeb.zip"; style=filled; fillcolor="#BBDEFB"; fontsize=18;
+    "PantallaWebSubasta" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>PantallaWebSubasta</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultarCatalogo</TD></TR><TR><TD ALIGN="LEFT">consultarMisCompras</TD></TR><TR><TD ALIGN="LEFT">ingresarCredenciales</TD></TR><TR><TD ALIGN="LEFT">registrarOferta</TD></TR><TR><TD ALIGN="LEFT">seleccionarCompra</TD></TR><TR><TD ALIGN="LEFT">solicitarPublicacion</TD></TR><TR><TD ALIGN="LEFT">suscribirse</TD></TR></TABLE>>];
+    "ProxyWSSubastaWeb" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ProxyWSSubastaWeb</B></TD></TR><HR/><TR><TD ALIGN="LEFT">autenticar</TD></TR><TR><TD ALIGN="LEFT">consultarCatalogo</TD></TR><TR><TD ALIGN="LEFT">iniciarCompra</TD></TR><TR><TD ALIGN="LEFT">publicarNuevaSubasta</TD></TR><TR><TD ALIGN="LEFT">registrarOferta</TD></TR><TR><TD ALIGN="LEFT">suscribirse</TD></TR></TABLE>>];
+  }
+  subgraph cluster_15 {
+    label="YoPagoBackEnd.dll"; style=filled; fillcolor="#F8BBD0"; fontsize=18;
+    "IntegraSSO" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>IntegraSSO</B></TD></TR><HR/><TR><TD ALIGN="LEFT">reportarPago</TD></TR></TABLE>>];
+    "RepoYoPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>RepoYoPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">buscarPendiente</TD></TR><TR><TD ALIGN="LEFT">guardarPendiente</TD></TR><TR><TD ALIGN="LEFT">registrarPagoConfirmado</TD></TR></TABLE>>];
+    "SrvYoPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>SrvYoPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">pagar</TD></TR><TR><TD ALIGN="LEFT">registrarCompraPendiente</TD></TR></TABLE>>];
+    "WSCompraPendiente" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>WSCompraPendiente</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultarCompraPendiente</TD></TR><TR><TD ALIGN="LEFT">pagar</TD></TR><TR><TD ALIGN="LEFT">registrarCompraPendiente</TD></TR></TABLE>>];
+  }
+  subgraph cluster_16 {
+    label="YoPagoFrontEnd.dll"; style=filled; fillcolor="#F8BBD0"; fontsize=18;
+    "PantallaWebYoPago" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>PantallaWebYoPago</B></TD></TR><HR/><TR><TD ALIGN="LEFT">confirmarPago</TD></TR><TR><TD ALIGN="LEFT">consultarCompraPendiente</TD></TR></TABLE>>];
+    "ProxyWSYoPagoWeb" [label=<<TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0" BGCOLOR="white"><TR><TD><B>ProxyWSYoPagoWeb</B></TD></TR><HR/><TR><TD ALIGN="LEFT">consultarCompraPendiente</TD></TR><TR><TD ALIGN="LEFT">pagar</TD></TR></TABLE>>];
+  }
+  "WorkerOutboxCatalogo" -> "q.nuevaSubasta" [label="AMQP"];
+  "WorkerOutboxCompra" -> "q.LiberarBienSubasta" [label="AMQP"];
+  "WorkerOutboxCompra" -> "q.despachoSolicitud" [label="AMQP"];
+  "WorkerOutboxCompra" -> "q.notificacion" [label="AMQP"];
+  "WorkerOutboxCompra" -> "q.pagoSolicitud" [label="AMQP"];
+  "WorkerOutboxDespacho" -> "q.despachoConfirmado" [label="AMQP"];
+  "WorkerOutboxDespacho" -> "q.envioSolicitud" [label="AMQP"];
+  "WorkerOutboxDespacho" -> "q.inventarioSolicitud" [label="AMQP"];
+  "WorkerOutboxPago" -> "q.notificacion" [label="AMQP"];
+  "WorkerOutboxPago" -> "q.pagoConfirmado" [label="AMQP"];
+  "WorkerOutboxSEN" -> "q.envioConfirmacion" [label="AMQP"];
+  "WorkerOutboxSIN" -> "q.inventarioConfirmacion" [label="AMQP"];
+  "WorkerOutboxSubasta" -> "q.cambioOfertaMayor" [label="AMQP"];
+  "WorkerOutboxSubasta" -> "q.subastaCerrada" [label="AMQP"];
+  "WorkerOutboxSubasta" -> "q.subastaIniciada" [label="AMQP"];
+  "WorkerOutboxSuscripcion" -> "q.notificacion" [label="AMQP"];
+  "q.LiberarBienSubasta" -> "ListenerLiberarBienCat" [label="AMQP"];
+  "q.LiberarBienSubasta" -> "ListenerLiberarBienSub" [label="AMQP"];
+  "q.LiberarBienSubasta" -> "ListenerLiberarBienSus" [label="AMQP"];
+  "q.cambioOfertaMayor" -> "ListenerEventoSubasta" [label="AMQP"];
+  "q.despachoConfirmado" -> "ListenerConfDespacho" [label="AMQP"];
+  "q.despachoSolicitud" -> "ListenerDespachoSolicitud" [label="AMQP"];
+  "q.envioConfirmacion" -> "ListenerConfEnvio" [label="AMQP"];
+  "q.envioSolicitud" -> "ListenerEnvio" [label="AMQP"];
+  "q.inventarioConfirmacion" -> "ListenerConfInventario" [label="AMQP"];
+  "q.inventarioSolicitud" -> "ListenerInventario" [label="AMQP"];
+  "q.notificacion" -> "ListenerNotificar" [label="AMQP"];
+  "q.nuevaSubasta" -> "ListenerEventoSubasta" [label="AMQP"];
+  "q.pagoConfirmado" -> "ListenerPago" [label="AMQP"];
+  "q.pagoSolicitud" -> "ListenerPagoSolicitud" [label="AMQP"];
+  "q.subastaCerrada" -> "ListenerSubastaCerrada" [label="AMQP"];
+  "q.subastaIniciada" -> "ListenerEventoSubasta" [label="AMQP"];
+  "Browser" -> "PantallaWebSubasta" [label="HTTP"];
+  "Browser" -> "PantallaWebYoPago" [label="HTTP"];
+  "Nginx" -> "WSCompra" [label="HTTP"];
+  "Nginx" -> "WSGateway" [label="HTTP"];
+  "ProxyWSSubastaWeb" -> "Nginx" [label="HTTP"];
+  "ProxyWSYoPagoWeb" -> "WSCompraPendiente" [label="HTTP"];
+  "SrvRuteo" -> "Nginx" [label="HTTP"];
+  "SrvRuteo" -> "WSAcceso" [label="HTTP"];
+  "SrvRuteo" -> "WSCatalogo" [label="HTTP"];
+  "SrvRuteo" -> "WSPagoYoPago" [label="HTTP"];
+  "SrvRuteo" -> "WSSubasta" [label="HTTP"];
+  "SrvRuteo" -> "WSSuscripcion" [label="HTTP"];
+  "IntegraSMS" -> "SMS GATEWAY" [label="HTTP(SMS)"];
+  "IntegraOFAC" -> "WSOfac" [label="HTTP/REST"];
+  "IntegraValidacion" -> "WSValidacion" [label="HTTP/REST"];
+  "IntegraYoPago" -> "WSCompraPendiente" [label="HTTP/REST"];
+  "IntegraSSO" -> "Nginx" [label="HTTPS"];
+  "RepoCatalogo" -> "DB CATALOGO" [label="JDBC"];
+  "RepoCompra" -> "DB COMPRA" [label="JDBC"];
+  "RepoDespacho" -> "DB DESPACHO" [label="JDBC"];
+  "RepoEnvio" -> "DB SEN" [label="JDBC"];
+  "RepoInventario" -> "DB SIN" [label="JDBC"];
+  "RepoLogin" -> "DB ACCESO" [label="JDBC"];
+  "RepoNotificar" -> "DB NOTIFICACION" [label="JDBC"];
+  "RepoOFAC" -> "DB OFAC" [label="JDBC"];
+  "RepoOferta" -> "DB SUBASTA" [label="JDBC"];
+  "RepoOutboxCatalogo" -> "DB CATALOGO" [label="JDBC"];
+  "RepoOutboxCompra" -> "DB COMPRA" [label="JDBC"];
+  "RepoOutboxDespacho" -> "DB DESPACHO" [label="JDBC"];
+  "RepoOutboxPago" -> "DB PAGO" [label="JDBC"];
+  "RepoOutboxSEN" -> "DB SEN" [label="JDBC"];
+  "RepoOutboxSIN" -> "DB SIN" [label="JDBC"];
+  "RepoOutboxSubasta" -> "DB SUBASTA" [label="JDBC"];
+  "RepoOutboxSuscripcion" -> "DB Suscripcion" [label="JDBC"];
+  "RepoPago" -> "DB PAGO" [label="JDBC"];
+  "RepoSubasta" -> "DB SUBASTA" [label="JDBC"];
+  "RepoSuscripcion" -> "DB Suscripcion" [label="JDBC"];
+  "RepoValidar" -> "DB VALIDAR" [label="JDBC"];
+  "RepoYoPago" -> "DB YOPAGO" [label="JDBC"];
+  "IntegraLoginAD" -> "AD" [label="LDAP"];
+  "IntegraMail" -> "CORREO" [label="SMTP"];
+  "AD" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "Browser" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "CORREO" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB ACCESO" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB CATALOGO" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB COMPRA" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB DESPACHO" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB NOTIFICACION" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB OFAC" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB PAGO" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB SEN" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB SIN" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB SUBASTA" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB Suscripcion" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB VALIDAR" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "DB YOPAGO" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "Nginx" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "SMS GATEWAY" [shape=box, style=filled, fillcolor="#E0E0E0", fontsize=12];
+  "q.LiberarBienSubasta" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.cambioOfertaMayor" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.despachoConfirmado" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.despachoSolicitud" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.envioConfirmacion" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.envioSolicitud" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.inventarioConfirmacion" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.inventarioSolicitud" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.notificacion" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.nuevaSubasta" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.pagoConfirmado" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.pagoSolicitud" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.subastaCerrada" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+  "q.subastaIniciada" [shape=box, style=filled, fillcolor="#FFF59D", fontsize=12];
+}

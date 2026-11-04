@@ -439,5 +439,5 @@ Diferencias con las VM:
 |---|---|---|
 | P12 | Recorrer a mano CU VII a X en pantalla. Por API y formularios ya pasa en las VM | Ensayo |
 | P11 | Fusionar la decisión de liberar bien, y cargar en vivo una subasta nueva del mismo `id_bien` | #141 |
-| P18 | VPP con revisión cruzada e impresión en papel gigante | #73 |
+| P18 | Dibujar en el VPP el diagrama con todas las clases (`docs/modelo/diagrama-clases.pdf`, observación 25), revisión cruzada e impresión en papel gigante | #73 |
 | P21 | Grabar el video del plan B | #75 |

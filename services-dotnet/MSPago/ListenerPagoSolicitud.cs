@@ -34,9 +34,16 @@ public sealed class ListenerPagoSolicitud(ConexionMom mom, IServiceScopeFactory 
                 await entregar(JsonSerializer.Deserialize<PagoSolicitud>(entrega.Body.Span, Json.Opciones)!);
                 await canal.BasicAckAsync(entrega.DeliveryTag, false, cancelacion);
             }
+            catch (JsonException e)
+            {
+                // Un mensaje ilegible nunca se podrá preparar: la DLQ lo devolvería para siempre.
+                log.LogError("Solicitud de pago ilegible, se descarta: {Mensaje}", e.Message);
+                await canal.BasicAckAsync(entrega.DeliveryTag, false, cancelacion);
+            }
             catch (Exception e) when (e is not OperationCanceledException)
             {
-                // Se devuelve a la cola tras una espera; la cola quorum lo pasa a q.pagoSolicitud.dlq al quinto intento.
+                // Se devuelve a la cola tras una espera. Al agotar x-delivery-limit pasa a q.pagoSolicitud.dlq, que lo
+                // regresa a los 60 s (x-message-ttl): con YoPago caído mucho tiempo, la compra se recupera sola.
                 log.LogWarning("Pago no preparado ({Mensaje}); se reintenta", e.Message);
                 await Task.Delay(TimeSpan.FromSeconds(5), cancelacion);
                 await canal.BasicNackAsync(entrega.DeliveryTag, false, true, cancelacion);
