@@ -1,18 +1,18 @@
 # Escenarios de falla
 
-Se reproducen con `tools/scripts/escenarios-falla.sh [ofac|rabbitmq|replica|yopago|sso|fanout|dlq ...]` contra `deploy/dev`.
-Las líneas de evidencia son salida real del script (2026-11-03, Mac arm64, una sola máquina). Falta repetirlos en las tres VM.
+Se reproducen con `tools/scripts/escenarios-falla.sh [ofac|rabbitmq|replica|yopago|sso|fanout|dlq ...]` contra `deploy/dev` o las tres máquinas (`deploy/README.md`).
+Las líneas de evidencia son salida real del script en `deploy/dev` (2026-11-03, Mac arm64, una sola máquina). La tabla resume la corrida en las tres VM (2026-11-04): 115 de 115 comprobaciones bien, en 672 s.
 
 | Escenario | Resultado |
 |---|---|
 | OFAC caído | Pasa |
 | RabbitMQ reiniciado | Pasa |
-| Réplica 1 de MSCompra apagada | Pasa con un defecto: **un 504** al cliente durante el apagado, visto en las 2 corridas |
+| Réplica 1 de MSCompra apagada | Pasa. En las VM, 40 de 40 respuestas 200 durante el apagado, en 4 corridas; el 504 solo se vio en `deploy/dev` |
 | YoPago caído, menos de unos 30 s | Pasa |
-| YoPago caído, más de unos 30 s | La compra **queda detenida** hasta reprocesar la DLQ a mano |
+| YoPago caído más que los reintentos (66 s en las VM) | La compra **queda detenida** hasta reprocesar la DLQ a mano |
 | Fanout de `q.LiberarBienSubasta` | Pasa |
 | `BienLiberado` con JSON inválido | No hay reencolado infinito: llega a la DLQ |
-| APIGateway caído al reportar el pago | **Sin verificar** |
+| APIGateway caído al reportar el pago | Pasa: YoPago guarda el reporte `PENDIENTE` y lo envía solo al volver |
 
 ## OFAC caído
 
@@ -77,7 +77,7 @@ Log de Nginx de la primera corrida:
 Las peticiones anteriores sí se reintentan en la réplica 2; la del 504 no.
 
 Hipótesis sin comprobar: el DNS de Docker retira la réplica del upstream mientras esa conexión sigue abierta, y Nginx ya no reintenta.
-De ser así, solo pasaría en `deploy/dev`, donde el upstream usa nombres; no se ha probado.
+En las tres VM el upstream usa IP, y el 504 no apareció en 4 corridas (160 peticiones), lo que es compatible con la hipótesis sin probarla.
 
 ## YoPago caído
 
@@ -124,6 +124,4 @@ Un JSON válido sin `idSubasta` (`{"sinIdSubasta":true}`) se confirma y se desca
 
 ## Sin verificar
 
-- **APIGateway caído al reportar el pago:** la única corrida falló por un error del script, no del sistema: `pagar_en_web` pedía el número de compra al gateway apagado, así que el pago nunca se hizo. El script ya está corregido, pero no se volvió a correr.
 - MSValidacion caído, como caso distinto de OFAC caído.
-- Los escenarios en las tres VM.

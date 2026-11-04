@@ -11,39 +11,77 @@ se comunican por los puertos publicados en la IP de la otra máquina.
 
 ## Evidencia
 
-> **Pendiente.** Aún no se ha desplegado en las VM: esta sección se llena con salidas y capturas reales.
+Salida real de las tres VM (2026-11-04), tras la prueba de extremo a extremo. En la lista de conexiones, `10.43.99.45` es Máquina 3: la réplica 2 de `MSCompra`, `MSPago`, SIN y SEN contra el MOM de Máquina 2.
 
-Después de desplegar (`deploy/README.md`) y de hacer una compra que pase por la validación OFAC:
+### Máquina 1 · `docker ps` (10.43.99.2)
 
-```bash
-# En cada máquina, desde ~/sso/deploy/maquina-N
-docker ps
-
-# Máquina 3: la réplica 2 conectada al MOM de Máquina 2
-docker compose logs mscompra-replica2 | grep -i "rabbit\|amqp"
-
-# Máquina 2: conexiones AMQP abiertas, con la IP de Máquina 3 como origen
-docker compose exec mom rabbitmqctl list_connections name peer_host user state
-
-# Máquina 2: la validación llamando a OFAC
-docker compose logs msvalidacion
-
-# Máquina 3: OFAC atendiendo la consulta
-docker compose logs ofacbackend
+```text
+NAMES                            STATUS
+apigateway-1       Up 10 minutes (healthy)
+ssoweb-1           Up 2 hours (healthy)
+yopagofrontend-1   Up 2 hours (healthy)
+balanceador-1      Up 2 hours (healthy)
 ```
 
-### Máquina 1 · `docker ps`
+### Máquina 2 · `docker ps` (10.43.100.238)
 
-Pendiente.
+```text
+NAMES                               STATUS
+mscatalogo-1          Up 2 minutes (healthy)
+mscompra-replica1-1   Up 7 minutes (healthy)
+msacceso-1            Up 2 hours (healthy)
+msdespacho-1          Up 2 hours (healthy)
+msnotificacion-1      Up 2 hours (healthy)
+msvalidacion-1        Up 2 hours (healthy)
+mssuscripcion-1       Up 20 minutes (healthy)
+mssubasta-1           Up 20 minutes (healthy)
+db-notificacion-1     Up 2 hours (healthy)
+db-compra-1           Up 2 hours (healthy)
+db-validar-1          Up 2 hours (healthy)
+db-acceso-1           Up 2 hours (healthy)
+mom-1                 Up 15 minutes (healthy)
+db-subasta-1          Up 2 hours (healthy)
+db-despacho-1         Up 2 hours (healthy)
+db-suscripcion-1      Up 2 hours (healthy)
+db-catalogo-1         Up 2 hours (healthy)
+```
 
-### Máquina 2 · `docker ps`
+### Máquina 3 · `docker ps` (10.43.99.45)
 
-Pendiente.
+```text
+NAMES                               STATUS
+mscompra-replica2-1   Up 23 minutes (healthy)
+yopagobackend-1       Up 12 minutes (healthy)
+mspago-1              Up 2 hours (healthy)
+ofacbackend-1         Up 18 minutes (healthy)
+senbackend-1          Up 2 hours (healthy)
+sinbackend-1          Up 2 hours (healthy)
+db-sen-1              Up 2 hours (healthy)
+db-pago-1             Up 2 hours (healthy)
+db-yopago-1           Up 2 hours (healthy)
+db-ofac-1             Up 2 hours (healthy)
+db-sin-1              Up 2 hours (healthy)
+sms-1                 Up 2 hours (healthy)
+mail-1                Up 2 hours (healthy)
+ad-1                  Up 2 hours (healthy)
+```
 
-### Máquina 3 · `docker ps`
+### Comunicación entre máquinas
 
-Pendiente.
+`rabbitmqctl list_connections peer_host user state` en Máquina 2, y resultado de `tools/scripts/e2e.sh` y `tools/scripts/escenarios-falla.sh`:
 
-### Logs de la comunicación
+```text
+4 10.43.99.45	sso_mom	running
+      1 172.23.0.10	sso_mom	running
+      1 172.23.0.3	sso_mom	running
+      1 172.23.0.4	sso_mom	running
+      1 172.23.0.5	sso_mom	running
+      1 172.23.0.6	sso_mom	running
+      1 172.23.0.7	sso_mom	running
+      1 peer_host	user	state
+== Resultado: 85 de 85 comprobaciones bien, 0 fallos, 66s ==
+  OK    [ 59s] compra TERMINADA en 59s (criterio: menos de 2 min)
+== Resultado: 115 de 115 comprobaciones bien, 0 fallos, 672s ==
+```
 
-Pendiente.
+`tools/scripts/check-red.sh` alcanzó 16 de 16 puertos entre máquinas con el firewall activo. Desde fuera de ellas, los puertos de Máquinas 2 y 3 quedan bloqueados (`tools/scripts/firewall-maquina.sh`).

@@ -13,15 +13,13 @@ Datos, claves e identificadores van entre `<...>`: nada de eso va en el reposito
 | `deploy/maquina-N/docker-compose.yml` | En PR borrador, **nunca levantado** | #142 |
 | Liberar bien: observación 16, pruebas de X.6–X.8 y Javadoc de `RepoCatalogo` | En PR abierto, sin fusionar | #141 |
 | `Makefile`, `make zip` y `tools/scripts/smoke-test.sh` | En PR borrador, sin fusionar | #143 |
-| E2E completo, `tools/scripts/e2e.sh` | En curso, aún sin PR | #65 |
-| Comprobación de red, `tools/scripts/check-red.sh` | En curso, aún sin PR | #68 |
-| Escenarios de falla con evidencia | Sin hacer | #66 |
+| E2E completo, `tools/scripts/e2e.sh` | 85 de 85 en las tres VM (2026-11-04), compra TERMINADA en menos de 70 s | #65 |
+| Comprobación de red, `tools/scripts/check-red.sh` | 16 de 16 puertos, con firewall | #68 |
+| Escenarios de falla con evidencia | 115 de 115 en las tres VM, `docs/escenarios-falla.md` | #66 |
 | Recorrido en Chrome real, CU I a VI | Hecho contra el stack local en Docker | Descripción de #139 |
-| CU VII a X en pantalla, de punta a punta | Sin comprobar. Solo pruebas de integración por servicio (ej. `MSCompraIT`) | **PENDIENTE (P12)** |
-| Las tres VM | Nada desplegado | **PENDIENTE (P4)**, #68 |
+| CU VII a X en pantalla, de punta a punta | Por API y formularios de YoPago en las VM. En Chromium solo se revisó la carga de pantallas de SSO y YoPago, sin errores de consola: **falta recorrerlo a mano en el ensayo** | **PENDIENTE (P12)** |
+| Las tres VM | Desplegadas, 35 contenedores `healthy` | #68 |
 
-Los comandos de las secciones 3, 4, 6 y 7 usan `deploy/maquina-N/docker-compose.yml` y la estructura `~/sso/` de **#142**. No sirven hasta
-que ese PR entre o se copie su contenido. En esta rama `deploy/maquina-N/` solo trae `.env.example`.
 
 ## 2. Reparto de la nota
 
@@ -30,8 +28,8 @@ Literal de `docs/enunciado/enunciado-proyecto-codificacion.docx` («Proyecto 2: 
 | Parte | Peso | Qué se entrega | Dónde está | Estado |
 |---|---|---|---|---|
 | Arquitectura Integrada JavaEE y .NET | 30 % | Impreso en papel gigante y VPP en BS (10 p. m.) | `docs/enunciado/arquitectura-integrada-pliego-100x70.pdf`, `ProyectoSSO-Integrada-JavaEE-NET*.vpp` | **PENDIENTE (P18)**, #73 |
-| Codificación | 60 % | `.zip` en BS, con los `pom.xml`. Spring Boot salvo lo marcado .NET | `services/pom.xml`, `services-dotnet/SSO.Dotnet.sln`, `frontend/sso-web` | **PENDIENTE (P19)**, #74 |
-| Aporte grupal | 10 % | Motor Docker en cada máquina y dos microservicios en máquinas distintas comunicados | `docs/aporte-grupal.md` (en #142, evidencia vacía) | **PENDIENTE (P20)**, #72 |
+| Codificación | 60 % | `.zip` en BS, con los `pom.xml`. Spring Boot salvo lo marcado .NET | `services/pom.xml`, `services-dotnet/SSO.Dotnet.sln`, `frontend/sso-web` | `make zip`, 13 `pom.xml`, verificado; regenerar desde `main`, #74 |
+| Aporte grupal | 10 % | Motor Docker en cada máquina y dos microservicios en máquinas distintas comunicados | `docs/aporte-grupal.md`, con evidencia real | #72 |
 
 El enunciado deja en blanco las fechas de entrega y sustentación: **PENDIENTE (P17)**. También marca «(10) se pide escalabilidad y balanceo del
 servicio de compra» dentro de la parte de código, sin aclarar a qué peso corresponde ese 10.
@@ -70,7 +68,7 @@ Antes de empezar se comprueba que la hora de M2 esté bien (`date`): la apertura
 Al terminar, desde la máquina de desarrollo y solo con #143 fusionado: `make smoke MAQUINA1_IP=10.43.99.2`. Es de solo lectura y comprueba la entrada pública; con
 `SMOKE_USUARIO` y `SMOKE_CLAVE`, también login, catálogo y mis compras. No recorre el flujo I a X. Según #143, aún no se ha probado contra el sistema real.
 
-**PENDIENTE (P4):** este orden nunca se ha ejecutado. **PENDIENTE (P5):** faltan valores de `.env` sin definir, como `MEMORIA_*` y `TASA_IMPUESTO`.
+Este orden se ejecutó en las VM (2026-11-04). **PENDIENTE (P5):** `TASA_IMPUESTO=0.19`, `MAIL_REMITENTE` y `MEMORIA_*` son valores provisionales: el enunciado no los da. Los límites (`MEMORIA_MS` 512m en M1 y 640m en M2 y M3, `MEMORIA_DB` 256m, `MEMORIA_MOM` 512m) aguantaron todas las pruebas con 11 GB por VM.
 
 ## 4. Carga de datos con `tools/carga`
 
@@ -111,7 +109,7 @@ DB_CATALOGO_CONTENEDOR=$(docker compose ps -q db-catalogo) DB_SUBASTA_CONTENEDOR
   python3 -I ../../tools/carga/cargar_subastas.py <ruta>/subastas.csv
 ```
 
-Los scripts validan todo antes de cargar y son idempotentes. **PENDIENTE (P7):** no se han corrido en las VM, y requieren `python3` allí.
+Los scripts validan todo antes de cargar y son idempotentes. Se corrieron en las VM con datos de prueba, desde `tools/scripts/e2e.sh`; requieren `python3`, ya instalado allí. **PENDIENTE (P10):** los CSV reales.
 
 ### 4.3 Dos reglas que hay que recordar
 
@@ -201,14 +199,7 @@ docker compose exec db-sin psql -U sin -d sin -c "SELECT * FROM salida_inventari
 docker compose exec db-sen psql -U sen -d sen -c "SELECT * FROM envio"
 ```
 
-**PENDIENTE (P8): el correo aún no se puede mostrar en las VM.** Afecta a III, V y IX: el enunciado pide «correos a los ganadores», y ese aviso solo va por
-correo. La recomendación es un **túnel SSH a :8025, por confirmar**. El túnel no basta por sí solo: `deploy/maquina-3/docker-compose.yml` de #142 no publica
-ese puerto en el host, así que `ssh -L 8025:localhost:8025` no llegaría a Mailpit. Hace falta una de estas dos cosas, ninguna probada:
-
-- Publicar el puerto solo en local (`127.0.0.1:8025:8025`) en ese compose. Es un cambio en #142.
-- Apuntar el túnel a la IP del contenedor `mail` en M3, sin cambiar el compose.
-
-Mientras no se confirme, la única evidencia en las VM es `notificacion_enviada`.
+**Correos en las VM.** La UI de Mailpit escucha solo en el loopback de M3. Desde el equipo de presentación: `ssh -L 8025:127.0.0.1:8025 estudiante@10.43.99.45` y abrir `http://localhost:8025`. Comprobado con `tools/scripts/e2e.sh`.
 
 **PENDIENTE (P16):** ninguno de estos comandos se ha probado en las VM.
 
@@ -225,8 +216,7 @@ Para el aporte grupal (10 %), los comandos están en `docs/aporte-grupal.md` de 
 
 ## 7. Tolerancia a fallas
 
-Se hace después del recorrido feliz, con S2 (cliente A, sin pagar) y S3 (cliente C). **PENDIENTE (P14):** ninguno de estos escenarios se ha ejecutado
-con el sistema completo (#66). Hay pruebas de integración para OFAC caído y pago rechazado en `MSCompraIT`.
+Se hace después del recorrido feliz, con S2 (cliente A, sin pagar) y S3 (cliente C). Todos los escenarios pasaron con el sistema completo en las VM: `docs/escenarios-falla.md`.
 
 ### 7.1 Réplica de MSCompra apagada
 
@@ -298,7 +288,7 @@ Advertencias:
   devolución.
 - La compensación no notifica al cliente: X.1 a X.8 no tienen aviso. El estado se ve en «Mis compras».
 
-**PENDIENTE (P15):** este comando nunca se ha ejecutado contra el sistema completo. `pagoRechazadoCompensaYLiberaElBien` prueba solo desde la cola.
+Probado por la ruta completa hasta `LIBERADA` en las tres bases, en las VM (escenario `fanout`). `pagoRechazadoCompensaYLiberaElBien` lo cubre además desde la cola.
 
 ### 7.4 ENPROCESO y RECHAZADO (si hay tiempo)
 
@@ -355,8 +345,8 @@ compras no leen DB ACCESO (observación 14).
 
 **¿Cómo se aísla la web? ¿Qué hay en la DMZ?**
 En M1 solo están Nginx, SSOWeb, APIGateway y YoPagoFrontEnd, sin bases de datos. El APIGateway valida el JWT con la clave pública (la privada queda en M2) y enruta; nunca toma la identidad
-del cuerpo de la petición. Publica 80, 443 y 5000; Nginx rechaza `/api/pagos/reporte` por HTTP con 403, porque VII.20 exige HTTPS. **PENDIENTE (P6):** el aislamiento de red real depende del
-firewall de las VM (#68), que no se ha configurado. M1 (10.43.99.2) y M3 (10.43.99.45) comparten prefijo, y no se ha comprobado cómo está segmentada la red.
+del cuerpo de la petición. Publica 80, 443 y 5000; Nginx rechaza `/api/pagos/reporte` por HTTP con 403, porque VII.20 exige HTTPS. El firewall de cada VM (`tools/scripts/firewall-maquina.sh`) solo deja entrar a M2 y M3 desde las máquinas que el diagrama conecta.
+Las tres VM están en la misma subred (10.43.96.0/20): el aislamiento es por firewall de host, no por segmentación de red.
 
 **¿Dónde está la lógica de negocio del front?**
 No hay. `PantallaWebSubasta` y `PantallaWebYoPago` solo presentan y llaman a su `Proxy*`. El carrito es estado de pantalla: ofertar por varios bienes es un `registrarOferta` por cada uno,
@@ -432,8 +422,7 @@ Diferencias con las VM:
 
 | # | Pendiente | Referencia |
 |---|---|---|
-| P5 | Valores de `.env`: `MEMORIA_*` (se desconoce la RAM de las VM, observación 17), `TASA_IMPUESTO` (el enunciado no da la tasa), `IMAGE_REGISTRY` | #142 |
-| P8 | Confirmar el túnel SSH a :8025 para los correos, y cómo alcanzar Mailpit, que el compose no publica en el host (5.3) | #142 |
+| P5 | Valores reales de `.env`: `TASA_IMPUESTO` y `MAIL_REMITENTE`, hoy provisionales | Usuario |
 | P9 | Puertos 443 y 8085 del balanceador, que el diagrama no dibuja (observación 18) | #142 |
 | P23 | Numeración ya decidida (15 sin móvil, liberar bien 16, compose 17 y 18), pero quedan referencias por corregir: los `.env.example` de #142 citan «#15» por memoria (es la 17), y `SrvPago.cs` cita una «observación 15» sobre el contacto, que ahora es la del móvil | #142, `SrvPago.cs` |
 
@@ -441,9 +430,6 @@ Diferencias con las VM:
 
 | # | Pendiente | Referencia |
 |---|---|---|
-| P4 | Nada desplegado: Docker, imágenes, `up -d`, estado healthy y orden M3 → M2 → M1 | #68, #69, #70, #71 |
-| P6 | Firewall, aislamiento real de la DMZ y segmentación de red. `tools/scripts/check-red.sh` sigue en curso, aún sin PR | #68 |
-| P7 | `tools/carga` en las VM, incluidos `python3` y `docker compose ps -q` | #142 |
 | P10 | Contenido de los CSV y tiempos de `fecha_inicio` y `fecha_cierre` | Ensayo |
 | P16 | Comandos de apoyo de 5.3 y 7, incluido el log de `upstream=` | Ensayo |
 
@@ -451,12 +437,7 @@ Diferencias con las VM:
 
 | # | Pendiente | Referencia |
 |---|---|---|
-| P12 | CU VII a X en pantalla de punta a punta. `tools/scripts/e2e.sh` sigue en curso, aún sin PR. `tools/scripts/smoke-test.sh` (#143) no lo sustituye: es de solo lectura y no recorre el flujo | #65, #143 |
+| P12 | Recorrer a mano CU VII a X en pantalla. Por API y formularios ya pasa en las VM | Ensayo |
 | P11 | Fusionar la decisión de liberar bien, y cargar en vivo una subasta nueva del mismo `id_bien` | #141 |
-| P13 | Fusionar los PR de los que depende el guion, y con ellos el modo estricto. Al fusionar, unificar `deploy/README.md`, que #142 y #143 cambian por separado | #139, #140, #141, #142, #143 |
-| P14 | Escenarios de falla sobre el sistema completo, y calibrar sus tiempos. `docs/escenarios-falla.md` no existe | #66 |
-| P15 | Reporte con valor distinto (7.3) por la ruta completa hasta `LIBERADA` en las tres bases | #65, #66 |
 | P18 | VPP con revisión cruzada e impresión en papel gigante | #73 |
-| P19 | Generar el `.zip` de entrega. `Makefile` y `make zip` están en #143, sin fusionar | #143, #74 |
-| P20 | Capturas y logs del aporte grupal en `docs/aporte-grupal.md` | #72 |
 | P21 | Grabar el video del plan B | #75 |
