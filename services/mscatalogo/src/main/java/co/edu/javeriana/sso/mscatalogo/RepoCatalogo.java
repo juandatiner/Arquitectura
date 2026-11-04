@@ -27,6 +27,7 @@ public class RepoCatalogo {
     private static final String FILTRO =
             """
              WHERE s.estado = 'PUBLICADA'
+               AND s.fecha_cierre > now()
                AND (CAST(:texto AS TEXT) IS NULL OR b.descripcion ILIKE '%' || :texto || '%')
                AND (CAST(:categoria AS TEXT) IS NULL OR b.categoria = :categoria)
             """;

@@ -224,6 +224,20 @@ class MSCatalogoIT {
     }
 
     @Test
+    @Order(7)
+    void unaSubastaYaCerradaNoSaleEnElCatalogo() throws Exception {
+        jdbc.sql(
+                        "INSERT INTO subasta (id_subasta, id_bien, fecha_inicio, fecha_cierre, estado)"
+                                + " VALUES ('SUB-CERRADA', 'BIEN-0001', now() - interval '2 days',"
+                                + " now() - interval '1 day', 'PUBLICADA')")
+                .update();
+
+        mvc.perform(get("/catalogo").param("categoria", "VEHICULOS"))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.contenido[0].idSubasta").value("SUB-0002"));
+    }
+
+    @Test
     @Order(6)
     void lasTareasProgramadasCorrenConSuPropioCorrelationId() {
         AtomicReference<String> visto = new AtomicReference<>();
