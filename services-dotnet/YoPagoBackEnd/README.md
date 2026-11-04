@@ -43,7 +43,7 @@ Todas son obligatorias: sin valor por defecto, el servicio no arranca. Llegan de
 | `DB_USUARIO` | Usuario de su base de datos | `Username` | `yopago` |
 | `DB_CLAVE` | Clave de su base de datos | `Password` | `${DB_CLAVE}` |
 | `CERTIFICADO_SSO` | Ruta del certificado TLS del balanceador | `Program.cs` | `/run/secrets/certificado_sso` |
-| `CREDENCIAL_YOPAGO` | Credencial compartida del reporte de pago | `credencial` | `${CREDENCIAL_YOPAGO}` |
+| `CREDENCIAL_YOPAGO` | Credencial compartida del reporte de pago | `Program.cs` | `${CREDENCIAL_YOPAGO}` |
 | `RUTA_SSO` | URL HTTPS de Nginx hacia SSO | `Program.cs` | `https://balanceador:443` |
 
 ## Conexiones del diagrama

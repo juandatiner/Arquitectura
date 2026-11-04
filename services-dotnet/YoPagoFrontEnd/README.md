@@ -23,7 +23,7 @@ Devuelven vistas Razor (`Views/PantallaWebYoPago/`), no JSON, y los POST exigen 
 | Método | Ruta | Operación | Entrada | Pasos |
 |---|---|---|---|---|
 | GET | `/` | `Ingresar` | `compra` | Formulario de ingreso (cédula y contraseña). `compra` llega en la URL de pago del SMS. |
-| POST | `/consultar` | `consultarCompraPendiente` | `cedula`, `clave`, `compra` | Paso VII.14 (Browser → PantallaWebYoPago consultarCompraPendiente(numeroCompra)) y VII.15 (→ ProxyWSYoPagoWeb). |
+| POST | `/consultar` | `consultarCompraPendiente` | `numeroCompra` | — |
 | POST | `/pagar` | `confirmarPago` | `numeroCompra`, `medio`, `titular` | Paso VII.14 (Browser → PantallaWebYoPago confirmarPago(...)) y VII.15 (→ ProxyWSYoPagoWeb pagar(numeroCompra, datosPago)). |
 | POST | `/salir` | `Salir` | — | — |
 
