@@ -54,7 +54,7 @@ public sealed record PagoConfirmado(
 }
 
 /// <summary>Fila PENDIENTE del outbox lista para publicarse.</summary>
-public sealed record EventoPendiente(Guid IdEvento, string Tipo, string Cola, string Payload);
+public sealed record EventoPendiente(Guid IdEvento, string Tipo, string Cola, string Payload, string CorrelationId);
 
 /// <summary>No existe un pago pendiente para esa compra.</summary>
 public sealed class PagoNoEncontradoException(string numeroCompra) : Exception($"No existe un pago para la compra {numeroCompra}");

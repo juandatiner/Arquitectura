@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.mscompra;
 
+import co.edu.javeriana.sso.mscompra.config.Correlacion;
 import co.edu.javeriana.sso.mscompra.modelo.Evento;
 import co.edu.javeriana.sso.mscompra.modelo.EventoPendiente;
 import java.util.List;
@@ -27,14 +28,15 @@ public class RepoOutboxCompra {
     public void guardar(Evento evento) {
         jdbc.sql(
                         """
-                        INSERT INTO outbox (id_evento, tipo, cola, payload, estado)
-                        VALUES (:id, :tipo, :cola, CAST(:payload AS JSON), :estado)
+                        INSERT INTO outbox (id_evento, tipo, cola, payload, estado, correlation_id)
+                        VALUES (:id, :tipo, :cola, CAST(:payload AS JSON), :estado, :correlationId)
                         """)
                 .param("id", evento.idEvento())
                 .param("tipo", evento.tipo())
                 .param("cola", evento.cola())
                 .param("payload", json.writeValueAsString(evento))
                 .param("estado", evento.cola() == null ? "REGISTRADO" : "PENDIENTE")
+                .param("correlationId", Correlacion.actualOGenerar())
                 .update();
     }
 
@@ -45,7 +47,7 @@ public class RepoOutboxCompra {
     public List<EventoPendiente> obtenerPendientes(int tamañoLote) {
         return jdbc.sql(
                         """
-                        SELECT id_evento, tipo, cola, payload::text AS payload
+                        SELECT id_evento, tipo, cola, payload::text AS payload, correlation_id
                           FROM outbox
                          WHERE estado = 'PENDIENTE'
                          ORDER BY creado_en
@@ -59,7 +61,8 @@ public class RepoOutboxCompra {
                                         rs.getObject("id_evento", UUID.class),
                                         rs.getString("tipo"),
                                         rs.getString("cola"),
-                                        rs.getString("payload")))
+                                        rs.getString("payload"),
+                                        rs.getString("correlation_id")))
                 .list();
     }
 

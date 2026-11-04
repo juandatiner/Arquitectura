@@ -9,15 +9,19 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.Duration;
 import java.util.List;
+import java.time.Instant;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
+import org.slf4j.MDC;
 import org.springframework.amqp.core.BindingBuilder;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Message;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -31,8 +35,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
@@ -92,6 +98,7 @@ class MSCatalogoIT {
     @Autowired RabbitTemplate rabbit;
     @Autowired RabbitAdmin admin;
     @Autowired JdbcClient jdbc;
+    @Autowired TaskScheduler programador;
 
     @Test
     @Order(1)
@@ -104,7 +111,7 @@ class MSCatalogoIT {
     @Test
     @Order(2)
     void publicarCambiaElEstadoYEmiteNuevaSubastaEnLaCola() throws Exception {
-        mvc.perform(publicar("SUB-0001"))
+        mvc.perform(publicar("SUB-0001").header("X-Correlation-Id", "desde-gateway-1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("PUBLICADA"));
         assertThat(
@@ -121,6 +128,10 @@ class MSCatalogoIT {
                 .contains("\"idSubasta\":\"SUB-0001\"")
                 .contains("\"publicadaPor\":\"admin1\"");
         assertThat(mensaje.getMessageProperties().getType()).isEqualTo("NuevaSubasta");
+        // HTTP → outbox → AMQP: el correlationId cruza en cabecera, no en el cuerpo del evento
+        assertThat(mensaje.getMessageProperties().<String>getHeader("correlationId"))
+                .isEqualTo("desde-gateway-1");
+        assertThat(new String(mensaje.getBody())).doesNotContain("desde-gateway-1");
         await().atMost(Duration.ofSeconds(5))
                 .until(
                         () ->
@@ -158,8 +169,13 @@ class MSCatalogoIT {
                 "{\"idEvento\":\""
                         + UUID.randomUUID()
                         + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}";
-        rabbit.convertAndSend("", "q.LiberarBienSubasta.catalogo", bienLiberado);
-        rabbit.convertAndSend("", "q.LiberarBienSubasta.catalogo", bienLiberado);
+        MessagePostProcessor conCorrelacion =
+                m -> {
+                    m.getMessageProperties().setHeader("correlationId", "desde-compra-1");
+                    return m;
+                };
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.catalogo", bienLiberado, conCorrelacion);
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.catalogo", bienLiberado, conCorrelacion);
 
         await().atMost(Duration.ofSeconds(10))
                 .until(
@@ -178,6 +194,14 @@ class MSCatalogoIT {
                                                 .query(Long.class)
                                                 .single()
                                         == 1);
+        // AMQP → listener → outbox: el evento que sigue conserva el correlationId del que lo causó
+        assertThat(
+                        jdbc.sql(
+                                        "SELECT correlation_id FROM outbox"
+                                                + " WHERE tipo = 'BienLiberadoConfirmado'")
+                                .query(String.class)
+                                .single())
+                .isEqualTo("desde-compra-1");
     }
 
     /** Observación 16: una subasta nueva del mismo bien lo devuelve al catálogo. */
@@ -199,7 +223,17 @@ class MSCatalogoIT {
                 .andExpect(jsonPath("$.contenido[0].idSubasta").value("SUB-0002"));
     }
 
-    private static org.springframework.test.web.servlet.RequestBuilder publicar(String idSubasta) {
+    @Test
+    @Order(6)
+    void lasTareasProgramadasCorrenConSuPropioCorrelationId() {
+        AtomicReference<String> visto = new AtomicReference<>();
+
+        programador.schedule(() -> visto.set(MDC.get("correlationId")), Instant.now());
+
+        await().atMost(Duration.ofSeconds(5)).until(() -> visto.get() != null);
+    }
+
+    private static MockHttpServletRequestBuilder publicar(String idSubasta) {
         return post("/catalogo/publicar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"idSubasta\":\"" + idSubasta + "\",\"admin\":" + ADMIN + "}");

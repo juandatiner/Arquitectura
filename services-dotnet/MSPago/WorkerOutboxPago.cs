@@ -57,6 +57,7 @@ public sealed class WorkerOutboxPago(
                     MessageId = evento.IdEvento.ToString(),
                     Type = evento.Tipo,
                     DeliveryMode = DeliveryModes.Persistent,
+                    Headers = new Dictionary<string, object?> { [Correlacion.CabeceraAmqp] = evento.CorrelationId },
                 };
                 await canal.BasicPublishAsync(evento.Cola, "", false, propiedades, Encoding.UTF8.GetBytes(evento.Payload), cancelacion);
                 await repo.marcarEnviado(evento.IdEvento);

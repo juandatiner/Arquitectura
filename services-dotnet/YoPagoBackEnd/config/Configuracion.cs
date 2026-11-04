@@ -113,6 +113,7 @@ public sealed class ReintentoReportes(IServiceScopeFactory alcances, ILogger<Rei
         {
             try
             {
+                using var ambito = Correlacion.Abrir(Correlacion.Normalizar(null));
                 await using var alcance = alcances.CreateAsyncScope();
                 await alcance.ServiceProvider.GetRequiredService<SrvYoPago>().reintentarReportes();
             }

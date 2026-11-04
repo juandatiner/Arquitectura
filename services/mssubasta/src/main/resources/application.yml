@@ -54,3 +54,8 @@ springdoc:
     enabled: false
   swagger-ui:
     enabled: false
+# Logs JSON en consola; el correlationId sale como campo propio
+logging:
+  structured:
+    format:
+      console: logstash
