@@ -12,6 +12,14 @@ docker compose version
 
 Abrir en el firewall los puertos de la tabla de `docs/arquitectura.md`.
 
+`ufw` no filtra los puertos publicados por Docker. Las restricciones de Máquinas 2 y 3 se aplican en `DOCKER-USER`:
+
+```bash
+sudo MAQUINA1_IP=<ip> MAQUINA2_IP=<ip> MAQUINA3_IP=<ip> tools/scripts/firewall-maquina.sh <2|3>
+```
+
+Máquina 1 no lleva reglas: 80, 443 y 5000 son la entrada al sistema.
+
 ## 2. Construir y publicar imágenes (máquina de desarrollo)
 
 ```bash

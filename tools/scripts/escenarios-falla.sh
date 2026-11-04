@@ -189,8 +189,9 @@ escenario_replica() {
     terminada 18
     upstreams_desde "$desde" >"$TRABAJO/upstreams"
     nota "upstreams con la réplica 1 apagada: $(tr -s ' ' <"$TRABAJO/upstreams" | tr '\n' ';')"
-    if grep -q "$ip2" "$TRABAJO/upstreams" && ! grep -q "$ip1" "$TRABAJO/upstreams"; then
-        ok "solo la réplica 2 atendió HTTP"
+    # Cada línea lista los upstream probados; el último es el que respondió (Nginx puede tantear la réplica apagada)
+    if grep -q "$ip2" "$TRABAJO/upstreams" && ! sed -E 's/.*[=, ]//' "$TRABAJO/upstreams" | grep -q "$ip1"; then
+        ok "solo la réplica 2 respondió HTTP"
     else
         fallo "se esperaba solo la réplica 2 ($ip2)"
     fi
