@@ -34,7 +34,10 @@ public class WorkerOutboxSEN {
         this.propiedades = propiedades;
     }
 
-    /** Pasos III.11 (→ RepoOutboxSEN obtenerPendientes) y III.12 (→ q.nuevaSubasta publicar). */
+    /**
+     * Pasos VIII.13b (→ RepoOutboxSEN obtenerPendientes) y VIII.14b (→ q.envioConfirmacion
+     * publicar).
+     */
     @Scheduled(fixedDelayString = "${sso.outbox.intervalo:1s}")
     @Transactional
     public void publicarPendientes() {

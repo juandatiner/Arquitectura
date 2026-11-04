@@ -34,7 +34,10 @@ public class WorkerOutboxSIN {
         this.propiedades = propiedades;
     }
 
-    /** Pasos III.11 (→ RepoOutboxSIN obtenerPendientes) y III.12 (→ q.nuevaSubasta publicar). */
+    /**
+     * Pasos VIII.13a (→ RepoOutboxSIN obtenerPendientes) y VIII.14a (→ q.inventarioConfirmacion
+     * publicar).
+     */
     @Scheduled(fixedDelayString = "${sso.outbox.intervalo:1s}")
     @Transactional
     public void publicarPendientes() {
