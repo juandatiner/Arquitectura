@@ -69,7 +69,7 @@ public class SrvCompraSaga {
                     if (repoCompra.existePorSubasta(evento.idSubasta())) {
                         return;
                     }
-                    Compra compra = repoCompra.crear(evento);
+                    Compra compra = repoCompra.crear(Compra.deSubastaCerrada(evento));
                     repoOutboxCompra.guardar(
                             aviso(
                                     "NotificacionGanador",

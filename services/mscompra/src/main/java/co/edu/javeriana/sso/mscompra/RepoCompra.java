@@ -4,7 +4,6 @@ import co.edu.javeriana.sso.mscompra.config.PropiedadesCompra;
 import co.edu.javeriana.sso.mscompra.modelo.Cliente;
 import co.edu.javeriana.sso.mscompra.modelo.Compra;
 import co.edu.javeriana.sso.mscompra.modelo.EstadoCompra;
-import co.edu.javeriana.sso.mscompra.modelo.SubastaCerrada;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -39,9 +38,9 @@ public class RepoCompra {
                 .single();
     }
 
-    /** Paso V.10a/b: crear(Compra) en estado CREADA con el ganador de la subasta. */
-    public Compra crear(SubastaCerrada evento) {
-        Cliente g = evento.ganador();
+    /** Paso V.10a/b: crear(Compra), en estado CREADA, con el ganador de la subasta. */
+    public Compra crear(Compra compra) {
+        Cliente g = compra.cliente();
         return jdbc.sql(
                         "INSERT INTO compra (numero_compra, id_subasta, id_bien, descripcion, usuario, cedula,"
                                 + " nombre, celular, correo, valor_ofertado, estado)"
@@ -49,15 +48,15 @@ public class RepoCompra {
                                 + " :idSubasta, :idBien, :descripcion, :usuario, :cedula, :nombre, :celular, :correo,"
                                 + " :valor, 'CREADA') RETURNING "
                                 + COLUMNAS)
-                .param("idSubasta", evento.idSubasta())
-                .param("idBien", evento.idBien())
-                .param("descripcion", evento.descripcion())
+                .param("idSubasta", compra.idSubasta())
+                .param("idBien", compra.idBien())
+                .param("descripcion", compra.descripcion())
                 .param("usuario", g.usuario())
                 .param("cedula", g.cedula())
                 .param("nombre", g.nombre())
                 .param("celular", g.celular())
                 .param("correo", g.correo())
-                .param("valor", evento.valor())
+                .param("valor", compra.valorOfertado())
                 .query(RepoCompra::fila)
                 .single();
     }
