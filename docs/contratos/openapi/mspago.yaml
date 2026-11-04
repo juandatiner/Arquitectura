@@ -1,0 +1,105 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSPago.dll
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSPago SERVER :5086."
+servers:
+  - url: "http://10.43.99.45:5086"
+    description: "MSPago SERVER :5086 · MAQUINA 3 · 10.43.99.45"
+paths:
+  "/pagos/reporte":
+    post:
+      operationId: reportarPago
+      summary: WSPagoYoPago.reportarPago
+      description: "Pasos VII.24 (SrvRuteo → WSPagoYoPago reportarPago(cedula, numeroCompra, valorPagado)) y VII.25 (→ SrvPago conciliarPago)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/ReportePago"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ResultadoConciliacion"
+        "400":
+          description: Petición inválida.
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: PagoNoEncontradoException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    ReportePago:
+      type: object
+      required:
+        - cedula
+        - numeroCompra
+        - valorPagado
+      properties:
+        cedula:
+          type: string
+        numeroCompra:
+          type: string
+        valorPagado:
+          type: number
+    ResultadoConciliacion:
+      type: object
+      required:
+        - numeroCompra
+        - resultado
+      properties:
+        numeroCompra:
+          type: string
+        resultado:
+          type: string
+        referenciaPago:
+          type:
+            - string
+            - "null"

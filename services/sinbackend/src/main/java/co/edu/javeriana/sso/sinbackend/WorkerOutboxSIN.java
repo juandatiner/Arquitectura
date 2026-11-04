@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.sinbackend;
 
+import co.edu.javeriana.sso.sinbackend.config.Correlacion;
 import co.edu.javeriana.sso.sinbackend.config.PropiedadesOutbox;
 import co.edu.javeriana.sso.sinbackend.modelo.EventoPendiente;
 import java.nio.charset.StandardCharsets;
@@ -34,7 +35,10 @@ public class WorkerOutboxSIN {
         this.propiedades = propiedades;
     }
 
-    /** Pasos III.11 (→ RepoOutboxSIN obtenerPendientes) y III.12 (→ q.nuevaSubasta publicar). */
+    /**
+     * Pasos VIII.13a (→ RepoOutboxSIN obtenerPendientes) y VIII.14a (→ q.inventarioConfirmacion
+     * publicar).
+     */
     @Scheduled(fixedDelayString = "${sso.outbox.intervalo:1s}")
     @Transactional
     public void publicarPendientes() {
@@ -63,6 +67,7 @@ public class WorkerOutboxSIN {
                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                         .setContentEncoding(StandardCharsets.UTF_8.name())
                         .setMessageId(evento.idEvento().toString())
+                        .setHeader(Correlacion.CABECERA_AMQP, evento.correlationId())
                         .setType(evento.tipo())
                         .setDeliveryMode(
                                 org.springframework.amqp.core.MessageDeliveryMode.PERSISTENT)

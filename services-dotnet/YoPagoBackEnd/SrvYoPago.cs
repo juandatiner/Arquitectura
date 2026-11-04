@@ -4,7 +4,7 @@ using YoPagoBackEnd.modelo;
 namespace YoPagoBackEnd;
 
 /// <summary>Lógica de YoPago: compras SSO pendientes, pago y reporte a SSO.</summary>
-public class SrvYoPago(RepoYoPago repoYoPago, IntegraSSO integraSSO, UnidadDeTrabajo unidad, ILogger<SrvYoPago> log)
+public class SrvYoPago(RepoYoPago repoYoPago, IntegraSSO integraSSO, UnidadDeTrabajo unidad, OpcionesYoPago opciones, ILogger<SrvYoPago> log)
 {
     /// <summary>Pasos VII.8 (WSCompraPendiente → SrvYoPago) y VII.9 (→ RepoYoPago guardarPendiente). Idempotente.</summary>
     public virtual async Task<CompraPendiente> registrarCompraPendiente(string cedula, string numeroCompra, decimal valorTotal)
@@ -60,7 +60,7 @@ public class SrvYoPago(RepoYoPago repoYoPago, IntegraSSO integraSSO, UnidadDeTra
     {
         try
         {
-            var respuesta = await integraSSO.reportarPago(cedula, numeroCompra, valorPagado);
+            var respuesta = await integraSSO.reportarPago(cedula, numeroCompra, valorPagado, opciones.CredencialSso);
             await repoYoPago.registrarReporte(numeroCompra, respuesta.Resultado);
             await unidad.Confirmar();
             return ("REPORTADO", respuesta.Resultado);

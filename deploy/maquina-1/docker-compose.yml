@@ -1,0 +1,90 @@
+# MAQUINA 1 (DMZ): entrada pública y presentación. Nodos del diagrama «Arquitectura Integrada JavaEE-.NET».
+# La IP de cada máquina llega por deploy/maquina-1/.env (ver .env.example y deploy/README.md).
+# Puertos publicados: 80 y 443 (navegador e IntegraSSO de Máquina 3) y 5000 (navegador).
+# APIGateway :8080, SSOWeb :80 y la entrada :8085 del balanceador solo se usan dentro de esta máquina.
+
+name: sso-maquina-1
+
+x-servicio: &servicio
+  platform: linux/amd64
+  restart: unless-stopped
+  mem_limit: ${MEMORIA_MS:?Falta MEMORIA_MS en deploy/maquina-1/.env}
+
+services:
+  # BALANCEADOR DE CARGAS :80 (Nginx). Upstream msCompra least_conn → réplica 1 (Máquina 2) y réplica 2 (Máquina 3)
+  balanceador:
+    <<: *servicio
+    image: nginx:1.29-alpine
+    mem_limit: ${MEMORIA_BALANCEADOR:?Falta MEMORIA_BALANCEADOR en deploy/maquina-1/.env}
+    environment:
+      SSOWEB: ssoweb:80
+      APIGATEWAY: apigateway:8080
+      MSCOMPRA_REPLICA1: ${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-1/.env}:8085
+      MSCOMPRA_REPLICA2: ${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-1/.env}:8085
+      RESOLVER: 127.0.0.11
+    volumes:
+      - ../balanceador/templates:/etc/nginx/templates:ro
+      - ../secretos/balanceador.crt:/etc/nginx/tls/balanceador.crt:ro
+      - ../secretos/balanceador.key:/etc/nginx/tls/balanceador.key:ro
+    ports:
+      - "80:80"
+      - "443:443"
+    healthcheck:
+      test: ["CMD", "wget", "-qO", "/dev/null", "http://127.0.0.1/"]
+      interval: 10s
+      retries: 10
+    depends_on:
+      apigateway:
+        condition: service_started
+      ssoweb:
+        condition: service_healthy
+
+  # SSOWeb SERVER :80 · SSOWeb.zip (Angular servido por Nginx). Health check en la imagen
+  ssoweb:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-1/.env}/sso-ssoweb:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-1/.env}
+    mem_limit: ${MEMORIA_BALANCEADOR:?Falta MEMORIA_BALANCEADOR en deploy/maquina-1/.env}
+    build:
+      context: ../../frontend/sso-web
+
+  # APIGATEWAY SERVER :8080 · APIGateway.jar. Health check en la imagen
+  apigateway:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-1/.env}/sso-apigateway:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-1/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: apigateway
+        ARTEFACTO: APIGateway
+        PUERTO: 8080
+    environment:
+      RUTA_MSACCESO: http://${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-1/.env}:8081
+      RUTA_MSCATALOGO: http://${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-1/.env}:8082
+      RUTA_MSSUBASTA: http://${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-1/.env}:8083
+      RUTA_MSSUSCRIPCION: http://${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-1/.env}:8084
+      RUTA_BALANCEADOR_COMPRA: http://balanceador:8085
+      RUTA_MSPAGO: http://${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-1/.env}:5086
+      TOKEN_CLAVE_PUBLICA: /run/secrets/token_publica
+      CREDENCIAL_YOPAGO: ${CREDENCIAL_YOPAGO:?Falta CREDENCIAL_YOPAGO en deploy/maquina-1/.env}
+    secrets:
+      - token_publica
+
+  # YoPagoWeb SERVER :5000 · YoPagoFrontEnd.dll (Kestrel .NET 8, MVC con Razor). Health check en la imagen
+  yopagofrontend:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-1/.env}/sso-yopagofrontend:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-1/.env}
+    build:
+      context: ../../services-dotnet
+      dockerfile: Dockerfile
+      args:
+        PROYECTO: YoPagoFrontEnd
+        PUERTO: 5000
+    environment:
+      RUTA_YOPAGO: http://${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-1/.env}:5001
+    ports:
+      - "5000:5000"
+
+secrets:
+  token_publica:
+    file: ../secretos/token_publica.pem

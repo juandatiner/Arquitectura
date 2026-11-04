@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 using YoPagoFrontEnd;
 using YoPagoFrontEnd.modelo;
@@ -35,13 +36,54 @@ public sealed partial class PantallaWebYoPagoTest : IDisposable
             ["__RequestVerificationToken"] = Token(formulario),
             ["cedula"] = "1010",
             ["clave"] = "Pago2026*",
-            ["compra"] = "C-1",
+            ["numeroCompra"] = "C-1",
         }));
 
         respuesta.EnsureSuccessStatusCode();
         var pendientes = await respuesta.Content.ReadAsStringAsync();
+        Assert.Contains("name=\"numeroCompra\" value=\"C-1\"", formulario, StringComparison.Ordinal);
         Assert.Contains("Compra C-1", pendientes, StringComparison.Ordinal);
+        Assert.Contains("compra resaltada", pendientes, StringComparison.Ordinal);
         Assert.NotEmpty(Token(pendientes));
+    }
+
+    [Fact]
+    public async Task ConClaveIncorrectaVuelveAlIngresoConLaCompraYNoMuestraCompras()
+    {
+        proxy.consultarCompraPendiente("1010", "mala", null)
+            .ThrowsAsync(new RespuestaYoPagoException(401, "Cédula o contraseña incorrectas"));
+        using var cliente = fabrica.CreateClient();
+
+        var formulario = await cliente.GetStringAsync("/?compra=C-1");
+        using var respuesta = await cliente.PostAsync("/consultar", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = Token(formulario),
+            ["cedula"] = "1010",
+            ["clave"] = "mala",
+            ["numeroCompra"] = "C-1",
+        }));
+
+        var pagina = await respuesta.Content.ReadAsStringAsync();
+        Assert.Contains("Ingrese a YoPago", pagina, StringComparison.Ordinal);
+        Assert.Contains("name=\"numeroCompra\" value=\"C-1\"", pagina, StringComparison.Ordinal);
+        Assert.DoesNotContain("Compras SSO", pagina, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task SinCredencialesElProxyRecibeNulosYElBackEndDecide()
+    {
+        proxy.consultarCompraPendiente(default!, default!, default)
+            .ThrowsAsyncForAnyArgs(new RespuestaYoPagoException(400, "Datos incompletos"));
+        using var cliente = fabrica.CreateClient();
+
+        var formulario = await cliente.GetStringAsync("/");
+        using var respuesta = await cliente.PostAsync("/consultar", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["__RequestVerificationToken"] = Token(formulario),
+        }));
+
+        Assert.Contains("Ingrese a YoPago", await respuesta.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+        await proxy.Received(1).consultarCompraPendiente(null!, null!, null);
     }
 
     [Fact]

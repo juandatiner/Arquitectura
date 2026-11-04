@@ -1,0 +1,6 @@
+# Perfil dev: publica /v3/api-docs y /swagger-ui.html en el puerto del servicio. Nunca en las VM.
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true

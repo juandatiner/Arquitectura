@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.mssubasta;
 
+import co.edu.javeriana.sso.mssubasta.config.Correlacion;
 import co.edu.javeriana.sso.mssubasta.config.PropiedadesOutbox;
 import co.edu.javeriana.sso.mssubasta.modelo.EventoPendiente;
 import java.nio.charset.StandardCharsets;
@@ -69,6 +70,7 @@ public class WorkerOutboxSubasta {
                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                         .setContentEncoding(StandardCharsets.UTF_8.name())
                         .setMessageId(evento.idEvento().toString())
+                        .setHeader(Correlacion.CABECERA_AMQP, evento.correlationId())
                         .setType(evento.tipo())
                         .setDeliveryMode(
                                 org.springframework.amqp.core.MessageDeliveryMode.PERSISTENT)

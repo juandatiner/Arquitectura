@@ -2,7 +2,6 @@ package co.edu.javeriana.sso.mssuscripcion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -10,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.edu.javeriana.sso.mssuscripcion.config.PropiedadesSuscripcion;
+import co.edu.javeriana.sso.mssuscripcion.modelo.BienLiberadoConfirmado;
 import co.edu.javeriana.sso.mssuscripcion.modelo.Cliente;
 import co.edu.javeriana.sso.mssuscripcion.modelo.EstadoSuscripcion;
 import co.edu.javeriana.sso.mssuscripcion.modelo.EventoSubasta;
@@ -43,14 +43,32 @@ class SrvSuscripcionTest {
                 Instant.now());
     }
 
+    /** Pasos X.6c, X.7c, X.8c. */
+    @Test
+    void liberarBienSoloRegistraConfirmacionSiCambioElEstado() {
+        when(repo.liberarSiAdjudicada("SUB-1")).thenReturn(true, false);
+
+        srv.liberarBien("SUB-1", "pago rechazado");
+        srv.liberarBien("SUB-1", "pago rechazado");
+
+        ArgumentCaptor<BienLiberadoConfirmado> evento =
+                ArgumentCaptor.forClass(BienLiberadoConfirmado.class);
+        verify(outbox).guardar(evento.capture());
+        assertThat(evento.getValue().idSubasta()).isEqualTo("SUB-1");
+        assertThat(evento.getValue().motivo()).isEqualTo("pago rechazado");
+        assertThat(evento.getValue().cola()).isNull();
+    }
+
     @Test
     void nuevaSubastaAvisaUnaVezACadaSuscriptorDeLaCategoriaODeTodas() {
-        when(repo.buscarSuscriptores(eq(TipoSuscripcion.NUEVAS_SUBASTAS), any()))
+        when(repo.buscarSuscriptores())
                 .thenReturn(
                         List.of(
                                 suscripcion("1", TipoSuscripcion.NUEVAS_SUBASTAS, "TODAS"),
                                 suscripcion("2", TipoSuscripcion.NUEVAS_SUBASTAS, "VEHICULOS"),
-                                suscripcion("1", TipoSuscripcion.NUEVAS_SUBASTAS, "VEHICULOS")));
+                                suscripcion("1", TipoSuscripcion.NUEVAS_SUBASTAS, "VEHICULOS"),
+                                suscripcion("3", TipoSuscripcion.NUEVAS_SUBASTAS, "INMUEBLES"),
+                                suscripcion("4", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1")));
 
         srv.procesarEvento(
                 new EventoSubasta.NuevaSubasta(
@@ -75,11 +93,13 @@ class SrvSuscripcionTest {
 
     @Test
     void cambioDeOfertaMayorAvisaPorSmsSinAvisarAlQueOferto() {
-        when(repo.buscarSuscriptores(TipoSuscripcion.CAMBIOS_OFERTA, List.of("SUB-1")))
+        when(repo.buscarSuscriptores())
                 .thenReturn(
                         List.of(
                                 suscripcion("1", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1"),
-                                suscripcion("2", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1")));
+                                suscripcion("2", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1"),
+                                suscripcion("3", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-2"),
+                                suscripcion("4", TipoSuscripcion.NUEVAS_SUBASTAS, "TODAS")));
 
         srv.procesarEvento(
                 new EventoSubasta.CambioOfertaMayor(

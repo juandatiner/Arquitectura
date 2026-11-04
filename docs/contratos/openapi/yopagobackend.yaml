@@ -1,0 +1,248 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: YoPagoBackEnd.dll
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: YoPago SERVER :5001."
+servers:
+  - url: "http://10.43.99.45:5001"
+    description: "YoPago SERVER :5001 · MAQUINA 3 · 10.43.99.45"
+paths:
+  "/compras-pendientes":
+    post:
+      operationId: registrarCompraPendiente
+      summary: WSCompraPendiente.registrarCompraPendiente
+      description: "Pasos VII.7 (IntegraYoPago → WSCompraPendiente registrarCompraPendiente) y VII.8 (→ SrvYoPago)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudPendiente"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/CompraPendiente"
+        "400":
+          description: Petición inválida.
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/compras-pendientes/consulta":
+    post:
+      operationId: consultarCompraPendiente
+      summary: WSCompraPendiente.consultarCompraPendiente
+      description: "Paso VII.16 (ProxyWSYoPagoWeb → WSCompraPendiente consultarCompraPendiente): las compras SSO pendientes del cliente."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/Consulta"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  "$ref": "#/components/schemas/CompraPendiente"
+        "400":
+          description: Petición inválida.
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "401":
+          description: CredencialesInvalidasException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/compras-pendientes/{numeroCompra}/pagar":
+    post:
+      operationId: pagar
+      summary: WSCompraPendiente.pagar
+      description: "Pasos VII.16 (ProxyWSYoPagoWeb → WSCompraPendiente pagar) y VII.17 (→ SrvYoPago pagar(numeroCompra, datosPago))."
+      security: []
+      parameters:
+        - name: numeroCompra
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/DatosPago"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ResultadoPago"
+        "400":
+          description: Petición inválida.
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "401":
+          description: CredencialesInvalidasException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "404":
+          description: CompraNoEncontradaException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "409":
+          description: CompraYaPagadaException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    CompraPendiente:
+      type: object
+      required:
+        - numeroCompra
+        - cedula
+        - valorTotal
+        - estado
+      properties:
+        numeroCompra:
+          type: string
+        cedula:
+          type: string
+        valorTotal:
+          type: number
+        estado:
+          type: string
+        referencia:
+          type:
+            - string
+            - "null"
+        reporte:
+          type:
+            - string
+            - "null"
+        resultadoSso:
+          type:
+            - string
+            - "null"
+    Consulta:
+      type: object
+      required:
+        - cedula
+        - clave
+      properties:
+        cedula:
+          type: string
+        clave:
+          type: string
+        numeroCompra:
+          type:
+            - string
+            - "null"
+    DatosPago:
+      type: object
+      required:
+        - cedula
+        - clave
+        - medio
+        - titular
+      properties:
+        cedula:
+          type: string
+        clave:
+          type: string
+        medio:
+          type: string
+        titular:
+          type: string
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    ResultadoPago:
+      type: object
+      required:
+        - numeroCompra
+        - estado
+        - referencia
+        - valorPagado
+        - reporte
+      properties:
+        numeroCompra:
+          type: string
+        estado:
+          type: string
+        referencia:
+          type: string
+        valorPagado:
+          type: number
+        reporte:
+          type: string
+        resultadoSso:
+          type:
+            - string
+            - "null"
+    SolicitudPendiente:
+      type: object
+      required:
+        - cedula
+        - numeroCompra
+        - valorTotal
+      properties:
+        cedula:
+          type: string
+        numeroCompra:
+          type: string
+        valorTotal:
+          type: number

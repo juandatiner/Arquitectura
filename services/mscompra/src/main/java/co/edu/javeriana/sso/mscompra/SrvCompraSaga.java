@@ -69,7 +69,7 @@ public class SrvCompraSaga {
                     if (repoCompra.existePorSubasta(evento.idSubasta())) {
                         return;
                     }
-                    Compra compra = repoCompra.crear(evento);
+                    Compra compra = repoCompra.crear(Compra.deSubastaCerrada(evento));
                     repoOutboxCompra.guardar(
                             aviso(
                                     "NotificacionGanador",
@@ -129,9 +129,7 @@ public class SrvCompraSaga {
      * respuesta.
      */
     public void validarComprasPendientes() {
-        List<Compra> pendientes =
-                repoCompra.tomarPendientesValidacion(
-                        propiedades.tamanoLote(), propiedades.reservaValidacion());
+        List<Compra> pendientes = repoCompra.tomarPendientesValidacion(propiedades.tamanoLote());
         for (Compra compra : pendientes) {
             EstadoOFAC resultado;
             try {

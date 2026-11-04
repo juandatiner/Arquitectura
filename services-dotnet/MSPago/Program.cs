@@ -5,6 +5,7 @@ using RabbitMQ.Client;
 
 // Componente MSPago.dll · nodo MSPago SERVER :5086 (Kestrel .NET 8) · Máquina 3 · 10.43.99.45
 var builder = WebApplication.CreateBuilder(args);
+builder.AgregarTrazabilidad();
 
 var cadena = new NpgsqlConnectionStringBuilder
 {
@@ -45,6 +46,7 @@ builder.Services.AddControllers();
 builder.Services.AddProblemDetails();
 
 var app = builder.Build();
+app.UsarTrazabilidad();
 Migraciones.Aplicar(cadena);
 app.UseExceptionHandler(errores => errores.Run(async contexto =>
 {

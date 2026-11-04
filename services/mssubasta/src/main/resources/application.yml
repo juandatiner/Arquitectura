@@ -4,6 +4,10 @@ server:
   port: 8083
 
 spring:
+  web:
+    resources:
+      # Sin esto, /webjars/** serviría los archivos de Swagger UI aunque esté desactivado
+      add-mappings: false
   application:
     name: MSSubasta
   datasource:
@@ -42,3 +46,16 @@ management:
     health:
       probes:
         enabled: true
+
+# OpenAPI y Swagger UI cerrados: esta API no tiene autenticación propia en el puerto del servicio.
+# Solo se abren con el perfil dev (application-dev.yml), que ningún despliegue de máquina activa.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+# Logs JSON en consola; el correlationId sale como campo propio
+logging:
+  structured:
+    format:
+      console: logstash

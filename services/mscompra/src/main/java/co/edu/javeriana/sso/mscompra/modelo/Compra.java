@@ -14,4 +14,20 @@ public record Compra(
         EstadoCompra estado,
         String motivo,
         int intentosOfac,
-        Instant creadaEn) {}
+        Instant creadaEn) {
+
+    /** Compra CREADA de una subasta adjudicada; la base asigna el número y la fecha (V.10a/b). */
+    public static Compra deSubastaCerrada(SubastaCerrada evento) {
+        return new Compra(
+                null,
+                evento.idSubasta(),
+                evento.idBien(),
+                evento.descripcion(),
+                evento.ganador(),
+                evento.valor(),
+                EstadoCompra.CREADA,
+                null,
+                0,
+                null);
+    }
+}

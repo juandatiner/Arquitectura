@@ -120,8 +120,10 @@ public class SrvSuscripcion {
             }
             case EventoSubasta.CambioOfertaMayor e -> {
                 for (Suscripcion s :
-                        repoSuscripcion.buscarSuscriptores(
-                                TipoSuscripcion.CAMBIOS_OFERTA, List.of(e.idSubasta()))) {
+                        delTipo(
+                                repoSuscripcion.buscarSuscriptores(),
+                                TipoSuscripcion.CAMBIOS_OFERTA,
+                                List.of(e.idSubasta()))) {
                     if (s.cliente().cedula().equals(e.cliente().cedula())) {
                         continue;
                     }
@@ -164,15 +166,22 @@ public class SrvSuscripcion {
         if (categoria != null) {
             valores.add(categoria);
         }
-        repoSuscripcion
-                .buscarSuscriptores(TipoSuscripcion.NUEVAS_SUBASTAS, valores)
+        List<Suscripcion> activas = repoSuscripcion.buscarSuscriptores();
+        delTipo(activas, TipoSuscripcion.NUEVAS_SUBASTAS, valores)
                 .forEach(s -> porCedula.putIfAbsent(s.cliente().cedula(), s));
         if (idSubasta != null) {
-            repoSuscripcion
-                    .buscarSuscriptores(TipoSuscripcion.CAMBIOS_OFERTA, List.of(idSubasta))
+            delTipo(activas, TipoSuscripcion.CAMBIOS_OFERTA, List.of(idSubasta))
                     .forEach(s -> porCedula.putIfAbsent(s.cliente().cedula(), s));
         }
         return List.copyOf(porCedula.values());
+    }
+
+    /** Las suscripciones de un tipo para alguno de los valores, en el orden recibido. */
+    private static List<Suscripcion> delTipo(
+            List<Suscripcion> activas, TipoSuscripcion tipo, List<String> valores) {
+        return activas.stream()
+                .filter(s -> s.tipo() == tipo && valores.contains(s.valor()))
+                .toList();
     }
 
     private void avisar(

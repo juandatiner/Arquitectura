@@ -1,8 +1,10 @@
 package co.edu.javeriana.sso.apigateway;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -17,14 +19,20 @@ import java.security.KeyPairGenerator;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.system.CapturedOutput;
+import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,6 +56,7 @@ import org.springframework.test.web.servlet.MockMvc;
 class APIGatewayIT {
 
     static final AtomicReference<String> RECIBIDO = new AtomicReference<>();
+    static final AtomicReference<String> CORRELACION_RECIBIDA = new AtomicReference<>();
     static final HttpServer INTERNO;
     static final KeyPair CLAVES;
 
@@ -57,6 +66,8 @@ class APIGatewayIT {
             INTERNO.createContext(
                     "/",
                     intercambio -> {
+                        CORRELACION_RECIBIDA.set(
+                                intercambio.getRequestHeaders().getFirst("X-Correlation-Id"));
                         RECIBIDO.set(
                                 intercambio.getRequestMethod()
                                         + " "
@@ -154,6 +165,44 @@ class APIGatewayIT {
     }
 
     @Test
+    @ExtendWith(OutputCaptureExtension.class)
+    void elCorrelationIdPasaEnCabeceraSinTocarElCuerpoYSaleEnElLogJson(CapturedOutput salida)
+            throws Exception {
+        mvc.perform(
+                        post("/api/acceso/login")
+                                .header("X-Correlation-Id", "desde-nginx-1")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"usuario\":\"cliente1\",\"clave\":\"Cliente1*\"}"))
+                .andExpect(status().isAccepted())
+                .andExpect(header().string("X-Correlation-Id", "desde-nginx-1"));
+
+        assertThat(CORRELACION_RECIBIDA).hasValue("desde-nginx-1");
+        assertThat(RECIBIDO.get())
+                .isEqualTo("POST /acceso/login {\"usuario\":\"cliente1\",\"clave\":\"Cliente1*\"}");
+        assertThat(salida.getOut())
+                .contains("\"correlationId\":\"desde-nginx-1\"")
+                .contains("\"ruta\":\"/api/acceso/login\"")
+                .doesNotContain("Cliente1*");
+    }
+
+    @Test
+    void sinCorrelationIdElGatewayCreaUnoYLoEnviaAlComponente() throws Exception {
+        String creado =
+                mvc.perform(
+                                post("/api/subastas/S-7/ofertas")
+                                        .header(HttpHeaders.AUTHORIZATION, token())
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"valor\":1}"))
+                        .andExpect(status().isAccepted())
+                        .andReturn()
+                        .getResponse()
+                        .getHeader("X-Correlation-Id");
+
+        assertThat(creado).isNotBlank();
+        assertThat(CORRELACION_RECIBIDA).hasValue(creado);
+    }
+
+    @Test
     void sinTokenDevuelve401() throws Exception {
         mvc.perform(post("/api/compras/C-42/iniciar")).andExpect(status().isUnauthorized());
     }
@@ -169,5 +218,36 @@ class APIGatewayIT {
                 .andExpect(
                         jsonPath("$.detail")
                                 .value("MSSuscripcion no está disponible en este momento"));
+    }
+
+    /** La documentación de la API no existe fuera del perfil dev (#25). */
+    @Test
+    void sinPerfilDevLaDocumentacionDeLaApiNoExiste() throws Exception {
+        for (String ruta :
+                List.of(
+                        "/v3/api-docs",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/webjars/swagger-ui/index.html")) {
+            mvc.perform(get(ruta)).andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @ActiveProfiles("dev")
+    class ConPerfilDev {
+
+        @Autowired MockMvc mvcDev;
+
+        @Test
+        void publicaOpenApiYSwaggerUi() throws Exception {
+            mvcDev.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paths['/api/acceso/login']").exists())
+                    .andExpect(
+                            jsonPath("$.paths['/api/catalogo'].get.parameters[?(@.name=='texto')]")
+                                    .exists());
+            mvcDev.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+        }
     }
 }

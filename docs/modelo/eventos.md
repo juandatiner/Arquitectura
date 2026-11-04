@@ -1,7 +1,7 @@
 # Contratos de eventos (colas `q.*`)
 
 Cada evento viaja como JSON UTF-8 en el exchange fanout con el nombre exacto de la cola del diagrama.
-Propiedades AMQP: `message_id` = `idEvento` (para idempotencia), `type` = nombre del evento, `content_type` = `application/json`, persistente.
+Propiedades AMQP: `message_id` = `idEvento` (para idempotencia), `type` = nombre del evento, `content_type` = `application/json`, persistente. Cabecera AMQP `correlationId` para la trazabilidad (observación 19); nunca va en el cuerpo.
 Los campos van en el orden en que se declaran aquí. Fechas en ISO-8601 UTC. Montos con punto decimal.
 
 | Cola | Evento | Productor (paso) | Consumidor (paso) | Campos |
@@ -25,4 +25,4 @@ Eventos sin cola (se guardan en el outbox con estado `REGISTRADO`, observación 
 
 `cliente`, `anterior` y `ganador` = `{usuario, cedula, nombre, celular, correo, rol}` (identidad tomada del token).
 
-Este documento crece con cada componente.
+Este documento crece con cada componente. El esquema formal de cada evento y sus ejemplos están en [`docs/contratos/`](../contratos/README.md).

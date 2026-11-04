@@ -1,0 +1,850 @@
+# Generado: no editar a mano.
+asyncapi: "3.0.0"
+info:
+  title: Eventos SSO
+  version: "1.0.0"
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Explicación de cada evento y sus pasos: docs/modelo/eventos.md."
+defaultContentType: application/json
+servers:
+  mom:
+    host: "10.43.100.238:5672"
+    protocol: amqp
+    description: "MOM SERVER :5672"
+channels:
+  LiberarBienSubasta:
+    address: q.LiberarBienSubasta
+    description: "Exchange fanout q.LiberarBienSubasta, ligado a: q.LiberarBienSubasta.catalogo, q.LiberarBienSubasta.subasta, q.LiberarBienSubasta.suscripcion. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      BienLiberado:
+        "$ref": "#/components/messages/BienLiberado"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.LiberarBienSubasta
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  cambioOfertaMayor:
+    address: q.cambioOfertaMayor
+    description: "Exchange fanout q.cambioOfertaMayor, ligado a: q.cambioOfertaMayor. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      CambioOfertaMayor:
+        "$ref": "#/components/messages/CambioOfertaMayor"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.cambioOfertaMayor
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  despachoConfirmado:
+    address: q.despachoConfirmado
+    description: "Exchange fanout q.despachoConfirmado, ligado a: q.despachoConfirmado. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      DespachoConfirmado:
+        "$ref": "#/components/messages/DespachoConfirmado"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.despachoConfirmado
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  despachoSolicitud:
+    address: q.despachoSolicitud
+    description: "Exchange fanout q.despachoSolicitud, ligado a: q.despachoSolicitud. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      DespachoSolicitud:
+        "$ref": "#/components/messages/DespachoSolicitud"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.despachoSolicitud
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  envioConfirmacion:
+    address: q.envioConfirmacion
+    description: "Exchange fanout q.envioConfirmacion, ligado a: q.envioConfirmacion. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      EnvioConfirmado:
+        "$ref": "#/components/messages/EnvioConfirmado"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.envioConfirmacion
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  envioSolicitud:
+    address: q.envioSolicitud
+    description: "Exchange fanout q.envioSolicitud, ligado a: q.envioSolicitud. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      SolicitudEnvio:
+        "$ref": "#/components/messages/SolicitudEnvio"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.envioSolicitud
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  inventarioConfirmacion:
+    address: q.inventarioConfirmacion
+    description: "Exchange fanout q.inventarioConfirmacion, ligado a: q.inventarioConfirmacion. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      InventarioConfirmado:
+        "$ref": "#/components/messages/InventarioConfirmado"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.inventarioConfirmacion
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  inventarioSolicitud:
+    address: q.inventarioSolicitud
+    description: "Exchange fanout q.inventarioSolicitud, ligado a: q.inventarioSolicitud. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      SolicitudInventario:
+        "$ref": "#/components/messages/SolicitudInventario"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.inventarioSolicitud
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  notificacion:
+    address: q.notificacion
+    description: "Exchange fanout q.notificacion, ligado a: q.notificacion. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      NotificacionSuscripcion:
+        "$ref": "#/components/messages/NotificacionSuscripcion"
+      NotificacionCompra:
+        "$ref": "#/components/messages/NotificacionCompra"
+      NotificacionPago:
+        "$ref": "#/components/messages/NotificacionPago"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.notificacion
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  nuevaSubasta:
+    address: q.nuevaSubasta
+    description: "Exchange fanout q.nuevaSubasta, ligado a: q.nuevaSubasta. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      NuevaSubasta:
+        "$ref": "#/components/messages/NuevaSubasta"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.nuevaSubasta
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  pagoConfirmado:
+    address: q.pagoConfirmado
+    description: "Exchange fanout q.pagoConfirmado, ligado a: q.pagoConfirmado. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      PagoConfirmado:
+        "$ref": "#/components/messages/PagoConfirmado"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.pagoConfirmado
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  pagoSolicitud:
+    address: q.pagoSolicitud
+    description: "Exchange fanout q.pagoSolicitud, ligado a: q.pagoSolicitud. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      PagoSolicitud:
+        "$ref": "#/components/messages/PagoSolicitud"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.pagoSolicitud
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  subastaCerrada:
+    address: q.subastaCerrada
+    description: "Exchange fanout q.subastaCerrada, ligado a: q.subastaCerrada. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      SubastaCerrada:
+        "$ref": "#/components/messages/SubastaCerrada"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.subastaCerrada
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+  subastaIniciada:
+    address: q.subastaIniciada
+    description: "Exchange fanout q.subastaIniciada, ligado a: q.subastaIniciada. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    messages:
+      SubastaIniciada:
+        "$ref": "#/components/messages/SubastaIniciada"
+    bindings:
+      amqp:
+        is: routingKey
+        bindingVersion: "0.3.0"
+        exchange:
+          name: q.subastaIniciada
+          type: fanout
+          durable: true
+          autoDelete: false
+          vhost: "/"
+operations:
+  WorkerOutboxCompra_LiberarBienSubasta:
+    action: send
+    channel:
+      "$ref": "#/channels/LiberarBienSubasta"
+    summary: WorkerOutboxCompra publica en q.LiberarBienSubasta
+    messages:
+      - "$ref": "#/channels/LiberarBienSubasta/messages/BienLiberado"
+  ListenerLiberarBienCat_LiberarBienSubasta_catalogo:
+    action: receive
+    channel:
+      "$ref": "#/channels/LiberarBienSubasta"
+    summary: "ListenerLiberarBienCat (MSCatalogo.jar) consume la cola q.LiberarBienSubasta.catalogo"
+  ListenerLiberarBienSub_LiberarBienSubasta_subasta:
+    action: receive
+    channel:
+      "$ref": "#/channels/LiberarBienSubasta"
+    summary: "ListenerLiberarBienSub (MSSubasta.jar) consume la cola q.LiberarBienSubasta.subasta"
+  ListenerLiberarBienSus_LiberarBienSubasta_suscripcion:
+    action: receive
+    channel:
+      "$ref": "#/channels/LiberarBienSubasta"
+    summary: "ListenerLiberarBienSus (MSSuscripcion.jar) consume la cola q.LiberarBienSubasta.suscripcion"
+  WorkerOutboxSubasta_cambioOfertaMayor:
+    action: send
+    channel:
+      "$ref": "#/channels/cambioOfertaMayor"
+    summary: WorkerOutboxSubasta publica en q.cambioOfertaMayor
+    messages:
+      - "$ref": "#/channels/cambioOfertaMayor/messages/CambioOfertaMayor"
+  ListenerEventoSubasta_cambioOfertaMayor:
+    action: receive
+    channel:
+      "$ref": "#/channels/cambioOfertaMayor"
+    summary: "ListenerEventoSubasta (MSSuscripcion.jar) consume la cola q.cambioOfertaMayor"
+  WorkerOutboxDespacho_despachoConfirmado:
+    action: send
+    channel:
+      "$ref": "#/channels/despachoConfirmado"
+    summary: WorkerOutboxDespacho publica en q.despachoConfirmado
+    messages:
+      - "$ref": "#/channels/despachoConfirmado/messages/DespachoConfirmado"
+  ListenerConfDespacho_despachoConfirmado:
+    action: receive
+    channel:
+      "$ref": "#/channels/despachoConfirmado"
+    summary: "ListenerConfDespacho (MSCompra.jar) consume la cola q.despachoConfirmado"
+  WorkerOutboxCompra_despachoSolicitud:
+    action: send
+    channel:
+      "$ref": "#/channels/despachoSolicitud"
+    summary: WorkerOutboxCompra publica en q.despachoSolicitud
+    messages:
+      - "$ref": "#/channels/despachoSolicitud/messages/DespachoSolicitud"
+  ListenerDespachoSolicitud_despachoSolicitud:
+    action: receive
+    channel:
+      "$ref": "#/channels/despachoSolicitud"
+    summary: "ListenerDespachoSolicitud (MSDespacho.jar) consume la cola q.despachoSolicitud"
+  WorkerOutboxSEN_envioConfirmacion:
+    action: send
+    channel:
+      "$ref": "#/channels/envioConfirmacion"
+    summary: WorkerOutboxSEN publica en q.envioConfirmacion
+    messages:
+      - "$ref": "#/channels/envioConfirmacion/messages/EnvioConfirmado"
+  ListenerConfEnvio_envioConfirmacion:
+    action: receive
+    channel:
+      "$ref": "#/channels/envioConfirmacion"
+    summary: "ListenerConfEnvio (MSDespacho.jar) consume la cola q.envioConfirmacion"
+  WorkerOutboxDespacho_envioSolicitud:
+    action: send
+    channel:
+      "$ref": "#/channels/envioSolicitud"
+    summary: WorkerOutboxDespacho publica en q.envioSolicitud
+    messages:
+      - "$ref": "#/channels/envioSolicitud/messages/SolicitudEnvio"
+  ListenerEnvio_envioSolicitud:
+    action: receive
+    channel:
+      "$ref": "#/channels/envioSolicitud"
+    summary: "ListenerEnvio (SENBackEnd.jar) consume la cola q.envioSolicitud"
+  WorkerOutboxSIN_inventarioConfirmacion:
+    action: send
+    channel:
+      "$ref": "#/channels/inventarioConfirmacion"
+    summary: WorkerOutboxSIN publica en q.inventarioConfirmacion
+    messages:
+      - "$ref": "#/channels/inventarioConfirmacion/messages/InventarioConfirmado"
+  ListenerConfInventario_inventarioConfirmacion:
+    action: receive
+    channel:
+      "$ref": "#/channels/inventarioConfirmacion"
+    summary: "ListenerConfInventario (MSDespacho.jar) consume la cola q.inventarioConfirmacion"
+  WorkerOutboxDespacho_inventarioSolicitud:
+    action: send
+    channel:
+      "$ref": "#/channels/inventarioSolicitud"
+    summary: WorkerOutboxDespacho publica en q.inventarioSolicitud
+    messages:
+      - "$ref": "#/channels/inventarioSolicitud/messages/SolicitudInventario"
+  ListenerInventario_inventarioSolicitud:
+    action: receive
+    channel:
+      "$ref": "#/channels/inventarioSolicitud"
+    summary: "ListenerInventario (SINBackEnd.jar) consume la cola q.inventarioSolicitud"
+  WorkerOutboxCompra_notificacion:
+    action: send
+    channel:
+      "$ref": "#/channels/notificacion"
+    summary: WorkerOutboxCompra publica en q.notificacion
+    messages:
+      - "$ref": "#/channels/notificacion/messages/NotificacionCompra"
+  WorkerOutboxPago_notificacion:
+    action: send
+    channel:
+      "$ref": "#/channels/notificacion"
+    summary: WorkerOutboxPago publica en q.notificacion
+    messages:
+      - "$ref": "#/channels/notificacion/messages/NotificacionPago"
+  WorkerOutboxSuscripcion_notificacion:
+    action: send
+    channel:
+      "$ref": "#/channels/notificacion"
+    summary: WorkerOutboxSuscripcion publica en q.notificacion
+    messages:
+      - "$ref": "#/channels/notificacion/messages/NotificacionSuscripcion"
+  ListenerNotificar_notificacion:
+    action: receive
+    channel:
+      "$ref": "#/channels/notificacion"
+    summary: "ListenerNotificar (MSNotificacion.jar) consume la cola q.notificacion"
+  WorkerOutboxCatalogo_nuevaSubasta:
+    action: send
+    channel:
+      "$ref": "#/channels/nuevaSubasta"
+    summary: WorkerOutboxCatalogo publica en q.nuevaSubasta
+    messages:
+      - "$ref": "#/channels/nuevaSubasta/messages/NuevaSubasta"
+  ListenerEventoSubasta_nuevaSubasta:
+    action: receive
+    channel:
+      "$ref": "#/channels/nuevaSubasta"
+    summary: "ListenerEventoSubasta (MSSuscripcion.jar) consume la cola q.nuevaSubasta"
+  WorkerOutboxPago_pagoConfirmado:
+    action: send
+    channel:
+      "$ref": "#/channels/pagoConfirmado"
+    summary: WorkerOutboxPago publica en q.pagoConfirmado
+    messages:
+      - "$ref": "#/channels/pagoConfirmado/messages/PagoConfirmado"
+  ListenerPago_pagoConfirmado:
+    action: receive
+    channel:
+      "$ref": "#/channels/pagoConfirmado"
+    summary: "ListenerPago (MSCompra.jar) consume la cola q.pagoConfirmado"
+  WorkerOutboxCompra_pagoSolicitud:
+    action: send
+    channel:
+      "$ref": "#/channels/pagoSolicitud"
+    summary: WorkerOutboxCompra publica en q.pagoSolicitud
+    messages:
+      - "$ref": "#/channels/pagoSolicitud/messages/PagoSolicitud"
+  ListenerPagoSolicitud_pagoSolicitud:
+    action: receive
+    channel:
+      "$ref": "#/channels/pagoSolicitud"
+    summary: "ListenerPagoSolicitud (MSPago.dll) consume la cola q.pagoSolicitud"
+  WorkerOutboxSubasta_subastaCerrada:
+    action: send
+    channel:
+      "$ref": "#/channels/subastaCerrada"
+    summary: WorkerOutboxSubasta publica en q.subastaCerrada
+    messages:
+      - "$ref": "#/channels/subastaCerrada/messages/SubastaCerrada"
+  ListenerSubastaCerrada_subastaCerrada:
+    action: receive
+    channel:
+      "$ref": "#/channels/subastaCerrada"
+    summary: "ListenerSubastaCerrada (MSCompra.jar) consume la cola q.subastaCerrada"
+  WorkerOutboxSubasta_subastaIniciada:
+    action: send
+    channel:
+      "$ref": "#/channels/subastaIniciada"
+    summary: WorkerOutboxSubasta publica en q.subastaIniciada
+    messages:
+      - "$ref": "#/channels/subastaIniciada/messages/SubastaIniciada"
+  ListenerEventoSubasta_subastaIniciada:
+    action: receive
+    channel:
+      "$ref": "#/channels/subastaIniciada"
+    summary: "ListenerEventoSubasta (MSSuscripcion.jar) consume la cola q.subastaIniciada"
+components:
+  messages:
+    BienLiberado:
+      name: BienLiberado
+      contentType: application/json
+      description: "Lo publica MSCompra.jar. Propiedades AMQP: message_id = idEvento, type = BienLiberado, persistente."
+      payload:
+        "$ref": "#/components/schemas/BienLiberado"
+    CambioOfertaMayor:
+      name: CambioOfertaMayor
+      contentType: application/json
+      description: "Lo publica MSSubasta.jar. Propiedades AMQP: message_id = idEvento, type = CambioOfertaMayor, persistente."
+      payload:
+        "$ref": "#/components/schemas/CambioOfertaMayor"
+    DespachoConfirmado:
+      name: DespachoConfirmado
+      contentType: application/json
+      description: "Lo publica MSDespacho.jar. Propiedades AMQP: message_id = idEvento, type = DespachoConfirmado, persistente."
+      payload:
+        "$ref": "#/components/schemas/DespachoConfirmado"
+    DespachoSolicitud:
+      name: DespachoSolicitud
+      contentType: application/json
+      description: "Lo publica MSCompra.jar. Propiedades AMQP: message_id = idEvento, type = DespachoSolicitud, persistente."
+      payload:
+        "$ref": "#/components/schemas/DespachoSolicitud"
+    EnvioConfirmado:
+      name: EnvioConfirmado
+      contentType: application/json
+      description: "Lo publica SENBackEnd.jar. Propiedades AMQP: message_id = idEvento, type = EnvioConfirmado, persistente."
+      payload:
+        "$ref": "#/components/schemas/EnvioConfirmado"
+    SolicitudEnvio:
+      name: SolicitudEnvio
+      contentType: application/json
+      description: "Lo publica MSDespacho.jar. Propiedades AMQP: message_id = idEvento, type = SolicitudEnvio, persistente."
+      payload:
+        "$ref": "#/components/schemas/SolicitudEnvio"
+    InventarioConfirmado:
+      name: InventarioConfirmado
+      contentType: application/json
+      description: "Lo publica SINBackEnd.jar. Propiedades AMQP: message_id = idEvento, type = InventarioConfirmado, persistente."
+      payload:
+        "$ref": "#/components/schemas/InventarioConfirmado"
+    SolicitudInventario:
+      name: SolicitudInventario
+      contentType: application/json
+      description: "Lo publica MSDespacho.jar. Propiedades AMQP: message_id = idEvento, type = SolicitudInventario, persistente."
+      payload:
+        "$ref": "#/components/schemas/SolicitudInventario"
+    NotificacionSuscripcion:
+      name: NotificacionSuscripcion
+      contentType: application/json
+      description: "Lo publica MSSuscripcion.jar. Propiedades AMQP: message_id = idEvento, type = Notificacion, persistente."
+      payload:
+        "$ref": "#/components/schemas/NotificacionSuscripcion"
+    NotificacionCompra:
+      name: NotificacionCompra
+      contentType: application/json
+      description: "Lo publica MSCompra.jar. Propiedades AMQP: message_id = idEvento, type = NotificacionCancelacion | NotificacionCompraFinalizada | NotificacionDemora | NotificacionGanador | NotificacionRevisionManual, persistente."
+      payload:
+        "$ref": "#/components/schemas/NotificacionCompra"
+    NotificacionPago:
+      name: NotificacionPago
+      contentType: application/json
+      description: "Lo publica MSPago.dll. Propiedades AMQP: message_id = idEvento, type = NotificacionPago, persistente."
+      payload:
+        "$ref": "#/components/schemas/NotificacionPago"
+    NuevaSubasta:
+      name: NuevaSubasta
+      contentType: application/json
+      description: "Lo publica MSCatalogo.jar. Propiedades AMQP: message_id = idEvento, type = NuevaSubasta, persistente."
+      payload:
+        "$ref": "#/components/schemas/NuevaSubasta"
+    PagoConfirmado:
+      name: PagoConfirmado
+      contentType: application/json
+      description: "Lo publica MSPago.dll. Propiedades AMQP: message_id = idEvento, type = PagoConfirmado, persistente."
+      payload:
+        "$ref": "#/components/schemas/PagoConfirmado"
+    PagoSolicitud:
+      name: PagoSolicitud
+      contentType: application/json
+      description: "Lo publica MSCompra.jar. Propiedades AMQP: message_id = idEvento, type = PagoSolicitud, persistente."
+      payload:
+        "$ref": "#/components/schemas/PagoSolicitud"
+    SubastaCerrada:
+      name: SubastaCerrada
+      contentType: application/json
+      description: "Lo publica MSSubasta.jar. Propiedades AMQP: message_id = idEvento, type = SubastaCerrada, persistente."
+      payload:
+        "$ref": "#/components/schemas/SubastaCerrada"
+    SubastaIniciada:
+      name: SubastaIniciada
+      contentType: application/json
+      description: "Lo publica MSSubasta.jar. Propiedades AMQP: message_id = idEvento, type = SubastaIniciada, persistente."
+      payload:
+        "$ref": "#/components/schemas/SubastaIniciada"
+  schemas:
+    BienLiberado:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        idSubasta:
+          type: string
+        motivo:
+          type: string
+    CambioOfertaMayor:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        idSubasta:
+          type: string
+        descripcion:
+          type: string
+        valor:
+          type: number
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+        anterior:
+          oneOf:
+            - "$ref": "#/components/schemas/Cliente"
+            - type: "null"
+          description: Null si es la primera oferta.
+    Cliente:
+      type: object
+      required:
+        - usuario
+        - cedula
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        rol:
+          type: string
+    DespachoConfirmado:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+    DespachoSolicitud:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        direccion:
+          type: string
+        destinatario:
+          "$ref": "#/components/schemas/Destinatario"
+    Destinatario:
+      type: object
+      properties:
+        nombre:
+          type: string
+        correo:
+          type: string
+        celular:
+          type: string
+    Destinatario_mspago:
+      type: object
+      properties:
+        nombre:
+          type:
+            - string
+            - "null"
+        correo:
+          type:
+            - string
+            - "null"
+        celular:
+          type:
+            - string
+            - "null"
+    EnvioConfirmado:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        fechaProgramada:
+          type: string
+          format: date
+    EstadoSubasta:
+      type: string
+      enum:
+        - PROGRAMADA
+        - ABIERTA
+        - EN_CIERRE
+        - ADJUDICADA
+        - DESIERTA
+        - LIBERADA
+    InventarioConfirmado:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        idBien:
+          type: string
+    NotificacionCompra:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        origen:
+          type: string
+        numeroCompra:
+          type: string
+        destinatario:
+          "$ref": "#/components/schemas/Destinatario"
+        asunto:
+          type: string
+        cuerpo:
+          type: string
+        sms:
+          type: boolean
+    NotificacionPago:
+      type: object
+      required:
+        - idEvento
+        - origen
+        - numeroCompra
+        - destinatario
+        - asunto
+        - cuerpo
+        - sms
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        origen:
+          type: string
+        numeroCompra:
+          type: string
+        destinatario:
+          "$ref": "#/components/schemas/Destinatario_mspago"
+        asunto:
+          type: string
+        cuerpo:
+          type: string
+        sms:
+          type: boolean
+    NotificacionSuscripcion:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        origen:
+          type: string
+        idSubasta:
+          type: string
+        destinatario:
+          "$ref": "#/components/schemas/Destinatario"
+        asunto:
+          type: string
+        cuerpo:
+          type: string
+        sms:
+          type: boolean
+    NuevaSubasta:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        categoria:
+          type: string
+        valorMinimo:
+          type: number
+        fechaInicio:
+          type: string
+          format: date-time
+        fechaCierre:
+          type: string
+          format: date-time
+        publicadaPor:
+          type: string
+    PagoConfirmado:
+      type: object
+      required:
+        - idEvento
+        - numeroCompra
+        - cedula
+        - valorPagado
+        - resultado
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        cedula:
+          type: string
+        valorPagado:
+          type: number
+        referenciaPago:
+          type:
+            - string
+            - "null"
+        resultado:
+          type: string
+          enum:
+            - APROBADO
+            - RECHAZADO
+    PagoSolicitud:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        cedula:
+          type: string
+        valorOfertado:
+          type: number
+        descripcion:
+          type: string
+        destinatario:
+          "$ref": "#/components/schemas/Destinatario"
+    SolicitudEnvio:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        idBien:
+          type: string
+        direccion:
+          type: string
+    SolicitudInventario:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        numeroCompra:
+          type: string
+        idBien:
+          type: string
+    SubastaCerrada:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        resultado:
+          "$ref": "#/components/schemas/EstadoSubasta"
+          description: ADJUDICADA o DESIERTA.
+        ganador:
+          oneOf:
+            - "$ref": "#/components/schemas/Cliente"
+            - type: "null"
+          description: Null si la subasta quedó desierta.
+        valor:
+          type: number
+    SubastaIniciada:
+      type: object
+      properties:
+        idEvento:
+          type: string
+          format: uuid
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        valorMinimo:
+          type: number
+        fechaCierre:
+          type: string
+          format: date-time

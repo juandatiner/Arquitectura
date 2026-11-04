@@ -34,7 +34,10 @@ def main():
             errores.append(f"fila {n}: cédula repetida")
         cedulas.add(f["cedula"])
     fallar(errores)
-    valores = ",\n".join(f"({sql_texto(f['cedula'])}, {sql_texto(f['estado'])}, {sql_texto(f['motivo'])})" for _, f in filas)
+    if not filas:
+        print("DB OFAC: lista vacía, no se cargó nada")
+        return
+    valores =",\n".join(f"({sql_texto(f['cedula'])}, {sql_texto(f['estado'])}, {sql_texto(f['motivo'])})" for _, f in filas)
     ejecutar_sql(contenedor, "ofac", "ofac", f"""
         INSERT INTO reporte (cedula, estado, motivo) VALUES
         {valores}

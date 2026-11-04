@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using YoPagoFrontEnd;
+using YoPagoFrontEnd.config;
 
 // Componente YoPagoFrontEnd.dll · nodo YoPagoWeb SERVER :5000 (Kestrel .NET 8) · Máquina 1 · 10.43.99.2 (DMZ)
 var builder = WebApplication.CreateBuilder(args);
+builder.AgregarTrazabilidad();
 
 var rutaYoPago = Environment.GetEnvironmentVariable("RUTA_YOPAGO") is { Length: > 0 } ruta
     ? ruta
@@ -24,6 +26,7 @@ builder.Services.AddSession(o =>
 });
 
 var app = builder.Build();
+app.UsarTrazabilidad();
 app.UseStaticFiles();
 app.UseSession();
 app.MapControllers();

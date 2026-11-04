@@ -7,6 +7,7 @@ import co.edu.javeriana.sso.mscatalogo.modelo.SubastaPublicada;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -26,14 +27,17 @@ public class RepoCatalogo {
     private static final String FILTRO =
             """
              WHERE s.estado = 'PUBLICADA'
+               AND s.fecha_cierre > now()
                AND (CAST(:texto AS TEXT) IS NULL OR b.descripcion ILIKE '%' || :texto || '%')
                AND (CAST(:categoria AS TEXT) IS NULL OR b.categoria = :categoria)
             """;
 
     private final JdbcClient jdbc;
+    private final Clock reloj;
 
-    public RepoCatalogo(JdbcClient jdbc) {
+    public RepoCatalogo(JdbcClient jdbc, Clock reloj) {
         this.jdbc = jdbc;
+        this.reloj = reloj;
     }
 
     /** Paso II.9a (SrvCatalogo → RepoCatalogo). */
@@ -68,12 +72,12 @@ public class RepoCatalogo {
 
     /**
      * Paso III.9 (SrvCatalogo → RepoCatalogo). UPDATE condicional: solo publica si está PENDIENTE y
-     * su fecha de cierre no ha pasado.
+     * su fecha de cierre no ha pasado. La fecha actual sale del reloj. {@code publicadaPor} no está
+     * en el paso: observación 21.
      *
      * @return true si la publicó (filasAfectadas = 1)
      */
-    public boolean publicarSiPendienteYEnFecha(
-            String idSubasta, String publicadaPor, Instant ahora) {
+    public boolean publicarSiPendienteYEnFecha(String idSubasta, String publicadaPor) {
         return jdbc.sql(
                                 """
                                 UPDATE subasta
@@ -82,14 +86,15 @@ public class RepoCatalogo {
                                 """)
                         .param("id", idSubasta)
                         .param("por", publicadaPor)
-                        .param("ahora", Timestamp.from(ahora))
+                        .param("ahora", Timestamp.from(Instant.now(reloj)))
                         .update()
                 == 1;
     }
 
     /**
-     * Paso X.7b (SrvCatalogo → RepoCatalogo). Devuelve el bien al catálogo cuando la compra se
-     * compensa. Idempotente.
+     * Paso X.7b (SrvCatalogo → RepoCatalogo). Marca la subasta LIBERADA cuando la compra se
+     * compensa: sale del catálogo y el bien vuelve a ofertarse con una subasta nueva (observación
+     * 16). Idempotente.
      *
      * @return true si cambió el estado (filasAfectadas = 1)
      */

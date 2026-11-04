@@ -13,6 +13,12 @@ public static class Entorno
             : throw new InvalidOperationException($"Falta la variable de entorno {nombre}");
 }
 
+/// <summary>Configuración de YoPago: <see cref="CredencialSso"/> identifica a YoPago ante el APIGateway (VII.19).</summary>
+public sealed record OpcionesYoPago(string CredencialSso)
+{
+    public override string ToString() => "OpcionesYoPago { CredencialSso = **** }";
+}
+
 /// <summary>Una transacción de DB YOPAGO por operación.</summary>
 public sealed class UnidadDeTrabajo(NpgsqlDataSource fuente) : IAsyncDisposable
 {
@@ -107,6 +113,7 @@ public sealed class ReintentoReportes(IServiceScopeFactory alcances, ILogger<Rei
         {
             try
             {
+                using var ambito = Correlacion.Abrir(Correlacion.Normalizar(null));
                 await using var alcance = alcances.CreateAsyncScope();
                 await alcance.ServiceProvider.GetRequiredService<SrvYoPago>().reintentarReportes();
             }

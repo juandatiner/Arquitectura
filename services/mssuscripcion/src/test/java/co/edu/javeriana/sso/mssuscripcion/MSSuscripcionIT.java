@@ -2,6 +2,7 @@ package co.edu.javeriana.sso.mssuscripcion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -32,6 +34,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -97,6 +100,10 @@ class MSSuscripcionIT {
         mvc.perform(suscribir("1111", "NUEVAS_SUBASTAS", "VEHICULOS"))
                 .andExpect(status().isCreated());
         mvc.perform(suscribir("2222", "NUEVAS_SUBASTAS", "TODAS")).andExpect(status().isCreated());
+        mvc.perform(suscribir("4444", "NUEVAS_SUBASTAS", "INMUEBLES"))
+                .andExpect(status().isCreated());
+        mvc.perform(suscribir("5555", "CAMBIOS_OFERTA", "SUB-0002"))
+                .andExpect(status().isCreated());
         String primera =
                 mvc.perform(suscribir("3333", "CAMBIOS_OFERTA", "SUB-0001"))
                         .andExpect(status().isCreated())
@@ -145,6 +152,7 @@ class MSSuscripcionIT {
 
         String aviso = recibir(1).get(0);
         assertThat(aviso).contains("3003333").contains("\"sms\":true").contains("99.000.000");
+        assertThat(rabbit.receive("q.notificacion", 1500)).isNull();
     }
 
     @Test
@@ -154,17 +162,26 @@ class MSSuscripcionIT {
         mvc.perform(cancelar(idSuscripcionCambios, "3333"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("CANCELADA"));
+
+        publicar(
+                "q.cambioOfertaMayor",
+                "CambioOfertaMayor",
+                "{\"idEvento\":\""
+                        + UUID.randomUUID()
+                        + "\",\"idSubasta\":\"SUB-0001\",\"descripcion\":\"Camioneta\","
+                        + "\"valor\":100000000,\"cliente\":{\"usuario\":\"u9\",\"cedula\":\"9999\"},\"anterior\":null}");
+        assertThat(rabbit.receive("q.notificacion", 1500)).isNull();
     }
 
     @Test
     @Order(5)
-    void bienLiberadoLiberaLaSubastaConocida() {
-        rabbit.convertAndSend(
-                "",
-                "q.LiberarBienSubasta.suscripcion",
+    void bienLiberadoLiberaLaSubastaConocidaUnaSolaVez() {
+        String bienLiberado =
                 "{\"idEvento\":\""
                         + UUID.randomUUID()
-                        + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}");
+                        + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}";
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.suscripcion", bienLiberado);
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.suscripcion", bienLiberado);
         await().atMost(Duration.ofSeconds(10))
                 .until(
                         () ->
@@ -173,6 +190,16 @@ class MSSuscripcionIT {
                                         .query(String.class)
                                         .single()
                                         .equals("LIBERADA"));
+        await().during(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(5))
+                .until(
+                        () ->
+                                jdbc.sql(
+                                                        "SELECT count(*) FROM outbox WHERE tipo = 'BienLiberadoConfirmado'"
+                                                                + " AND estado = 'REGISTRADO'")
+                                                .query(Long.class)
+                                                .single()
+                                        == 1);
     }
 
     private void publicar(String cola, String tipo, String json) {
@@ -227,5 +254,33 @@ class MSSuscripcionIT {
         return post("/suscripciones/cancelar")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"idSuscripcion\":\"" + id + "\",\"cliente\":" + cliente(cedula) + "}");
+    }
+
+    /** La documentación de la API no existe fuera del perfil dev (#25). */
+    @Test
+    void sinPerfilDevLaDocumentacionDeLaApiNoExiste() throws Exception {
+        for (String ruta :
+                List.of(
+                        "/v3/api-docs",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/webjars/swagger-ui/index.html")) {
+            mvc.perform(get(ruta)).andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @ActiveProfiles("dev")
+    class ConPerfilDev {
+
+        @Autowired MockMvc mvcDev;
+
+        @Test
+        void publicaOpenApiYSwaggerUi() throws Exception {
+            mvcDev.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paths['/suscripciones']").exists());
+            mvcDev.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+        }
     }
 }

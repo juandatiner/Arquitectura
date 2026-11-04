@@ -24,7 +24,7 @@ spring:
         # Correo o SMS caídos: reintenta con espera creciente; al agotar, el mensaje va a q.notificacion.dlq
         retry:
           enabled: true
-          max-attempts: 5
+          max-retries: 4
           initial-interval: 2s
           multiplier: 2
           max-interval: 30s
@@ -53,3 +53,9 @@ management:
     health:
       probes:
         enabled: true
+
+# Logs JSON en consola; el correlationId sale como campo propio
+logging:
+  structured:
+    format:
+      console: logstash

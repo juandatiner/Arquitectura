@@ -1,0 +1,12 @@
+{
+  "idEvento": "00000000-0000-0000-0000-000000000000",
+  "numeroCompra": "<numeroCompra>",
+  "cedula": "<cedula>",
+  "valorOfertado": 1.0,
+  "descripcion": "<descripcion>",
+  "destinatario": {
+    "nombre": "<nombre>",
+    "correo": "<correo>",
+    "celular": "<celular>"
+  }
+}

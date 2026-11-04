@@ -1,0 +1,82 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: OFACBackEnd.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: OFAC SERVER :9001."
+servers:
+  - url: "http://10.43.99.45:9001"
+    description: "OFAC SERVER :9001 · MAQUINA 3 · 10.43.99.45"
+paths:
+  "/ofac/{cedula}":
+    get:
+      operationId: validarCedula
+      summary: WSOfac.validarCedula
+      description: "Pasos VI.18 (IntegraOFAC → WSOfac validarCedula(cedula)) y VI.19 (→ SrvValidacionOFAC)."
+      security: []
+      parameters:
+        - name: cedula
+          in: path
+          required: true
+          schema:
+            type: string
+            pattern: "\\d{5,15}"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/RespuestaOFAC"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoOFAC:
+      type: string
+      enum:
+        - APROBADO
+        - RECHAZADO
+        - ENPROCESO
+    RespuestaOFAC:
+      type: object
+      properties:
+        cedula:
+          type: string
+        estado:
+          "$ref": "#/components/schemas/EstadoOFAC"

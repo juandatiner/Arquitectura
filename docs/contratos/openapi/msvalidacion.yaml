@@ -1,0 +1,114 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSValidacion.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSValidacion SERVER :8087."
+servers:
+  - url: "http://10.43.100.238:8087"
+    description: "MSValidacion SERVER :8087 · MAQUINA 2 · 10.43.100.238"
+paths:
+  "/validaciones":
+    post:
+      operationId: validar
+      summary: WSValidacion.validar
+      description: "Pasos VI.14 (IntegraValidacion → WSValidacion validar(numeroCompra, cedula)) y VI.15 (→ SrvValidarOFAC)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudValidacion"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ResultadoValidacion"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "503":
+          description: OfacNoDisponibleException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoOFAC:
+      type: string
+      enum:
+        - APROBADO
+        - RECHAZADO
+        - ENPROCESO
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    ResultadoValidacion:
+      type: object
+      properties:
+        numeroCompra:
+          type: string
+        estado:
+          "$ref": "#/components/schemas/EstadoOFAC"
+    SolicitudValidacion:
+      type: object
+      required:
+        - numeroCompra
+      properties:
+        numeroCompra:
+          type: string
+        cedula:
+          type: string
+          pattern: "\\d{5,15}"

@@ -1,0 +1,196 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSCatalogo.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSCatalogo SERVER :8082."
+servers:
+  - url: "http://10.43.100.238:8082"
+    description: "MSCatalogo SERVER :8082 · MAQUINA 2 · 10.43.100.238"
+paths:
+  "/catalogo":
+    get:
+      operationId: consultarCatalogo
+      summary: WSCatalogo.consultarCatalogo
+      description: "Pasos II.7a (SrvRuteo → WSCatalogo) y II.8a (WSCatalogo → SrvCatalogo)."
+      security: []
+      parameters:
+        - name: texto
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: categoria
+          in: query
+          required: false
+          schema:
+            type: string
+        - name: pagina
+          in: query
+          required: false
+          schema:
+            type: integer
+        - name: tamano
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/PaginaCatalogo"
+  "/catalogo/publicar":
+    post:
+      operationId: publicarNuevaSubasta
+      summary: WSCatalogo.publicarNuevaSubasta
+      description: "Pasos III.7 (SrvRuteo → WSCatalogo) y III.8 (WSCatalogo → SrvCatalogo)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudPublicacion"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/SubastaPublicada"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "404":
+          description: SubastaNoEncontradaException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+        "409":
+          description: SubastaNoPublicableException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Administrador:
+      type: object
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        rol:
+          type: string
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoSubasta:
+      type: string
+      enum:
+        - PENDIENTE
+        - PUBLICADA
+        - LIBERADA
+    PaginaCatalogo:
+      type: object
+      properties:
+        contenido:
+          type: array
+          items:
+            "$ref": "#/components/schemas/SubastaPublicada"
+        pagina:
+          type: integer
+        tamano:
+          type: integer
+        total:
+          type: integer
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    SolicitudPublicacion:
+      type: object
+      required:
+        - idSubasta
+        - admin
+      properties:
+        idSubasta:
+          type: string
+        admin:
+          "$ref": "#/components/schemas/Administrador"
+    SubastaPublicada:
+      type: object
+      properties:
+        idSubasta:
+          type: string
+        idBien:
+          type: string
+        descripcion:
+          type: string
+        categoria:
+          type: string
+        valorMinimo:
+          type: number
+        fechaInicio:
+          type: string
+          format: date-time
+        fechaCierre:
+          type: string
+          format: date-time
+        estado:
+          "$ref": "#/components/schemas/EstadoSubasta"

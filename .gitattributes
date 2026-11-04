@@ -4,3 +4,4 @@
 *.pdf binary
 *.jar binary
 *.cmd text eol=crlf
+CLAUDE.md export-ignore

@@ -1,0 +1,396 @@
+# MAQUINA 2: núcleo de negocio SSO y MOM. Nodos del diagrama «Arquitectura Integrada JavaEE-.NET».
+# La IP de Máquina 3 llega por deploy/maquina-2/.env (ver .env.example y deploy/README.md).
+# Puertos publicados, solo los que usa otra máquina:
+#   8081-8084 (SrvRuteo, Máquina 1) · 8085 (Nginx, Máquina 1) · 8087 (MSCompra réplica 2, Máquina 3)
+#   5672 (MSCompra réplica 2, MSPago, SIN y SEN, Máquina 3) · 5432 de DB COMPRA (MSCompra réplica 2, Máquina 3)
+# Cada PostgreSQL vive en su red privada con su servicio. DB COMPRA no es interna porque se publica.
+
+name: sso-maquina-2
+
+x-servicio: &servicio
+  platform: linux/amd64
+  restart: unless-stopped
+  mem_limit: ${MEMORIA_MS:?Falta MEMORIA_MS en deploy/maquina-2/.env}
+
+x-db: &db
+  image: postgres:17-alpine
+  platform: linux/amd64
+  restart: unless-stopped
+  mem_limit: ${MEMORIA_DB:?Falta MEMORIA_DB en deploy/maquina-2/.env}
+  # ADR 0003: 8 PostgreSQL en la misma máquina, con la memoria limitada
+  command: ["postgres", "-c", "shared_buffers=32MB"]
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    interval: 5s
+    retries: 20
+
+x-mom: &mom
+  MOM_HOST: mom
+  MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/maquina-2/.env}
+  MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/maquina-2/.env}
+
+services:
+  # MOM SERVER :5672 (RabbitMQ)
+  mom:
+    <<: *servicio
+    image: rabbitmq:4.1-management-alpine
+    mem_limit: ${MEMORIA_MOM:?Falta MEMORIA_MOM en deploy/maquina-2/.env}
+    # El nombre del nodo sale del hostname: fijo, para que los mensajes persistentes sobrevivan a recrear el contenedor
+    hostname: mom
+    volumes:
+      - ../mom/rabbitmq.conf:/etc/rabbitmq/conf.d/20-sso.conf:ro
+      - ../mom/definiciones/colas.json:/etc/rabbitmq/definiciones/colas.json:ro
+      - ../secretos/mom/usuarios.json:/etc/rabbitmq/definiciones/usuarios.json:ro
+      - mom:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "check_port_connectivity"]
+      interval: 10s
+      retries: 20
+
+  # DB SERVER :5432 · DB ACCESO
+  db-acceso:
+    <<: *db
+    environment:
+      POSTGRES_DB: acceso
+      POSTGRES_USER: acceso
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-acceso:/var/lib/postgresql/data
+    networks:
+      - red-acceso
+
+  # MSAcceso SERVER :8081 · MSAcceso.jar
+  msacceso:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-msacceso:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msacceso
+        ARTEFACTO: MSAcceso
+        PUERTO: 8081
+    environment:
+      DB_URL: jdbc:postgresql://db-acceso:5432/acceso
+      DB_USUARIO: acceso
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+      AD_URL: ldap://${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-2/.env}:389
+      TOKEN_CLAVE_PRIVADA: /run/secrets/token_privada
+    secrets:
+      - token_privada
+    ports:
+      - "8081:8081"
+    networks:
+      - default
+      - red-acceso
+    depends_on:
+      db-acceso:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB CATALOGO
+  db-catalogo:
+    <<: *db
+    environment:
+      POSTGRES_DB: catalogo
+      POSTGRES_USER: catalogo
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-catalogo:/var/lib/postgresql/data
+    networks:
+      - red-catalogo
+
+  # MSCatalogo SERVER :8082 · MSCatalogo.jar
+  mscatalogo:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-mscatalogo:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mscatalogo
+        ARTEFACTO: MSCatalogo
+        PUERTO: 8082
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-catalogo:5432/catalogo
+      DB_USUARIO: catalogo
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    ports:
+      - "8082:8082"
+    networks:
+      - default
+      - red-catalogo
+    depends_on:
+      db-catalogo:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB SUBASTA
+  db-subasta:
+    <<: *db
+    environment:
+      POSTGRES_DB: subasta
+      POSTGRES_USER: subasta
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-subasta:/var/lib/postgresql/data
+    networks:
+      - red-subasta
+
+  # MSSubasta SERVER :8083 · MSSubasta.jar
+  mssubasta:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-mssubasta:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mssubasta
+        ARTEFACTO: MSSubasta
+        PUERTO: 8083
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-subasta:5432/subasta
+      DB_USUARIO: subasta
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    ports:
+      - "8083:8083"
+    networks:
+      - default
+      - red-subasta
+    depends_on:
+      db-subasta:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB Suscripcion
+  db-suscripcion:
+    <<: *db
+    environment:
+      POSTGRES_DB: suscripcion
+      POSTGRES_USER: suscripcion
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-suscripcion:/var/lib/postgresql/data
+    networks:
+      - red-suscripcion
+
+  # MSSuscripcion SERVER :8084 · MSSuscripcion.jar
+  mssuscripcion:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-mssuscripcion:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mssuscripcion
+        ARTEFACTO: MSSuscripcion
+        PUERTO: 8084
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-suscripcion:5432/suscripcion
+      DB_USUARIO: suscripcion
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    ports:
+      - "8084:8084"
+    networks:
+      - default
+      - red-suscripcion
+    depends_on:
+      db-suscripcion:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB COMPRA (la comparten las dos réplicas; la réplica 2 entra por red desde Máquina 3)
+  db-compra:
+    <<: *db
+    environment:
+      POSTGRES_DB: compra
+      POSTGRES_USER: compra
+      POSTGRES_PASSWORD: ${DB_COMPRA_CLAVE:?Falta DB_COMPRA_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-compra:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - red-compra
+
+  # MSCompra SERVER réplica 1 :8085 · MSCompra.jar
+  mscompra-replica1:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-mscompra:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mscompra
+        ARTEFACTO: MSCompra
+        PUERTO: 8085
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-compra:5432/compra
+      DB_USUARIO: compra
+      DB_CLAVE: ${DB_COMPRA_CLAVE:?Falta DB_COMPRA_CLAVE en deploy/maquina-2/.env}
+      RUTA_MSVALIDACION: http://msvalidacion:8087
+    ports:
+      - "8085:8085"
+    networks:
+      - default
+      - red-compra
+    depends_on:
+      db-compra:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB VALIDAR
+  db-validar:
+    <<: *db
+    environment:
+      POSTGRES_DB: validar
+      POSTGRES_USER: validar
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-validar:/var/lib/postgresql/data
+    networks:
+      - red-validar
+
+  # MSValidacion SERVER :8087 · MSValidacion.jar
+  msvalidacion:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-msvalidacion:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msvalidacion
+        ARTEFACTO: MSValidacion
+        PUERTO: 8087
+    environment:
+      DB_URL: jdbc:postgresql://db-validar:5432/validar
+      DB_USUARIO: validar
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+      RUTA_OFAC: http://${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-2/.env}:9001
+    ports:
+      - "8087:8087"
+    networks:
+      - default
+      - red-validar
+    depends_on:
+      db-validar:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB DESPACHO
+  db-despacho:
+    <<: *db
+    environment:
+      POSTGRES_DB: despacho
+      POSTGRES_USER: despacho
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-despacho:/var/lib/postgresql/data
+    networks:
+      - red-despacho
+
+  # MSDespacho SERVER :8088 · MSDespacho.jar
+  msdespacho:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-msdespacho:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msdespacho
+        ARTEFACTO: MSDespacho
+        PUERTO: 8088
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-despacho:5432/despacho
+      DB_USUARIO: despacho
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    networks:
+      - default
+      - red-despacho
+    depends_on:
+      db-despacho:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB NOTIFICACION
+  db-notificacion:
+    <<: *db
+    environment:
+      POSTGRES_DB: notificacion
+      POSTGRES_USER: notificacion
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+    volumes:
+      - db-notificacion:/var/lib/postgresql/data
+    networks:
+      - red-notificacion
+
+  # MSNotificacion SERVER :8089 · MSNotificacion.jar
+  msnotificacion:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-2/.env}/sso-msnotificacion:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-2/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: msnotificacion
+        ARTEFACTO: MSNotificacion
+        PUERTO: 8089
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-notificacion:5432/notificacion
+      DB_USUARIO: notificacion
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-2/.env}
+      MAIL_HOST: ${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-2/.env}
+      MAIL_REMITENTE: ${MAIL_REMITENTE:?Falta MAIL_REMITENTE en deploy/maquina-2/.env}
+      RUTA_SMS: http://${MAQUINA3_IP:?Falta MAQUINA3_IP en deploy/maquina-2/.env}:9004
+    networks:
+      - default
+      - red-notificacion
+    depends_on:
+      db-notificacion:
+        condition: service_healthy
+      mom:
+        condition: service_healthy
+
+networks:
+  red-acceso:
+    internal: true
+  red-catalogo:
+    internal: true
+  red-subasta:
+    internal: true
+  red-suscripcion:
+    internal: true
+  # Sin internal: Docker no publica puertos en una red interna
+  red-compra:
+  red-validar:
+    internal: true
+  red-despacho:
+    internal: true
+  red-notificacion:
+    internal: true
+
+secrets:
+  token_privada:
+    file: ../secretos/token_privada.pem
+
+volumes:
+  mom:
+  db-acceso:
+  db-catalogo:
+  db-subasta:
+  db-suscripcion:
+  db-compra:
+  db-validar:
+  db-despacho:
+  db-notificacion:

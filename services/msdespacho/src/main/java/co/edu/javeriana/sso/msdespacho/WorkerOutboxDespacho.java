@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.msdespacho;
 
+import co.edu.javeriana.sso.msdespacho.config.Correlacion;
 import co.edu.javeriana.sso.msdespacho.config.PropiedadesOutbox;
 import co.edu.javeriana.sso.msdespacho.modelo.EventoPendiente;
 import java.nio.charset.StandardCharsets;
@@ -35,7 +36,9 @@ public class WorkerOutboxDespacho {
     }
 
     /**
-     * Pasos III.11 (→ RepoOutboxDespacho obtenerPendientes) y III.12 (→ q.nuevaSubasta publicar).
+     * Pasos VIII.7, VIII.19 (→ RepoOutboxDespacho obtenerPendientes), VIII.8a (→
+     * q.inventarioSolicitud publicar), VIII.8b (→ q.envioSolicitud publicar) y VIII.20 (→
+     * q.despachoConfirmado publicar).
      */
     @Scheduled(fixedDelayString = "${sso.outbox.intervalo:1s}")
     @Transactional
@@ -65,6 +68,7 @@ public class WorkerOutboxDespacho {
                         .setContentType(MessageProperties.CONTENT_TYPE_JSON)
                         .setContentEncoding(StandardCharsets.UTF_8.name())
                         .setMessageId(evento.idEvento().toString())
+                        .setHeader(Correlacion.CABECERA_AMQP, evento.correlationId())
                         .setType(evento.tipo())
                         .setDeliveryMode(
                                 org.springframework.amqp.core.MessageDeliveryMode.PERSISTENT)

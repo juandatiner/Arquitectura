@@ -82,15 +82,14 @@ public class RepoSuscripcion {
                 == 0;
     }
 
-    /** Pasos III.20 / IV.18: suscripciones ACTIVAS de un tipo para alguno de los valores. */
-    public List<Suscripcion> buscarSuscriptores(TipoSuscripcion tipo, List<String> valores) {
+    /**
+     * Pasos III.20 / IV.18: todas las suscripciones ACTIVAS; SrvSuscripcion elige las del evento.
+     */
+    public List<Suscripcion> buscarSuscriptores() {
         return jdbc.sql(
                         "SELECT "
                                 + COLUMNAS
-                                + " FROM suscripcion WHERE estado = 'ACTIVA' AND tipo = :tipo"
-                                + " AND valor IN (:valores) ORDER BY creada_en")
-                .param("tipo", tipo.name())
-                .param("valores", valores)
+                                + " FROM suscripcion WHERE estado = 'ACTIVA' ORDER BY creada_en")
                 .query(RepoSuscripcion::fila)
                 .list();
     }

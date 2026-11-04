@@ -2,6 +2,7 @@ package co.edu.javeriana.sso.mssubasta;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -17,6 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
@@ -36,6 +38,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 import org.testcontainers.junit.jupiter.Container;
@@ -107,6 +110,13 @@ class MSSubastaIT {
         mvc.perform(oferta("SUB-0001", "cliente1", "1010101010", "1000"))
                 .andExpect(status().isUnprocessableContent())
                 .andExpect(jsonPath("$.motivo").value("MENOR_AL_MINIMO"));
+    }
+
+    @Test
+    @Order(2)
+    void ofertaASubastaInexistenteDevuelve404() throws Exception {
+        mvc.perform(oferta("SUB-NO-EXISTE", "cliente1", "1010101010", "1000"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -183,7 +193,7 @@ class MSSubastaIT {
                 .update();
 
         await().atMost(Duration.ofSeconds(10)).until(() -> estado("SUB-0001").equals("ADJUDICADA"));
-        assertThat(estado("SUB-0002")).isEqualTo("DESIERTA");
+        await().atMost(Duration.ofSeconds(10)).until(() -> estado("SUB-0002").equals("DESIERTA"));
         assertThat(
                         jdbc.sql("SELECT valor_ganador FROM subasta WHERE id_subasta = 'SUB-0001'")
                                 .query(BigDecimal.class)
@@ -213,13 +223,42 @@ class MSSubastaIT {
 
     @Test
     @Order(6)
-    void bienLiberadoLiberaLaSubastaAdjudicada() {
-        String evento =
-                "{\"idEvento\":\""
-                        + UUID.randomUUID()
-                        + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}";
-        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", evento);
+    void bienLiberadoLiberaLaSubastaAdjudicadaUnaSolaVez() {
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", bienLiberado("SUB-0001"));
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", bienLiberado("SUB-0001"));
         await().atMost(Duration.ofSeconds(10)).until(() -> estado("SUB-0001").equals("LIBERADA"));
+        await().during(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> confirmacionesRegistradas("SUB-0001") == 1);
+    }
+
+    @Test
+    @Order(7)
+    void bienLiberadoNoLiberaUnaSubastaDesierta() {
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", bienLiberado("SUB-0002"));
+        await().during(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(5))
+                .until(
+                        () ->
+                                estado("SUB-0002").equals("DESIERTA")
+                                        && confirmacionesRegistradas("SUB-0002") == 0);
+    }
+
+    private static String bienLiberado(String idSubasta) {
+        return "{\"idEvento\":\""
+                + UUID.randomUUID()
+                + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\""
+                + idSubasta
+                + "\",\"motivo\":\"pago rechazado\"}";
+    }
+
+    private long confirmacionesRegistradas(String idSubasta) {
+        return jdbc.sql(
+                        "SELECT count(*) FROM outbox WHERE tipo = 'BienLiberadoConfirmado'"
+                                + " AND estado = 'REGISTRADO' AND payload->>'idSubasta' = :id")
+                .param("id", idSubasta)
+                .query(Long.class)
+                .single();
     }
 
     private String estado(String idSubasta) {
@@ -243,5 +282,33 @@ class MSSubastaIT {
                                 + "\",\"celular\":\"300\",\"correo\":\"x@sso.local\"},\"valor\":"
                                 + valor
                                 + "}");
+    }
+
+    /** La documentación de la API no existe fuera del perfil dev (#25). */
+    @Test
+    void sinPerfilDevLaDocumentacionDeLaApiNoExiste() throws Exception {
+        for (String ruta :
+                List.of(
+                        "/v3/api-docs",
+                        "/swagger-ui.html",
+                        "/swagger-ui/index.html",
+                        "/webjars/swagger-ui/index.html")) {
+            mvc.perform(get(ruta)).andExpect(status().isNotFound());
+        }
+    }
+
+    @Nested
+    @ActiveProfiles("dev")
+    class ConPerfilDev {
+
+        @Autowired MockMvc mvcDev;
+
+        @Test
+        void publicaOpenApiYSwaggerUi() throws Exception {
+            mvcDev.perform(get("/v3/api-docs"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.paths['/subastas/ofertas']").exists());
+            mvcDev.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+        }
     }
 }
