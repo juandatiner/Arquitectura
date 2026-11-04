@@ -1,0 +1,192 @@
+# Generado: no editar a mano.
+openapi: "3.1.0"
+info:
+  title: MSSuscripcion.jar
+  version: "1.0.0"
+  license:
+    name: Proyecto académico
+    identifier: UNLICENSED
+  description: "Generado desde el código con tools/docs/generar_contratos.py. Nodo del diagrama: MSSuscripcion SERVER :8084."
+servers:
+  - url: "http://10.43.100.238:8084"
+    description: "MSSuscripcion SERVER :8084 · MAQUINA 2 · 10.43.100.238"
+paths:
+  "/suscripciones":
+    post:
+      operationId: suscribirse
+      summary: WSSuscripcion.suscribirse
+      description: "Pasos II.7b (SrvRuteo → WSSuscripcion suscribirse) e II.8b (→ SrvSuscripcion)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudSuscripcion"
+      responses:
+        "201":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Suscripcion"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+  "/suscripciones/cancelar":
+    post:
+      operationId: cancelarSuscripcion
+      summary: WSSuscripcion.cancelarSuscripcion
+      description: "Pasos II.7b (SrvRuteo → WSSuscripcion cancelarSuscripcion) e II.8b (→ SrvSuscripcion)."
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              "$ref": "#/components/schemas/SolicitudCancelacion"
+      responses:
+        "200":
+          description: Respuesta del componente.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/Suscripcion"
+        "400":
+          description: Petición inválida.
+          content:
+            application/json:
+              schema:
+                "$ref": "#/components/schemas/ErrorSpring"
+        "404":
+          description: SuscripcionNoEncontradaException
+          content:
+            "application/problem+json":
+              schema:
+                "$ref": "#/components/schemas/Problema"
+  "/actuator/health":
+    get:
+      operationId: salud
+      summary: Estado del componente
+      security: []
+      responses:
+        "200":
+          description: En servicio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+components:
+  schemas:
+    Cliente:
+      type: object
+      required:
+        - usuario
+        - cedula
+      properties:
+        usuario:
+          type: string
+        cedula:
+          type: string
+        nombre:
+          type: string
+        celular:
+          type: string
+        correo:
+          type: string
+        rol:
+          type: string
+    CriterioSuscripcion:
+      type: object
+      required:
+        - tipo
+        - valor
+      properties:
+        tipo:
+          "$ref": "#/components/schemas/TipoSuscripcion"
+        valor:
+          type: string
+    ErrorSpring:
+      type: object
+      description: Cuerpo por defecto de Spring Boot para una petición inválida.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: integer
+        error:
+          type: string
+        path:
+          type: string
+    EstadoSuscripcion:
+      type: string
+      enum:
+        - ACTIVA
+        - CANCELADA
+    Problema:
+      type: object
+      description: "Problem Details (RFC 9457)."
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        status:
+          type: integer
+        detail:
+          type: string
+        instance:
+          type: string
+        motivo:
+          type: string
+          description: Solo en el rechazo de ofertas de MSSubasta.
+    SolicitudCancelacion:
+      type: object
+      required:
+        - idSuscripcion
+        - cliente
+      properties:
+        idSuscripcion:
+          type: string
+          format: uuid
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+    SolicitudSuscripcion:
+      type: object
+      required:
+        - criterio
+        - cliente
+      properties:
+        criterio:
+          "$ref": "#/components/schemas/CriterioSuscripcion"
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+    Suscripcion:
+      type: object
+      properties:
+        idSuscripcion:
+          type: string
+          format: uuid
+        cliente:
+          "$ref": "#/components/schemas/Cliente"
+        tipo:
+          "$ref": "#/components/schemas/TipoSuscripcion"
+        valor:
+          type: string
+        estado:
+          "$ref": "#/components/schemas/EstadoSuscripcion"
+        creadaEn:
+          type: string
+          format: date-time
+    TipoSuscripcion:
+      type: string
+      enum:
+        - NUEVAS_SUBASTAS
+        - CAMBIOS_OFERTA

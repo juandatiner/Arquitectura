@@ -25,4 +25,4 @@ Eventos sin cola (se guardan en el outbox con estado `REGISTRADO`, observación 
 
 `cliente`, `anterior` y `ganador` = `{usuario, cedula, nombre, celular, correo, rol}` (identidad tomada del token).
 
-Este documento crece con cada componente.
+Este documento crece con cada componente. El esquema formal de cada evento y sus ejemplos están en [`docs/contratos/`](../contratos/README.md).

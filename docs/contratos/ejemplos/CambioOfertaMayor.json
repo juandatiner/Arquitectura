@@ -1,0 +1,22 @@
+{
+  "idEvento": "00000000-0000-0000-0000-000000000000",
+  "idSubasta": "<idSubasta>",
+  "descripcion": "<descripcion>",
+  "valor": 1.0,
+  "cliente": {
+    "usuario": "<usuario>",
+    "cedula": "<cedula>",
+    "nombre": "<nombre>",
+    "celular": "<celular>",
+    "correo": "<correo>",
+    "rol": "<rol>"
+  },
+  "anterior": {
+    "usuario": "<usuario>",
+    "cedula": "<cedula>",
+    "nombre": "<nombre>",
+    "celular": "<celular>",
+    "correo": "<correo>",
+    "rol": "<rol>"
+  }
+}

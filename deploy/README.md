@@ -10,67 +10,31 @@ sudo usermod -aG docker $USER   # cerrar sesión y volver a entrar
 docker compose version
 ```
 
-Abrir en el firewall solo estos puertos (son los únicos que publica cada `docker-compose.yml`):
-
-| Máquina | Puerto | Quién entra |
-|---------|--------|-------------|
-| 1 | 80, 5000 | Navegador |
-| 1 | 443 | `IntegraSSO`, Máquina 3 (VII.20) |
-| 2 | 8081, 8082, 8083, 8084 | `SrvRuteo`, Máquina 1 |
-| 2 | 8085 | Nginx, Máquina 1 |
-| 2 | 8087, 5432 (DB COMPRA) | `MSCompra` réplica 2, Máquina 3 |
-| 2 | 5672 | `MSCompra` réplica 2, `MSPago`, SIN y SEN, Máquina 3 |
-| 3 | 8085, 5001 | Nginx y `ProxyWSYoPagoWeb`, Máquina 1 |
-| 3 | 5086 | `SrvRuteo`, Máquina 1 |
-| 3 | 389, 9001, 1025, 9004 | `MSAcceso`, `IntegraOFAC` e `IntegraMail` / `IntegraSMS`, Máquina 2 |
+Abrir en el firewall los puertos de la tabla de `docs/arquitectura.md`.
 
 ## 2. Construir y publicar imágenes (máquina de desarrollo)
 
-Las publica en GHCR [`release.yml`](../.github/workflows/release.yml) al subir una etiqueta `vX.Y.Z` (o a mano con `gh workflow run release.yml --ref vX.Y.Z`),
-con los tags `X.Y.Z`, `X.Y` y `latest`. En el `.env` de cada VM: `IMAGE_REGISTRY=ghcr.io/juandatiner` e `IMAGE_TAG` con uno de esos tags.
-
-Para construirlas desde la máquina de desarrollo, con `deploy/maquina-N/.env` lleno (ver paso 3). Todas las imágenes son `linux/amd64`.
-
 ```bash
 echo $GHCR_TOKEN | docker login ghcr.io -u juandatiner --password-stdin
-docker compose -f deploy/maquina-N/docker-compose.yml build --push
+make images IMAGE_REGISTRY=ghcr.io/juandatiner IMAGE_TAG=<etiqueta>   # docker buildx --platform linux/amd64 ... --push
 ```
 
-Sin registro, se construye sin `--push` y se copian las imágenes a la VM:
+`IMAGE_REGISTRY` e `IMAGE_TAG` deben coincidir con los de `deploy/maquina-N/.env`. Para construir sin publicar: `make images-local` (mismas variables; `s=<componente>` limita a uno).
 
-```bash
-docker compose -f deploy/maquina-N/docker-compose.yml build
-docker save $(docker compose -f deploy/maquina-N/docker-compose.yml config --images | sort -u) | gzip > imagenes-maquina-N.tar.gz
-scp imagenes-maquina-N.tar.gz usuario@IP:
-ssh usuario@IP 'gunzip -c imagenes-maquina-N.tar.gz | docker load'
-```
+Sin registro, `make export` (mismas variables) genera `dist/images-maquina-N.tar` a partir de `deploy/maquina-N/docker-compose.yml`; si ese archivo no existe, falla sin exportar nada. Luego
+`scp dist/images-maquina-N.tar vm:` + `docker load -i images-maquina-N.tar`, y en el paso 3 se omite `docker compose pull`.
 
 ## 3. Arrancar cada máquina
 
-Los `docker-compose.yml` usan archivos hermanos de `deploy/` (`balanceador`, `mom`, `ad`, `sms`, `secretos`), así que se copia la carpeta
-completa, pero **sin `secretos`**: cada VM recibe solo los suyos.
-
-| Máquina | Archivos en `deploy/secretos/` | Se generan con |
-|---------|--------------------------------|----------------|
-| 1 | `token_publica.pem`, `balanceador.crt`, `balanceador.key` | `tools/scripts/generar-claves-token.sh`, `tools/scripts/generar-certificado-tls.sh deploy/secretos <IP-maquina-1>` |
-| 2 | `token_privada.pem`, `mom/usuarios.json` | `tools/scripts/generar-claves-token.sh`, `tools/scripts/generar-usuario-mom.py` |
-| 3 | `balanceador.crt` (el mismo de Máquina 1) | |
-
 ```bash
-rsync -a --exclude secretos --exclude dev deploy usuario@IP:~/sso/
-rsync -a --relative tools/carga tools/scripts/check-red.sh usuario@IP:~/sso/
-# Copiar a ~/sso/deploy/secretos/ los archivos de la tabla, con la misma estructura
+scp -r deploy/maquina-N usuario@IP:~/sso
 ssh usuario@IP
-cd ~/sso/deploy/maquina-N && cp .env.example .env   # llenar: nada trae valor
-docker compose pull           # sin registro: omitir (las imágenes ya están cargadas)
-docker compose up -d --no-build
+cd ~/sso && cp .env.example .env   # revisar IP y contraseñas
+docker compose pull && docker compose up -d
 docker compose ps
 ```
 
-`CREDENCIAL_YOPAGO` (Máquinas 1 y 3), `DB_COMPRA_CLAVE` y `RABBITMQ_USUARIO` / `RABBITMQ_CLAVE` (Máquinas 2 y 3) deben ser iguales en ambas.
-
 Orden recomendado: **Máquina 3** (AD, OFAC, YoPago, bases) → **Máquina 2** (RabbitMQ, microservicios) → **Máquina 1** (Nginx, gateway, web).
-Las máquinas dependen entre sí y Compose no espera a otra máquina: `MSCompra` réplica 2 se reinicia hasta que DB COMPRA de Máquina 2 responde (`restart: unless-stopped`).
 
 ## 4. Cargar datos (una vez, en la VM)
 
@@ -86,25 +50,13 @@ DB_CATALOGO_CONTENEDOR=<contenedor> DB_SUBASTA_CONTENEDOR=<contenedor> python3 -
 
 Ver `tools/carga/README.md`.
 
-## Ver los correos (Mailpit)
-
-La UI de Mailpit solo escucha en el loopback de Máquina 3. Desde tu equipo:
-
-```bash
-ssh -L 8025:127.0.0.1:8025 usuario@IP-MAQUINA-3
-# abrir http://localhost:8025
-```
-
 ## 5. Verificar
 
-Con los tres stacks arriba, en cada VM, [`tools/scripts/check-red.sh`](../tools/scripts/check-red.sh) comprueba con `nc -zv` los puertos de la tabla
-del paso 1 que esa máquina usa de las otras. Termina en un código distinto de cero si alguno falla. Los puertos 80 y 5000 de Máquina 1 no están: los usa el navegador, no otra máquina.
+En cada VM, `docker compose ps` debe mostrar los contenedores `healthy`. Luego, desde la máquina de desarrollo:
 
 ```bash
-cd ~/sso
-env $(grep -E '^MAQUINA[123]_IP=' deploy/maquina-N/.env) tools/scripts/check-red.sh N
+make smoke MAQUINA1_IP=<ip>                                       # entrada pública: SSOWeb, token, HTTPS de VII.20, YoPagoWeb
+make smoke MAQUINA1_IP=<ip> SMOKE_USUARIO=<u> SMOKE_CLAVE=<c>     # además login, catálogo y mis compras
 ```
 
-```bash
-./scripts/smoke-test.sh   # recorre CU I → X contra la IP de Máquina 1
-```
+La prueba es de solo lectura y cubre los CU I y II y el camino hasta `WSCompra`. Los CU III a X crean datos y se prueban aparte, con los CSV cargados en el paso 4.

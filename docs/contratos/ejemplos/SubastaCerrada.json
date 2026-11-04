@@ -1,0 +1,16 @@
+{
+  "idEvento": "00000000-0000-0000-0000-000000000000",
+  "idSubasta": "<idSubasta>",
+  "idBien": "<idBien>",
+  "descripcion": "<descripcion>",
+  "resultado": "PROGRAMADA",
+  "ganador": {
+    "usuario": "<usuario>",
+    "cedula": "<cedula>",
+    "nombre": "<nombre>",
+    "celular": "<celular>",
+    "correo": "<correo>",
+    "rol": "<rol>"
+  },
+  "valor": 1.0
+}
