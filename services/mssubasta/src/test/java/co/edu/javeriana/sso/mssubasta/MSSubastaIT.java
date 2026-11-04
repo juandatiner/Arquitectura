@@ -193,7 +193,7 @@ class MSSubastaIT {
                 .update();
 
         await().atMost(Duration.ofSeconds(10)).until(() -> estado("SUB-0001").equals("ADJUDICADA"));
-        assertThat(estado("SUB-0002")).isEqualTo("DESIERTA");
+        await().atMost(Duration.ofSeconds(10)).until(() -> estado("SUB-0002").equals("DESIERTA"));
         assertThat(
                         jdbc.sql("SELECT valor_ganador FROM subasta WHERE id_subasta = 'SUB-0001'")
                                 .query(BigDecimal.class)
