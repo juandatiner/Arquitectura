@@ -10,29 +10,64 @@ sudo usermod -aG docker $USER   # cerrar sesión y volver a entrar
 docker compose version
 ```
 
-Abrir en el firewall los puertos de la tabla de `docs/arquitectura.md`.
+Abrir en el firewall solo estos puertos (son los únicos que publica cada `docker-compose.yml`):
+
+| Máquina | Puerto | Quién entra |
+|---------|--------|-------------|
+| 1 | 80, 5000 | Navegador |
+| 1 | 443 | `IntegraSSO`, Máquina 3 (VII.20) |
+| 2 | 8081, 8082, 8083, 8084 | `SrvRuteo`, Máquina 1 |
+| 2 | 8085 | Nginx, Máquina 1 |
+| 2 | 8087, 5432 (DB COMPRA) | `MSCompra` réplica 2, Máquina 3 |
+| 2 | 5672 | `MSCompra` réplica 2, `MSPago`, SIN y SEN, Máquina 3 |
+| 3 | 8085, 5001 | Nginx y `ProxyWSYoPagoWeb`, Máquina 1 |
+| 3 | 5086 | `SrvRuteo`, Máquina 1 |
+| 3 | 389, 9001, 1025, 9004 | `MSAcceso`, `IntegraOFAC` e `IntegraMail` / `IntegraSMS`, Máquina 2 |
 
 ## 2. Construir y publicar imágenes (máquina de desarrollo)
 
+Con `deploy/maquina-N/.env` lleno en la máquina de desarrollo (ver paso 3). Todas las imágenes son `linux/amd64`.
+
 ```bash
 echo $GHCR_TOKEN | docker login ghcr.io -u juandatiner --password-stdin
-make images        # docker buildx --platform linux/amd64 ... --push
+docker compose -f deploy/maquina-N/docker-compose.yml build --push
 ```
 
-Sin registro: `make export` genera `dist/images-maquina-N.tar` y luego
-`scp dist/images-maquina-N.tar vm:` + `docker load -i images-maquina-N.tar`.
+Sin registro, se construye sin `--push` y se copian las imágenes a la VM:
+
+```bash
+docker compose -f deploy/maquina-N/docker-compose.yml build
+docker save $(docker compose -f deploy/maquina-N/docker-compose.yml config --images | sort -u) | gzip > imagenes-maquina-N.tar.gz
+scp imagenes-maquina-N.tar.gz usuario@IP:
+ssh usuario@IP 'gunzip -c imagenes-maquina-N.tar.gz | docker load'
+```
 
 ## 3. Arrancar cada máquina
 
+Los `docker-compose.yml` usan archivos hermanos de `deploy/` (`balanceador`, `mom`, `ad`, `sms`, `secretos`), así que se copia la carpeta
+completa, pero **sin `secretos`**: cada VM recibe solo los suyos.
+
+| Máquina | Archivos en `deploy/secretos/` | Se generan con |
+|---------|--------------------------------|----------------|
+| 1 | `token_publica.pem`, `balanceador.crt`, `balanceador.key` | `tools/scripts/generar-claves-token.sh`, `tools/scripts/generar-certificado-tls.sh deploy/secretos <IP-maquina-1>` |
+| 2 | `token_privada.pem`, `mom/usuarios.json` | `tools/scripts/generar-claves-token.sh`, `tools/scripts/generar-usuario-mom.py` |
+| 3 | `balanceador.crt` (el mismo de Máquina 1) | |
+
 ```bash
-scp -r deploy/maquina-N usuario@IP:~/sso
+rsync -a --exclude secretos --exclude dev deploy usuario@IP:~/sso/
+rsync -a --relative tools/carga usuario@IP:~/sso/
+# Copiar a ~/sso/deploy/secretos/ los archivos de la tabla, con la misma estructura
 ssh usuario@IP
-cd ~/sso && cp .env.example .env   # revisar IP y contraseñas
-docker compose pull && docker compose up -d
+cd ~/sso/deploy/maquina-N && cp .env.example .env   # llenar: nada trae valor
+docker compose pull           # sin registro: omitir (las imágenes ya están cargadas)
+docker compose up -d --no-build
 docker compose ps
 ```
 
+`CREDENCIAL_YOPAGO` (Máquinas 1 y 3), `DB_COMPRA_CLAVE` y `RABBITMQ_USUARIO` / `RABBITMQ_CLAVE` (Máquinas 2 y 3) deben ser iguales en ambas.
+
 Orden recomendado: **Máquina 3** (AD, OFAC, YoPago, bases) → **Máquina 2** (RabbitMQ, microservicios) → **Máquina 1** (Nginx, gateway, web).
+Las máquinas dependen entre sí y Compose no espera a otra máquina: `MSCompra` réplica 2 se reinicia hasta que DB COMPRA de Máquina 2 responde (`restart: unless-stopped`).
 
 ## 4. Cargar datos (una vez, en la VM)
 
@@ -47,6 +82,15 @@ DB_CATALOGO_CONTENEDOR=<contenedor> DB_SUBASTA_CONTENEDOR=<contenedor> python3 -
 ```
 
 Ver `tools/carga/README.md`.
+
+## Ver los correos (Mailpit)
+
+La UI de Mailpit solo escucha en el loopback de Máquina 3. Desde tu equipo:
+
+```bash
+ssh -L 8025:127.0.0.1:8025 usuario@IP-MAQUINA-3
+# abrir http://localhost:8025
+```
 
 ## 5. Verificar
 

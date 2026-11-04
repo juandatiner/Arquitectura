@@ -1,0 +1,319 @@
+# MAQUINA 3: réplica de compra, .NET y sistemas externos e internos. Nodos del diagrama «Arquitectura Integrada JavaEE-.NET».
+# Las IP de Máquinas 1 y 2 llegan por deploy/maquina-3/.env (ver .env.example y deploy/README.md).
+# Puertos publicados, solo los que usa otra máquina:
+#   8085 (Nginx, Máquina 1) · 5086 (SrvRuteo, Máquina 1) · 5001 (ProxyWSYoPagoWeb, Máquina 1)
+#   389 (MSAcceso, Máquina 2) · 9001 (MSValidacion, Máquina 2) · 1025 y 9004 (MSNotificacion, Máquina 2)
+# Cada PostgreSQL vive en su red privada con su servicio.
+
+name: sso-maquina-3
+
+x-servicio: &servicio
+  platform: linux/amd64
+  restart: unless-stopped
+  mem_limit: ${MEMORIA_MS:?Falta MEMORIA_MS en deploy/maquina-3/.env}
+
+x-db: &db
+  image: postgres:17-alpine
+  platform: linux/amd64
+  restart: unless-stopped
+  mem_limit: ${MEMORIA_DB:?Falta MEMORIA_DB en deploy/maquina-3/.env}
+  # ADR 0003: varios PostgreSQL en la misma máquina, con la memoria limitada
+  command: ["postgres", "-c", "shared_buffers=32MB"]
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+    interval: 5s
+    retries: 20
+
+x-mom: &mom
+  MOM_HOST: ${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-3/.env}
+  MOM_USUARIO: ${RABBITMQ_USUARIO:?Falta RABBITMQ_USUARIO en deploy/maquina-3/.env}
+  MOM_CLAVE: ${RABBITMQ_CLAVE:?Falta RABBITMQ_CLAVE en deploy/maquina-3/.env}
+
+services:
+  # AD SERVER :389 (OpenLDAP)
+  ad:
+    <<: *servicio
+    image: osixia/openldap:1.5.0
+    mem_limit: ${MEMORIA_EXTERNOS:?Falta MEMORIA_EXTERNOS en deploy/maquina-3/.env}
+    command: --copy-service
+    environment:
+      LDAP_ORGANISATION: SSO Javeriana
+      LDAP_DOMAIN: sso.javeriana.edu.co
+      LDAP_ADMIN_PASSWORD: ${AD_ADMIN_CLAVE:?Falta AD_ADMIN_CLAVE en deploy/maquina-3/.env}
+    volumes:
+      - ../ad/ldif:/container/service/slapd/assets/config/bootstrap/ldif/custom:ro
+      # Datos y configuración persistentes: sin esto el AD pierde los usuarios al recrear el contenedor
+      - ad-datos:/var/lib/ldap
+      - ad-config:/etc/ldap/slapd.d
+    ports:
+      - "389:389"
+    healthcheck:
+      test: ["CMD-SHELL", "ldapwhoami -x -H ldap://localhost -D cn=admin,dc=sso,dc=javeriana,dc=edu,dc=co -w \"$$LDAP_ADMIN_PASSWORD\""]
+      interval: 5s
+      retries: 20
+
+  # MAIL SERVER :1025 (SMTP) · CORREO. Health check en la imagen
+  mail:
+    <<: *servicio
+    image: axllent/mailpit:v1.27
+    mem_limit: ${MEMORIA_EXTERNOS:?Falta MEMORIA_EXTERNOS en deploy/maquina-3/.env}
+    environment:
+      MP_DATABASE: /datos/mailpit.db
+    volumes:
+      - mail:/datos
+    ports:
+      - "1025:1025"
+      # UI de correos solo en loopback de la VM: se consulta con túnel SSH, no desde otra máquina
+      - "127.0.0.1:8025:8025"
+
+  # SMS SERVER :9004 (HTTP) · SMS GATEWAY
+  sms:
+    <<: *servicio
+    image: python:3.13-alpine
+    mem_limit: ${MEMORIA_EXTERNOS:?Falta MEMORIA_EXTERNOS en deploy/maquina-3/.env}
+    command: ["python", "-I", "/app/servidor.py"]
+    volumes:
+      - ../sms/servidor.py:/app/servidor.py:ro
+      - sms:/datos
+    ports:
+      - "9004:9004"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:9004/salud"]
+      interval: 10s
+      retries: 10
+
+  # MSCompra SERVER réplica 2 :8085 · MSCompra.jar. DB COMPRA, MOM y MSValidacion están en Máquina 2
+  mscompra-replica2:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-3/.env}/sso-mscompra:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-3/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: mscompra
+        ARTEFACTO: MSCompra
+        PUERTO: 8085
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-3/.env}:5432/compra
+      DB_USUARIO: compra
+      DB_CLAVE: ${DB_COMPRA_CLAVE:?Falta DB_COMPRA_CLAVE en deploy/maquina-3/.env}
+      RUTA_MSVALIDACION: http://${MAQUINA2_IP:?Falta MAQUINA2_IP en deploy/maquina-3/.env}:8087
+    ports:
+      - "8085:8085"
+
+  # DB SERVER :5432 · DB OFAC
+  db-ofac:
+    <<: *db
+    environment:
+      POSTGRES_DB: ofac
+      POSTGRES_USER: ofac
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    volumes:
+      - db-ofac:/var/lib/postgresql/data
+    networks:
+      - red-ofac
+
+  # OFAC SERVER :9001 · OFACBackEnd.jar (sistema externo)
+  ofacbackend:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-3/.env}/sso-ofacbackend:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-3/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: ofacbackend
+        ARTEFACTO: OFACBackEnd
+        PUERTO: 9001
+    environment:
+      DB_URL: jdbc:postgresql://db-ofac:5432/ofac
+      DB_USUARIO: ofac
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    ports:
+      - "9001:9001"
+    networks:
+      - default
+      - red-ofac
+    depends_on:
+      db-ofac:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB SIN
+  db-sin:
+    <<: *db
+    environment:
+      POSTGRES_DB: sin
+      POSTGRES_USER: sin
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    volumes:
+      - db-sin:/var/lib/postgresql/data
+    networks:
+      - red-sin
+
+  # SIN SERVER :9002 · SINBackEnd.jar (Sistema de Inventarios)
+  sinbackend:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-3/.env}/sso-sinbackend:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-3/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: sinbackend
+        ARTEFACTO: SINBackEnd
+        PUERTO: 9002
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-sin:5432/sin
+      DB_USUARIO: sin
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    networks:
+      - default
+      - red-sin
+    depends_on:
+      db-sin:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB SEN
+  db-sen:
+    <<: *db
+    environment:
+      POSTGRES_DB: sen
+      POSTGRES_USER: sen
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    volumes:
+      - db-sen:/var/lib/postgresql/data
+    networks:
+      - red-sen
+
+  # SEN SERVER :9003 · SENBackEnd.jar (Sistema de Envíos)
+  senbackend:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-3/.env}/sso-senbackend:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-3/.env}
+    build:
+      context: ../../services
+      dockerfile: Dockerfile
+      args:
+        MODULO: senbackend
+        ARTEFACTO: SENBackEnd
+        PUERTO: 9003
+    environment:
+      <<: *mom
+      DB_URL: jdbc:postgresql://db-sen:5432/sen
+      DB_USUARIO: sen
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    networks:
+      - default
+      - red-sen
+    depends_on:
+      db-sen:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB PAGO
+  db-pago:
+    <<: *db
+    environment:
+      POSTGRES_DB: pago
+      POSTGRES_USER: pago
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    volumes:
+      - db-pago:/var/lib/postgresql/data
+    networks:
+      - red-pago
+
+  # MSPago SERVER :5086 · MSPago.dll (Kestrel .NET 8)
+  mspago:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-3/.env}/sso-mspago:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-3/.env}
+    build:
+      context: ../../services-dotnet
+      dockerfile: Dockerfile
+      args:
+        PROYECTO: MSPago
+        PUERTO: 5086
+    environment:
+      <<: *mom
+      DB_HOST: db-pago
+      DB_NOMBRE: pago
+      DB_USUARIO: pago
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+      TASA_IMPUESTO: ${TASA_IMPUESTO:?Falta TASA_IMPUESTO en deploy/maquina-3/.env}
+      RUTA_YOPAGO: http://yopagobackend:5001
+      # YoPagoWeb SERVER :5000 (Máquina 1): la URL que recibe el cliente para ir a pagar
+      URL_PAGO: http://${MAQUINA1_IP:?Falta MAQUINA1_IP en deploy/maquina-3/.env}:5000
+    ports:
+      - "5086:5086"
+    networks:
+      - default
+      - red-pago
+    depends_on:
+      db-pago:
+        condition: service_healthy
+
+  # DB SERVER :5432 · DB YOPAGO
+  db-yopago:
+    <<: *db
+    environment:
+      POSTGRES_DB: yopago
+      POSTGRES_USER: yopago
+      POSTGRES_PASSWORD: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+    volumes:
+      - db-yopago:/var/lib/postgresql/data
+    networks:
+      - red-yopago
+
+  # YoPago SERVER :5001 · YoPagoBackEnd.dll (Kestrel .NET 8) · sistema externo
+  yopagobackend:
+    <<: *servicio
+    image: ${IMAGE_REGISTRY:?Falta IMAGE_REGISTRY en deploy/maquina-3/.env}/sso-yopagobackend:${IMAGE_TAG:?Falta IMAGE_TAG en deploy/maquina-3/.env}
+    build:
+      context: ../../services-dotnet
+      dockerfile: Dockerfile
+      args:
+        PROYECTO: YoPagoBackEnd
+        PUERTO: 5001
+    environment:
+      DB_HOST: db-yopago
+      DB_NOMBRE: yopago
+      DB_USUARIO: yopago
+      DB_CLAVE: ${DB_CLAVE:?Falta DB_CLAVE en deploy/maquina-3/.env}
+      # VII.20 IntegraSSO → Nginx por HTTPS, con el certificado del balanceador fijado
+      RUTA_SSO: https://${MAQUINA1_IP:?Falta MAQUINA1_IP en deploy/maquina-3/.env}:443
+      CERTIFICADO_SSO: /run/secrets/certificado_sso
+      CREDENCIAL_YOPAGO: ${CREDENCIAL_YOPAGO:?Falta CREDENCIAL_YOPAGO en deploy/maquina-3/.env}
+    secrets:
+      - certificado_sso
+    ports:
+      - "5001:5001"
+    networks:
+      - default
+      - red-yopago
+    depends_on:
+      db-yopago:
+        condition: service_healthy
+
+networks:
+  red-ofac:
+    internal: true
+  red-sin:
+    internal: true
+  red-sen:
+    internal: true
+  red-pago:
+    internal: true
+  red-yopago:
+    internal: true
+
+secrets:
+  certificado_sso:
+    file: ../secretos/balanceador.crt
+
+volumes:
+  ad-datos:
+  ad-config:
+  mail:
+  sms:
+  db-ofac:
+  db-sin:
+  db-sen:
+  db-pago:
+  db-yopago:
