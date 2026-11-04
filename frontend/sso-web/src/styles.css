@@ -1,0 +1,29 @@
+:root { --fondo: #f4f6f9; --tarjeta: #fff; --texto: #1d2733; --suave: #5b6878; --marca: #1f4e8c; --borde: #d8dee6; --error: #b3261e; --ok: #1e6b3a; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--fondo); color: var(--texto); }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 16px; background: var(--marca); color: #fff; }
+header .marca { font-weight: 700; font-size: 18px; }
+header nav { display: flex; flex-wrap: wrap; gap: 6px; }
+header nav button { background: transparent; border: 1px solid #ffffff66; }
+header nav button.activo { background: #fff; color: var(--marca); }
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+.tarjeta { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; padding: 20px; overflow-x: auto; }
+.estrecha { max-width: 420px; margin: 0 auto; }
+h1 { margin-top: 0; font-size: 22px; }
+h2 { font-size: 17px; }
+label { display: block; margin-bottom: 10px; color: var(--suave); }
+input { display: block; width: 100%; padding: 8px; margin-top: 4px; border: 1px solid var(--borde); border-radius: 6px; font: inherit; }
+button { padding: 8px 14px; border: 0; border-radius: 6px; background: var(--marca); color: #fff; font: inherit; cursor: pointer; }
+button.secundario { background: #e6ebf2; color: var(--texto); }
+button:disabled { opacity: .5; cursor: default; }
+.filtros { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 14px; }
+.filtros label { margin: 0; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--borde); }
+td.acciones { display: flex; gap: 6px; }
+tr.resaltada { background: #eef4ff; }
+.seleccion { border-bottom: 1px solid var(--borde); padding-bottom: 12px; margin-bottom: 12px; }
+.paginas { display: flex; gap: 10px; align-items: center; }
+.error { color: var(--error); background: #fdecea; padding: 10px; border-radius: 6px; }
+.aviso { color: var(--ok); background: #e8f5ec; padding: 10px; border-radius: 6px; }
+.usuario { display: flex; gap: 8px; align-items: center; }
