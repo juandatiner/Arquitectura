@@ -15,7 +15,7 @@ Datos, claves e identificadores van entre `<...>`: nada de eso va en el reposito
 | `Makefile`, `make zip` y `tools/scripts/smoke-test.sh` | En PR borrador, sin fusionar | #143 |
 | E2E completo, `tools/scripts/e2e.sh` | 85 de 85 en las tres VM (2026-11-04), compra TERMINADA en menos de 70 s | #65 |
 | Comprobación de red, `tools/scripts/check-red.sh` | 16 de 16 puertos, con firewall | #68 |
-| Escenarios de falla con evidencia | 115 de 115 en las tres VM, `docs/escenarios-falla.md` | #66 |
+| Escenarios de falla con evidencia | 123 de 123 en las tres VM, `docs/escenarios-falla.md` | #66 |
 | Recorrido en Chrome real, CU I a VI | Hecho contra el stack local en Docker | Descripción de #139 |
 | CU VII a X en pantalla, de punta a punta | Por API y formularios de YoPago en las VM. En Chromium solo se revisó la carga de pantallas de SSO y YoPago, sin errores de consola: **falta recorrerlo a mano en el ensayo** | **PENDIENTE (P12)** |
 | Las tres VM | Desplegadas, 35 contenedores `healthy` | #68 |

@@ -81,7 +81,7 @@ ad-1                  Up 2 hours (healthy)
       1 peer_host	user	state
 == Resultado: 85 de 85 comprobaciones bien, 0 fallos, 66s ==
   OK    [ 59s] compra TERMINADA en 59s (criterio: menos de 2 min)
-== Resultado: 115 de 115 comprobaciones bien, 0 fallos, 672s ==
+== Resultado: 123 de 123 comprobaciones bien, 0 fallos, 720s ==
 ```
 
 `tools/scripts/check-red.sh` alcanzó 16 de 16 puertos entre máquinas con el firewall activo. Desde fuera de ellas, los puertos de Máquinas 2 y 3 quedan bloqueados (`tools/scripts/firewall-maquina.sh`).
