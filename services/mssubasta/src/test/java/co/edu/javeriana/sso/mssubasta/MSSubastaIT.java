@@ -213,13 +213,42 @@ class MSSubastaIT {
 
     @Test
     @Order(6)
-    void bienLiberadoLiberaLaSubastaAdjudicada() {
-        String evento =
-                "{\"idEvento\":\""
-                        + UUID.randomUUID()
-                        + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}";
-        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", evento);
+    void bienLiberadoLiberaLaSubastaAdjudicadaUnaSolaVez() {
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", bienLiberado("SUB-0001"));
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", bienLiberado("SUB-0001"));
         await().atMost(Duration.ofSeconds(10)).until(() -> estado("SUB-0001").equals("LIBERADA"));
+        await().during(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(5))
+                .until(() -> confirmacionesRegistradas("SUB-0001") == 1);
+    }
+
+    @Test
+    @Order(7)
+    void bienLiberadoNoLiberaUnaSubastaDesierta() {
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.subasta", bienLiberado("SUB-0002"));
+        await().during(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(5))
+                .until(
+                        () ->
+                                estado("SUB-0002").equals("DESIERTA")
+                                        && confirmacionesRegistradas("SUB-0002") == 0);
+    }
+
+    private static String bienLiberado(String idSubasta) {
+        return "{\"idEvento\":\""
+                + UUID.randomUUID()
+                + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\""
+                + idSubasta
+                + "\",\"motivo\":\"pago rechazado\"}";
+    }
+
+    private long confirmacionesRegistradas(String idSubasta) {
+        return jdbc.sql(
+                        "SELECT count(*) FROM outbox WHERE tipo = 'BienLiberadoConfirmado'"
+                                + " AND estado = 'REGISTRADO' AND payload->>'idSubasta' = :id")
+                .param("id", idSubasta)
+                .query(Long.class)
+                .single();
     }
 
     private String estado(String idSubasta) {

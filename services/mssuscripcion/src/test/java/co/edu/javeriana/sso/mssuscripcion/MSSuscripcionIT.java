@@ -158,13 +158,13 @@ class MSSuscripcionIT {
 
     @Test
     @Order(5)
-    void bienLiberadoLiberaLaSubastaConocida() {
-        rabbit.convertAndSend(
-                "",
-                "q.LiberarBienSubasta.suscripcion",
+    void bienLiberadoLiberaLaSubastaConocidaUnaSolaVez() {
+        String bienLiberado =
                 "{\"idEvento\":\""
                         + UUID.randomUUID()
-                        + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}");
+                        + "\",\"numeroCompra\":\"C-1\",\"idSubasta\":\"SUB-0001\",\"motivo\":\"pago rechazado\"}";
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.suscripcion", bienLiberado);
+        rabbit.convertAndSend("", "q.LiberarBienSubasta.suscripcion", bienLiberado);
         await().atMost(Duration.ofSeconds(10))
                 .until(
                         () ->
@@ -173,6 +173,16 @@ class MSSuscripcionIT {
                                         .query(String.class)
                                         .single()
                                         .equals("LIBERADA"));
+        await().during(Duration.ofSeconds(1))
+                .atMost(Duration.ofSeconds(5))
+                .until(
+                        () ->
+                                jdbc.sql(
+                                                        "SELECT count(*) FROM outbox WHERE tipo = 'BienLiberadoConfirmado'"
+                                                                + " AND estado = 'REGISTRADO'")
+                                                .query(Long.class)
+                                                .single()
+                                        == 1);
     }
 
     private void publicar(String cola, String tipo, String json) {

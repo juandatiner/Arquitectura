@@ -10,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import co.edu.javeriana.sso.mssuscripcion.config.PropiedadesSuscripcion;
+import co.edu.javeriana.sso.mssuscripcion.modelo.BienLiberadoConfirmado;
 import co.edu.javeriana.sso.mssuscripcion.modelo.Cliente;
 import co.edu.javeriana.sso.mssuscripcion.modelo.EstadoSuscripcion;
 import co.edu.javeriana.sso.mssuscripcion.modelo.EventoSubasta;
@@ -41,6 +42,22 @@ class SrvSuscripcionTest {
                 valor,
                 EstadoSuscripcion.ACTIVA,
                 Instant.now());
+    }
+
+    /** Pasos X.6c, X.7c, X.8c. */
+    @Test
+    void liberarBienSoloRegistraConfirmacionSiCambioElEstado() {
+        when(repo.liberarSiAdjudicada("SUB-1")).thenReturn(true, false);
+
+        srv.liberarBien("SUB-1", "pago rechazado");
+        srv.liberarBien("SUB-1", "pago rechazado");
+
+        ArgumentCaptor<BienLiberadoConfirmado> evento =
+                ArgumentCaptor.forClass(BienLiberadoConfirmado.class);
+        verify(outbox).guardar(evento.capture());
+        assertThat(evento.getValue().idSubasta()).isEqualTo("SUB-1");
+        assertThat(evento.getValue().motivo()).isEqualTo("pago rechazado");
+        assertThat(evento.getValue().cola()).isNull();
     }
 
     @Test

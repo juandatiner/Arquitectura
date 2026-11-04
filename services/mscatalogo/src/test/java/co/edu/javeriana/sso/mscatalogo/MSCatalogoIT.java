@@ -143,7 +143,7 @@ class MSCatalogoIT {
 
     @Test
     @Order(5)
-    void bienLiberadoDevuelveElBienAlCatalogoUnaSolaVez() {
+    void bienLiberadoMarcaLaSubastaLiberadaUnaSolaVez() {
         String bienLiberado =
                 "{\"idEvento\":\""
                         + UUID.randomUUID()
@@ -168,6 +168,25 @@ class MSCatalogoIT {
                                                 .query(Long.class)
                                                 .single()
                                         == 1);
+    }
+
+    /** Observación 16: una subasta nueva del mismo bien lo devuelve al catálogo. */
+    @Test
+    @Order(6)
+    void unaSubastaNuevaDelBienLiberadoLoDevuelveAlCatalogo() throws Exception {
+        mvc.perform(get("/catalogo").param("categoria", "VEHICULOS"))
+                .andExpect(jsonPath("$.total").value(0));
+
+        jdbc.sql(
+                        "INSERT INTO subasta (id_subasta, id_bien, fecha_inicio, fecha_cierre, estado)"
+                                + " VALUES ('SUB-0002', 'BIEN-0001', now() + interval '1 day',"
+                                + " now() + interval '4 days', 'PENDIENTE')")
+                .update();
+        mvc.perform(publicar("SUB-0002")).andExpect(status().isOk());
+
+        mvc.perform(get("/catalogo").param("categoria", "VEHICULOS"))
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.contenido[0].idSubasta").value("SUB-0002"));
     }
 
     private static org.springframework.test.web.servlet.RequestBuilder publicar(String idSubasta) {
