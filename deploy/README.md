@@ -26,7 +26,10 @@ Abrir en el firewall solo estos puertos (son los únicos que publica cada `docke
 
 ## 2. Construir y publicar imágenes (máquina de desarrollo)
 
-Con `deploy/maquina-N/.env` lleno en la máquina de desarrollo (ver paso 3). Todas las imágenes son `linux/amd64`.
+Las publica en GHCR [`release.yml`](../.github/workflows/release.yml) al subir una etiqueta `vX.Y.Z` (o a mano con `gh workflow run release.yml --ref vX.Y.Z`),
+con los tags `X.Y.Z`, `X.Y` y `latest`. En el `.env` de cada VM: `IMAGE_REGISTRY=ghcr.io/juandatiner` e `IMAGE_TAG` con uno de esos tags.
+
+Para construirlas desde la máquina de desarrollo, con `deploy/maquina-N/.env` lleno (ver paso 3). Todas las imágenes son `linux/amd64`.
 
 ```bash
 echo $GHCR_TOKEN | docker login ghcr.io -u juandatiner --password-stdin
@@ -55,7 +58,7 @@ completa, pero **sin `secretos`**: cada VM recibe solo los suyos.
 
 ```bash
 rsync -a --exclude secretos --exclude dev deploy usuario@IP:~/sso/
-rsync -a --relative tools/carga usuario@IP:~/sso/
+rsync -a --relative tools/carga tools/scripts/check-red.sh usuario@IP:~/sso/
 # Copiar a ~/sso/deploy/secretos/ los archivos de la tabla, con la misma estructura
 ssh usuario@IP
 cd ~/sso/deploy/maquina-N && cp .env.example .env   # llenar: nada trae valor
@@ -93,6 +96,14 @@ ssh -L 8025:127.0.0.1:8025 usuario@IP-MAQUINA-3
 ```
 
 ## 5. Verificar
+
+Con los tres stacks arriba, en cada VM, [`tools/scripts/check-red.sh`](../tools/scripts/check-red.sh) comprueba con `nc -zv` los puertos de la tabla
+del paso 1 que esa máquina usa de las otras. Termina en un código distinto de cero si alguno falla. Los puertos 80 y 5000 de Máquina 1 no están: los usa el navegador, no otra máquina.
+
+```bash
+cd ~/sso
+env $(grep -E '^MAQUINA[123]_IP=' deploy/maquina-N/.env) tools/scripts/check-red.sh N
+```
 
 ```bash
 ./scripts/smoke-test.sh   # recorre CU I → X contra la IP de Máquina 1

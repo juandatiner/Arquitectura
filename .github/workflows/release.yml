@@ -1,0 +1,197 @@
+# Publica en GHCR las imágenes linux/amd64 que usan deploy/maquina-*/docker-compose.yml.
+# Se dispara al subir una etiqueta v* o a mano sobre una etiqueta existente:
+#   gh workflow run release.yml --ref v1.2.3
+# La matriz repite image: y build: de esos compose; un servicio nuevo allí se agrega también aquí.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  IMAGE_REGISTRY: ghcr.io/${{ github.repository_owner }}
+
+jobs:
+  version:
+    name: Validar etiqueta
+    runs-on: ubuntu-latest
+    outputs:
+      prerelease: ${{ steps.etiqueta.outputs.prerelease }}
+    steps:
+      - id: etiqueta
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ "$REF_TYPE" != tag || ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error::Se publica solo desde una etiqueta vX.Y.Z o vX.Y.Z-pre; llegó $REF_TYPE '$TAG'"
+            exit 1
+          fi
+          if [[ "$TAG" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  imagenes:
+    name: ${{ matrix.imagen }}
+    needs: version
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Máquina 1
+          - imagen: sso-ssoweb
+            contexto: frontend/sso-web
+            args: ''
+          - imagen: sso-apigateway
+            contexto: services
+            args: |
+              MODULO=apigateway
+              ARTEFACTO=APIGateway
+              PUERTO=8080
+          - imagen: sso-yopagofrontend
+            contexto: services-dotnet
+            args: |
+              PROYECTO=YoPagoFrontEnd
+              PUERTO=5000
+          # Máquina 2
+          - imagen: sso-msacceso
+            contexto: services
+            args: |
+              MODULO=msacceso
+              ARTEFACTO=MSAcceso
+              PUERTO=8081
+          - imagen: sso-mscatalogo
+            contexto: services
+            args: |
+              MODULO=mscatalogo
+              ARTEFACTO=MSCatalogo
+              PUERTO=8082
+          - imagen: sso-mssubasta
+            contexto: services
+            args: |
+              MODULO=mssubasta
+              ARTEFACTO=MSSubasta
+              PUERTO=8083
+          - imagen: sso-mssuscripcion
+            contexto: services
+            args: |
+              MODULO=mssuscripcion
+              ARTEFACTO=MSSuscripcion
+              PUERTO=8084
+          # Máquinas 2 y 3 (réplicas 1 y 2)
+          - imagen: sso-mscompra
+            contexto: services
+            args: |
+              MODULO=mscompra
+              ARTEFACTO=MSCompra
+              PUERTO=8085
+          - imagen: sso-msvalidacion
+            contexto: services
+            args: |
+              MODULO=msvalidacion
+              ARTEFACTO=MSValidacion
+              PUERTO=8087
+          - imagen: sso-msdespacho
+            contexto: services
+            args: |
+              MODULO=msdespacho
+              ARTEFACTO=MSDespacho
+              PUERTO=8088
+          - imagen: sso-msnotificacion
+            contexto: services
+            args: |
+              MODULO=msnotificacion
+              ARTEFACTO=MSNotificacion
+              PUERTO=8089
+          # Máquina 3
+          - imagen: sso-ofacbackend
+            contexto: services
+            args: |
+              MODULO=ofacbackend
+              ARTEFACTO=OFACBackEnd
+              PUERTO=9001
+          - imagen: sso-sinbackend
+            contexto: services
+            args: |
+              MODULO=sinbackend
+              ARTEFACTO=SINBackEnd
+              PUERTO=9002
+          - imagen: sso-senbackend
+            contexto: services
+            args: |
+              MODULO=senbackend
+              ARTEFACTO=SENBackEnd
+              PUERTO=9003
+          - imagen: sso-mspago
+            contexto: services-dotnet
+            args: |
+              PROYECTO=MSPago
+              PUERTO=5086
+          - imagen: sso-yopagobackend
+            contexto: services-dotnet
+            args: |
+              PROYECTO=YoPagoBackEnd
+              PUERTO=5001
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - id: meta
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6.2.0
+        with:
+          images: ${{ env.IMAGE_REGISTRY }}/${{ matrix.imagen }}
+          flavor: latest=false
+          # v1.2.3 → 1.2.3, 1.2 y latest. Una prerelease (v1.2.3-rc.1) solo publica 1.2.3-rc.1
+          tags: |
+            type=semver,pattern={{version}},value=${{ github.ref_name }}
+            type=semver,pattern={{major}}.{{minor}},value=${{ github.ref_name }},enable=${{ needs.version.outputs.prerelease == 'false' }}
+            type=raw,value=latest,enable=${{ needs.version.outputs.prerelease == 'false' }}
+      - uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: ${{ matrix.contexto }}
+          platforms: linux/amd64
+          build-args: ${{ matrix.args }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.imagen }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.imagen }}
+
+  release:
+    name: Crear release
+    needs: [version, imagenes]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      # --generate-notes: las notas las genera GitHub (generate_release_notes) con los títulos de los PR
+      - env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        run: |
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "La release $TAG ya existe"
+            exit 0
+          fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes --prerelease="$PRERELEASE"
