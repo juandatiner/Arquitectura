@@ -13,15 +13,16 @@ RUN --mount=type=cache,target=/root/.m2 \
 FROM eclipse-temurin:21-jre-alpine
 ARG MODULO
 ARG ARTEFACTO
+ENV ARTEFACTO=${ARTEFACTO}
 # Puerto del nodo en el diagrama (el mismo de server.port del componente)
 ARG PUERTO
 ENV PUERTO=${PUERTO}
 EXPOSE ${PUERTO}
 RUN addgroup -S sso && adduser -S sso -G sso && apk add --no-cache wget
 WORKDIR /app
-COPY --from=construccion /src/${MODULO}/target/${ARTEFACTO}.jar /app/app.jar
+COPY --from=construccion /src/${MODULO}/target/${ARTEFACTO}.jar /app/${ARTEFACTO}.jar
 USER sso
 ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
 HEALTHCHECK --interval=15s --timeout=3s --start-period=60s --retries=5 \
   CMD wget -qO- http://localhost:${PUERTO}/actuator/health/readiness | grep -q UP || exit 1
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java -jar /app/${ARTEFACTO}.jar"]

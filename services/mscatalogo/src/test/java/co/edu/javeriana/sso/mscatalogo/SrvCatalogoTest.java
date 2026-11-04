@@ -44,7 +44,7 @@ class SrvCatalogoTest {
 
     @Test
     void publicarGuardaNuevaSubastaEnElOutbox() {
-        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001", "admin1")).thenReturn(true);
+        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001")).thenReturn(true);
         when(repoCatalogo.obtener("SUB-0001"))
                 .thenReturn(Optional.of(subasta(EstadoSubasta.PUBLICADA)));
 
@@ -59,7 +59,7 @@ class SrvCatalogoTest {
 
     @Test
     void publicarUnaYaPublicadaNoGeneraEvento() {
-        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001", "admin1")).thenReturn(false);
+        when(repoCatalogo.publicarSiPendienteYEnFecha("SUB-0001")).thenReturn(false);
         when(repoCatalogo.obtener("SUB-0001"))
                 .thenReturn(Optional.of(subasta(EstadoSubasta.PUBLICADA)));
 

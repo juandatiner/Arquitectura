@@ -252,7 +252,7 @@
         "x-queue-type": "quorum",
         "x-dead-letter-exchange": "sso.dlx",
         "x-dead-letter-routing-key": "q.pagoSolicitud.dlq",
-        "x-delivery-limit": 5
+        "x-delivery-limit": -1
       }
     },
     {
@@ -261,8 +261,7 @@
       "durable": true,
       "auto_delete": false,
       "arguments": {
-        "x-queue-type": "quorum"
-      }
+        "x-queue-type": "quorum"}
     },
     {
       "name": "q.pagoConfirmado",

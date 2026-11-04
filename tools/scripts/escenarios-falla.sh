@@ -2,7 +2,7 @@
 # Escenarios de falla contra deploy/dev o las tres máquinas (issue #66; variables en lib-e2e.sh). Evidencia y conclusiones: docs/escenarios-falla.md.
 # Detiene y arranca solo contenedores del proyecto; al salir vuelve a arrancar lo que detuvo.
 #
-# Uso: tools/scripts/escenarios-falla.sh [ofac|rabbitmq|replica|yopago|sso|fanout|dlq ...]   (sin argumentos: todos)
+# Uso: tools/scripts/escenarios-falla.sh [ofac|validacion|rabbitmq|replica|yopago|sso|fanout|dlq ...]   (sin argumentos: todos)
 set -uo pipefail
 # shellcheck disable=SC1091
 . "$(dirname "$0")/lib-e2e.sh"
@@ -223,24 +223,36 @@ escenario_yopago() {
     pagar_en_web 19
     terminada 19
 
-    seccion "YoPago caído más que los reintentos de la cola (x-delivery-limit)"
+    seccion "YoPago caído mucho tiempo: MSPago sigue reintentando y no pierde la solicitud"
     numero=$(campo_compra 20 20 numeroCompra)
     dlq_base=$(mensajes_en q.pagoSolicitud.dlq)
+    desde=$(marca_tiempo)
     detener yopagobackend
-    local inicio_caida=$SECONDS
     iniciar_compra 20 20
     esperar "compra 20 en ESPERANDO_PAGO" 30 estado_compra_es 20 20 ESPERANDO_PAGO
-    esperar "la solicitud de pago cae a q.pagoSolicitud.dlq" 90 mensajes_son q.pagoSolicitud.dlq "$((dlq_base + 1))"
-    nota "llegó a la DLQ $((SECONDS - inicio_caida))s después de apagar YoPago"
+    sleep 90
+    esperar "MSPago sigue reintentando pasados 90 s" 10 mspago_reintenta "$desde" 8
+    igual "la solicitud no cae a la DLQ" "$dlq_base" "$(mensajes_en q.pagoSolicitud.dlq)"
+    igual "la compra espera sin perderse" ESPERANDO_PAGO "$(campo_compra 20 20 estado)"
     arrancar yopagobackend
-    sleep 25
-    igual "al volver YoPago, sin reprocesar, no hay pago preparado" 0 "$(sql pago "SELECT count(*) FROM pago WHERE numero_compra = '$numero'")"
-    igual "la compra queda detenida en" ESPERANDO_PAGO "$(campo_compra 20 20 estado)"
-    MOM_USUARIO=$RABBITMQ_USUARIO MOM_CLAVE=$RABBITMQ_CLAVE python3 -I "$RAIZ/tools/scripts/reprocesar-dlq.py" q.pagoSolicitud 1 "$MOM_API_URL" | sed 's/^/        /'
-    esperar "con reprocesar-dlq.py el pago se prepara" 30 sql_es pago "SELECT estado FROM pago WHERE numero_compra = '$numero'" PENDIENTE
+    esperar "al volver YoPago, el pago se prepara solo" 60 sql_es pago "SELECT estado FROM pago WHERE numero_compra = '$numero'" PENDIENTE
     esperar "SMS con el enlace de pago" 30 hay_sms 20 "Pague en YoPago"
     pagar_en_web 20
     terminada 20
+}
+
+# ---------- MSValidacion caído ----------
+escenario_validacion() {
+    seccion "MSValidacion caído: la compra reintenta y avanza al volver"
+    preparar_compras 22
+    detener msvalidacion
+    iniciar_compra 22 22
+    codigo_es "iniciar compra con MSValidacion caído (el cliente no espera)" 202
+    esperar "al menos 1 reintento registrado" 90 intentos_ofac_al_menos 22 1
+    igual "la compra sigue" EN_VALIDACION "$(campo_compra 22 22 estado)"
+    arrancar msvalidacion
+    esperar "MSValidacion de vuelta" 120 sano msvalidacion
+    esperar "la compra avanza sola a ESPERANDO_PAGO" 150 estado_compra_es 22 22 ESPERANDO_PAGO
 }
 
 # ---------- SSO caído cuando YoPago reporta ----------
@@ -332,7 +344,7 @@ escenario_dlq() {
     done
 }
 
-ESCENARIOS=${*:-fanout dlq ofac rabbitmq replica yopago sso}
+ESCENARIOS=${*:-fanout dlq ofac validacion rabbitmq replica yopago sso}
 for escenario in $ESCENARIOS; do
     "escenario_$escenario"
 done

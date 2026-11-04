@@ -38,7 +38,7 @@ public class SrvCatalogo {
      */
     @Transactional
     public SubastaPublicada publicarNuevaSubasta(String idSubasta, Administrador admin) {
-        if (!repoCatalogo.publicarSiPendienteYEnFecha(idSubasta, admin.usuario())) {
+        if (!repoCatalogo.publicarSiPendienteYEnFecha(idSubasta)) {
             SubastaPublicada actual =
                     repoCatalogo
                             .obtener(idSubasta)

@@ -226,13 +226,15 @@
                     }
                   </td>
                   <td>
-                    <button
-                      type="button"
-                      [disabled]="ocupado()"
-                      (click)="seleccionarCompra(c.numeroCompra)"
-                    >
-                      Continuar compra
-                    </button>
+                    @if (c.estado === 'CREADA') {
+                      <button
+                        type="button"
+                        [disabled]="ocupado()"
+                        (click)="seleccionarCompra(c.numeroCompra)"
+                      >
+                        Continuar compra
+                      </button>
+                    }
                   </td>
                 </tr>
               } @empty {

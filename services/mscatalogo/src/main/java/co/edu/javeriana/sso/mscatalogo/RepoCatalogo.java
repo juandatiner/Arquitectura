@@ -72,20 +72,18 @@ public class RepoCatalogo {
 
     /**
      * Paso III.9 (SrvCatalogo → RepoCatalogo). UPDATE condicional: solo publica si está PENDIENTE y
-     * su fecha de cierre no ha pasado. La fecha actual sale del reloj. {@code publicadaPor} no está
-     * en el paso: observación 21.
+     * su fecha de cierre no ha pasado. La fecha actual sale del reloj.
      *
      * @return true si la publicó (filasAfectadas = 1)
      */
-    public boolean publicarSiPendienteYEnFecha(String idSubasta, String publicadaPor) {
+    public boolean publicarSiPendienteYEnFecha(String idSubasta) {
         return jdbc.sql(
                                 """
                                 UPDATE subasta
-                                   SET estado = 'PUBLICADA', publicada_por = :por, publicada_en = :ahora
+                                   SET estado = 'PUBLICADA', publicada_en = :ahora
                                  WHERE id_subasta = :id AND estado = 'PENDIENTE' AND fecha_cierre > :ahora
                                 """)
                         .param("id", idSubasta)
-                        .param("por", publicadaPor)
                         .param("ahora", Timestamp.from(Instant.now(reloj)))
                         .update()
                 == 1;

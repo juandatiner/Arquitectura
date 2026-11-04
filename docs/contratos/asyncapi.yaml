@@ -193,7 +193,7 @@ channels:
           vhost: "/"
   pagoSolicitud:
     address: q.pagoSolicitud
-    description: "Exchange fanout q.pagoSolicitud, ligado a: q.pagoSolicitud. Tras 5 entregas fallidas el mensaje pasa a <cola>.dlq."
+    description: "Exchange fanout q.pagoSolicitud, ligado a: q.pagoSolicitud. Tras -1 entregas fallidas el mensaje pasa a <cola>.dlq."
     messages:
       PagoSolicitud:
         "$ref": "#/components/messages/PagoSolicitud"
