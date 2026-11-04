@@ -1,5 +1,6 @@
 package co.edu.javeriana.sso.mscompra;
 
+import co.edu.javeriana.sso.mscompra.config.PropiedadesCompra;
 import co.edu.javeriana.sso.mscompra.modelo.Cliente;
 import co.edu.javeriana.sso.mscompra.modelo.Compra;
 import co.edu.javeriana.sso.mscompra.modelo.EstadoCompra;
@@ -23,9 +24,11 @@ public class RepoCompra {
             """;
 
     private final JdbcClient jdbc;
+    private final PropiedadesCompra propiedades;
 
-    public RepoCompra(JdbcClient jdbc) {
+    public RepoCompra(JdbcClient jdbc, PropiedadesCompra propiedades) {
         this.jdbc = jdbc;
+        this.propiedades = propiedades;
     }
 
     /** Paso V.10a/b. */
@@ -132,10 +135,10 @@ public class RepoCompra {
 
     /**
      * Paso VI.12: reserva un lote de compras EN_VALIDACION cuyo próximo intento ya llegó. La
-     * reserva ({@code reservada_hasta}) y SKIP LOCKED evitan que las dos réplicas validen la misma
-     * compra.
+     * reserva ({@code reservada_hasta}, su duración viene de la configuración) y SKIP LOCKED evitan
+     * que las dos réplicas validen la misma compra.
      */
-    public List<Compra> tomarPendientesValidacion(int tamañoLote, Duration reserva) {
+    public List<Compra> tomarPendientesValidacion(int tamañoLote) {
         return jdbc.sql(
                         "UPDATE compra SET reservada_hasta = now() + make_interval(secs => :reserva)"
                                 + " WHERE numero_compra IN (SELECT numero_compra FROM compra"
@@ -144,7 +147,7 @@ public class RepoCompra {
                                 + "   ORDER BY proximo_intento LIMIT :lote FOR UPDATE SKIP LOCKED)"
                                 + " RETURNING "
                                 + COLUMNAS)
-                .param("reserva", reserva.toSeconds())
+                .param("reserva", propiedades.reservaValidacion().toSeconds())
                 .param("lote", tamañoLote)
                 .query(RepoCompra::fila)
                 .list();

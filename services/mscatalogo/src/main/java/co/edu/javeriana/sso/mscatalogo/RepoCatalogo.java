@@ -7,6 +7,7 @@ import co.edu.javeriana.sso.mscatalogo.modelo.SubastaPublicada;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -31,9 +32,11 @@ public class RepoCatalogo {
             """;
 
     private final JdbcClient jdbc;
+    private final Clock reloj;
 
-    public RepoCatalogo(JdbcClient jdbc) {
+    public RepoCatalogo(JdbcClient jdbc, Clock reloj) {
         this.jdbc = jdbc;
+        this.reloj = reloj;
     }
 
     /** Paso II.9a (SrvCatalogo → RepoCatalogo). */
@@ -68,12 +71,12 @@ public class RepoCatalogo {
 
     /**
      * Paso III.9 (SrvCatalogo → RepoCatalogo). UPDATE condicional: solo publica si está PENDIENTE y
-     * su fecha de cierre no ha pasado.
+     * su fecha de cierre no ha pasado. La fecha actual sale del reloj. {@code publicadaPor} no está
+     * en el paso: observación 21.
      *
      * @return true si la publicó (filasAfectadas = 1)
      */
-    public boolean publicarSiPendienteYEnFecha(
-            String idSubasta, String publicadaPor, Instant ahora) {
+    public boolean publicarSiPendienteYEnFecha(String idSubasta, String publicadaPor) {
         return jdbc.sql(
                                 """
                                 UPDATE subasta
@@ -82,7 +85,7 @@ public class RepoCatalogo {
                                 """)
                         .param("id", idSubasta)
                         .param("por", publicadaPor)
-                        .param("ahora", Timestamp.from(ahora))
+                        .param("ahora", Timestamp.from(Instant.now(reloj)))
                         .update()
                 == 1;
     }

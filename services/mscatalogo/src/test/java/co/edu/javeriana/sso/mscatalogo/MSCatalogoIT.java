@@ -104,6 +104,13 @@ class MSCatalogoIT {
         mvc.perform(publicar("SUB-0001"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.estado").value("PUBLICADA"));
+        assertThat(
+                        jdbc.sql(
+                                        "SELECT count(*) FROM subasta WHERE id_subasta = 'SUB-0001'"
+                                                + " AND publicada_por = 'admin1' AND publicada_en IS NOT NULL")
+                                .query(Long.class)
+                                .single())
+                .isEqualTo(1);
 
         Message mensaje = rabbit.receive("q.nuevaSubasta", 10_000);
         assertThat(mensaje).isNotNull();

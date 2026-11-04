@@ -129,9 +129,7 @@ public class SrvCompraSaga {
      * respuesta.
      */
     public void validarComprasPendientes() {
-        List<Compra> pendientes =
-                repoCompra.tomarPendientesValidacion(
-                        propiedades.tamanoLote(), propiedades.reservaValidacion());
+        List<Compra> pendientes = repoCompra.tomarPendientesValidacion(propiedades.tamanoLote());
         for (Compra compra : pendientes) {
             EstadoOFAC resultado;
             try {

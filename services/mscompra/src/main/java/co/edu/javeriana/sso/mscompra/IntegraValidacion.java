@@ -6,6 +6,7 @@ import co.edu.javeriana.sso.mscompra.modelo.ResultadoValidacion;
 import co.edu.javeriana.sso.mscompra.modelo.ValidacionNoDisponibleException;
 import io.github.resilience4j.circuitbreaker.CallNotPermittedException;
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -39,12 +40,7 @@ public class IntegraValidacion {
                             () ->
                                     http.post()
                                             .uri(urlValidacion + "/validaciones")
-                                            .body(
-                                                    Map.of(
-                                                            "numeroCompra",
-                                                            numeroCompra,
-                                                            "cedula",
-                                                            cedula))
+                                            .body(cuerpo(numeroCompra, cedula))
                                             .retrieve()
                                             .body(ResultadoValidacion.class));
             if (resultado == null || resultado.estado() == null) {
@@ -57,5 +53,13 @@ public class IntegraValidacion {
             throw new ValidacionNoDisponibleException(
                     "MSValidacion no responde: " + e.getMessage(), e);
         }
+    }
+
+    /** Cuerpo JSON con los parámetros de VI.14, en el mismo orden. */
+    private static Map<String, Object> cuerpo(String numeroCompra, String cedula) {
+        Map<String, Object> mapa = new LinkedHashMap<>();
+        mapa.put("numeroCompra", numeroCompra);
+        mapa.put("cedula", cedula);
+        return mapa;
     }
 }

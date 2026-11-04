@@ -71,7 +71,7 @@ class SrvCompraSagaTest {
     }
 
     private void pendiente(int intentos) {
-        when(repo.tomarPendientesValidacion(anyInt(), any()))
+        when(repo.tomarPendientesValidacion(anyInt()))
                 .thenReturn(List.of(compra(EstadoCompra.EN_VALIDACION, intentos)));
     }
 
@@ -82,6 +82,7 @@ class SrvCompraSagaTest {
 
         srv.validarComprasPendientes();
 
+        verify(repo).tomarPendientesValidacion(20);
         verify(repo).cambiarEstado("C-2026-000001", EstadoCompra.ESPERANDO_PAGO, null);
         verify(outbox).guardar(any(PagoSolicitud.class));
     }

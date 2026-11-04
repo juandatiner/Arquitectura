@@ -2,7 +2,6 @@ package co.edu.javeriana.sso.mssuscripcion;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -62,12 +61,14 @@ class SrvSuscripcionTest {
 
     @Test
     void nuevaSubastaAvisaUnaVezACadaSuscriptorDeLaCategoriaODeTodas() {
-        when(repo.buscarSuscriptores(eq(TipoSuscripcion.NUEVAS_SUBASTAS), any()))
+        when(repo.buscarSuscriptores())
                 .thenReturn(
                         List.of(
                                 suscripcion("1", TipoSuscripcion.NUEVAS_SUBASTAS, "TODAS"),
                                 suscripcion("2", TipoSuscripcion.NUEVAS_SUBASTAS, "VEHICULOS"),
-                                suscripcion("1", TipoSuscripcion.NUEVAS_SUBASTAS, "VEHICULOS")));
+                                suscripcion("1", TipoSuscripcion.NUEVAS_SUBASTAS, "VEHICULOS"),
+                                suscripcion("3", TipoSuscripcion.NUEVAS_SUBASTAS, "INMUEBLES"),
+                                suscripcion("4", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1")));
 
         srv.procesarEvento(
                 new EventoSubasta.NuevaSubasta(
@@ -92,11 +93,13 @@ class SrvSuscripcionTest {
 
     @Test
     void cambioDeOfertaMayorAvisaPorSmsSinAvisarAlQueOferto() {
-        when(repo.buscarSuscriptores(TipoSuscripcion.CAMBIOS_OFERTA, List.of("SUB-1")))
+        when(repo.buscarSuscriptores())
                 .thenReturn(
                         List.of(
                                 suscripcion("1", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1"),
-                                suscripcion("2", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1")));
+                                suscripcion("2", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-1"),
+                                suscripcion("3", TipoSuscripcion.CAMBIOS_OFERTA, "SUB-2"),
+                                suscripcion("4", TipoSuscripcion.NUEVAS_SUBASTAS, "TODAS")));
 
         srv.procesarEvento(
                 new EventoSubasta.CambioOfertaMayor(

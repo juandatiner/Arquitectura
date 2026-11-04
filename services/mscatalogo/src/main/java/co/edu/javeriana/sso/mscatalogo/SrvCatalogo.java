@@ -9,8 +9,6 @@ import co.edu.javeriana.sso.mscatalogo.modelo.PaginaCatalogo;
 import co.edu.javeriana.sso.mscatalogo.modelo.SubastaNoEncontradaException;
 import co.edu.javeriana.sso.mscatalogo.modelo.SubastaNoPublicableException;
 import co.edu.javeriana.sso.mscatalogo.modelo.SubastaPublicada;
-import java.time.Clock;
-import java.time.Instant;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,13 +19,10 @@ public class SrvCatalogo {
 
     private final RepoCatalogo repoCatalogo;
     private final RepoOutboxCatalogo repoOutboxCatalogo;
-    private final Clock reloj;
 
-    public SrvCatalogo(
-            RepoCatalogo repoCatalogo, RepoOutboxCatalogo repoOutboxCatalogo, Clock reloj) {
+    public SrvCatalogo(RepoCatalogo repoCatalogo, RepoOutboxCatalogo repoOutboxCatalogo) {
         this.repoCatalogo = repoCatalogo;
         this.repoOutboxCatalogo = repoOutboxCatalogo;
-        this.reloj = reloj;
     }
 
     /** Pasos II.8a (WSCatalogo → SrvCatalogo) y II.9a (→ RepoCatalogo). */
@@ -43,8 +38,7 @@ public class SrvCatalogo {
      */
     @Transactional
     public SubastaPublicada publicarNuevaSubasta(String idSubasta, Administrador admin) {
-        Instant ahora = Instant.now(reloj);
-        if (!repoCatalogo.publicarSiPendienteYEnFecha(idSubasta, admin.usuario(), ahora)) {
+        if (!repoCatalogo.publicarSiPendienteYEnFecha(idSubasta, admin.usuario())) {
             SubastaPublicada actual =
                     repoCatalogo
                             .obtener(idSubasta)
