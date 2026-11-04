@@ -102,7 +102,7 @@ public static class Trazabilidad
             }
             finally
             {
-                if (!contexto.Request.Path.StartsWithSegments("/health"))
+                if (!contexto.Request.Path.StartsWithSegments("/health") && log.IsEnabled(LogLevel.Information))
                 {
                     log.LogInformation(
                         "peticion atendida {Metodo} {Ruta} {Estado} {DuracionMs}",
