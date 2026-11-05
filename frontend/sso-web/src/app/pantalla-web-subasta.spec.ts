@@ -35,6 +35,36 @@ describe('PantallaWebSubasta', () => {
     expect(fixture.nativeElement.textContent).toContain('Ana');
   });
 
+  it('muestra en rojo la oferta rechazada, no como aviso de éxito', async () => {
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    proxy.registrarOferta.mockRejectedValue(new ErrorSso(422, 'Oferta bajo el mínimo'));
+    const fixture = TestBed.createComponent(PantallaWebSubasta);
+    const pantalla = fixture.componentInstance;
+    await pantalla.ingresarCredenciales('ana', 'secreta');
+    pantalla['agregarAlCarrito']({
+      idSubasta: 'SUB-1',
+      idBien: 'B-1',
+      descripcion: 'Bien',
+      categoria: 'ARTE',
+      valorMinimo: 100,
+      fechaInicio: '2026-11-01T00:00:00Z',
+      fechaCierre: '2026-11-30T00:00:00Z',
+      estado: 'PUBLICADA',
+    });
+    pantalla['carrito']()[0].valor = 1;
+    pantalla['irA']('carrito');
+
+    await pantalla['ofertarCarrito']();
+    fixture.detectChanges();
+
+    const elemento: HTMLElement = fixture.nativeElement;
+    expect(elemento.querySelector('.seleccion .error')?.textContent).toContain(
+      'Oferta bajo el mínimo',
+    );
+    expect(elemento.querySelector('.seleccion .aviso')).toBeNull();
+  });
+
   it('muestra el error del backend sin decidir nada', async () => {
     proxy.autenticar.mockRejectedValue(new ErrorSso(401, 'Usuario o clave incorrectos'));
     const fixture = TestBed.createComponent(PantallaWebSubasta);

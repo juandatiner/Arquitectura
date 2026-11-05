@@ -20,6 +20,7 @@ interface Seleccion {
   subasta: SubastaCatalogo;
   valor: number | null;
   resultado?: string;
+  fallida?: boolean;
 }
 
 /**
@@ -106,7 +107,7 @@ export class PantallaWebSubasta {
       const oferta = await this.proxyWSSubastaWeb.registrarOferta(idSubasta, valor, this.token());
       this.marcarResultado(idSubasta, oferta.mensaje);
     } catch (e) {
-      this.marcarResultado(idSubasta, textoError(e));
+      this.marcarResultado(idSubasta, textoError(e), true);
     }
   }
 
@@ -187,14 +188,19 @@ export class PantallaWebSubasta {
   }
 
   protected descripcionCriterio = descripcionCriterio;
+  protected textoEstado = textoEstado;
+
+  protected totalOfertas(): number {
+    return this.carrito().reduce((total, s) => total + (s.valor ?? 0), 0);
+  }
 
   private token(): string {
     return this.sesion()?.token ?? '';
   }
 
-  private marcarResultado(idSubasta: string, resultado: string): void {
+  private marcarResultado(idSubasta: string, resultado: string, fallida = false): void {
     this.carrito.update((c) =>
-      c.map((s) => (s.subasta.idSubasta === idSubasta ? { ...s, resultado } : s)),
+      c.map((s) => (s.subasta.idSubasta === idSubasta ? { ...s, resultado, fallida } : s)),
     );
   }
 
@@ -216,6 +222,23 @@ export class PantallaWebSubasta {
 
 function textoError(e: unknown): string {
   return e instanceof ErrorSso ? e.message : 'Ocurrió un error inesperado';
+}
+
+const TEXTO_ESTADO: Record<string, string> = {
+  PENDIENTE: 'Pendiente',
+  PUBLICADA: 'Publicada',
+  LIBERADA: 'Liberada',
+  CREADA: 'Creada',
+  EN_VALIDACION: 'En validación',
+  ESPERANDO_PAGO: 'Esperando pago',
+  PAGO_CONFIRMADO: 'Pago confirmado',
+  TERMINADA: 'Terminada',
+  CANCELADA: 'Cancelada',
+  EN_REVISION: 'En revisión',
+};
+
+function textoEstado(estado: string): string {
+  return TEXTO_ESTADO[estado] ?? estado;
 }
 
 function descripcionCriterio(c: CriterioSuscripcion): string {
