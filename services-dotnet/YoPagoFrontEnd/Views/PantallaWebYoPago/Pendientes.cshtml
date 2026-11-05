@@ -12,7 +12,7 @@
         <article class="compra @(compra.NumeroCompra == Model.Resaltada ? "resaltada" : "")">
             <h2>Compra @compra.NumeroCompra</h2>
             <p class="valor">@compra.ValorTotal.ToString("C0", pesos)</p>
-            <p>Estado: <strong>@compra.Estado</strong></p>
+            <p>Estado <strong>@compra.Estado</strong></p>
             @if (compra.Estado == "PENDIENTE")
             {
                 <form method="post" action="/pagar" asp-antiforgery="true">
@@ -26,9 +26,9 @@
             }
             else
             {
-                <p>Referencia @compra.Referencia · reporte a SSO: @compra.Reporte</p>
+                <div class="detalle"><p>Referencia <strong>@compra.Referencia</strong></p><p>Reporte a SSO <strong>@compra.Reporte</strong></p></div>
             }
         </article>
     }
-    <form method="post" action="/salir" asp-antiforgery="true"><button class="secundario" type="submit">Salir</button></form>
+    <form class="salida" method="post" action="/salir" asp-antiforgery="true"><button class="secundario" type="submit">Salir</button></form>
 </section>
