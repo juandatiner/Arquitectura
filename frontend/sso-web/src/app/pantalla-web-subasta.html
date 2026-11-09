@@ -6,7 +6,7 @@
     </div>
     <section class="acceso-formulario">
       <div>
-        <h1>Ingresar</h1>
+        <h1 tabindex="-1">Ingresar</h1>
         @if (error(); as e) {
           <p class="error" role="alert">{{ e }}</p>
         }
@@ -33,24 +33,49 @@
   <header>
     <span class="marca">SSO <span>Subastas</span></span>
     <nav>
-      <button type="button" [class.activo]="vista() === 'catalogo'" (click)="irA('catalogo')">
+      <button
+        type="button"
+        [class.activo]="vista() === 'catalogo'"
+        [attr.aria-current]="vista() === 'catalogo' ? 'page' : null"
+        (click)="irA('catalogo')"
+      >
         Catálogo
       </button>
       @if (esAdministrador()) {
-        <button type="button" [class.activo]="vista() === 'publicar'" (click)="irA('publicar')">
+        <button
+          type="button"
+          [class.activo]="vista() === 'publicar'"
+          [attr.aria-current]="vista() === 'publicar' ? 'page' : null"
+          (click)="irA('publicar')"
+        >
           Publicar
         </button>
       } @else {
-        <button type="button" [class.activo]="vista() === 'carrito'" (click)="irA('carrito')">
+        <button
+          type="button"
+          [class.activo]="vista() === 'carrito'"
+          [attr.aria-current]="vista() === 'carrito' ? 'page' : null"
+          (click)="irA('carrito')"
+        >
           Ofertar
           @if (carrito().length) {
             <span class="contador">{{ carrito().length }}</span>
           }
         </button>
-        <button type="button" [class.activo]="vista() === 'ofertas'" (click)="irA('ofertas')">
+        <button
+          type="button"
+          [class.activo]="vista() === 'ofertas'"
+          [attr.aria-current]="vista() === 'ofertas' ? 'page' : null"
+          (click)="irA('ofertas')"
+        >
           Mis subastas
         </button>
-        <button type="button" [class.activo]="vista() === 'compras'" (click)="irA('compras')">
+        <button
+          type="button"
+          [class.activo]="vista() === 'compras'"
+          [attr.aria-current]="vista() === 'compras' ? 'page' : null"
+          (click)="irA('compras')"
+        >
           Mis compras
         </button>
       }
@@ -78,7 +103,7 @@
     @switch (vista()) {
       @case ('catalogo') {
         <section class="tarjeta">
-          <h1>Catálogo</h1>
+          <h1 tabindex="-1">Catálogo</h1>
           <form class="filtros" (ngSubmit)="buscar()">
             <label>Buscar <input name="texto" [(ngModel)]="filtros.texto" /></label>
             <label
@@ -92,10 +117,16 @@
               <button
                 type="button"
                 class="enlace"
-                [disabled]="ocupado()"
-                (click)="suscribirse({ tipo: 'NUEVAS_SUBASTAS', valor: filtros.categoria })"
+                [disabled]="ocupado() || sigue('NUEVAS_SUBASTAS', filtros.categoria.toUpperCase())"
+                (click)="
+                  suscribirse({ tipo: 'NUEVAS_SUBASTAS', valor: filtros.categoria.toUpperCase() })
+                "
               >
-                Avisarme de nuevas subastas de {{ filtros.categoria }}
+                {{
+                  sigue('NUEVAS_SUBASTAS', filtros.categoria.toUpperCase())
+                    ? 'Ya recibe avisos de nuevas subastas de ' + filtros.categoria.toUpperCase()
+                    : 'Avisarme de nuevas subastas de ' + filtros.categoria.toUpperCase()
+                }}
               </button>
             </p>
           }
@@ -110,8 +141,8 @@
                   <th>Subasta</th>
                   <th>Bien</th>
                   <th>Cierra en</th>
-                  <th class="numero">Valor mínimo</th>
-                  <th><span hidden>Acciones</span></th>
+                  <th class="numero">Precio inicial</th>
+                  <th><span class="oculto">Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
@@ -139,12 +170,19 @@
                     </td>
                     <td class="numero precio">
                       {{ s.valorMinimo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                      @if (aSuperar(s); as mayor) {
+                        <span class="superar"
+                          >Oferta mayor
+                          {{ mayor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span
+                        >
+                      }
                     </td>
                     <td class="acciones">
                       @if (!esAdministrador()) {
                         <button
                           type="button"
                           [disabled]="enCarrito(s.idSubasta) || restante(s.fechaCierre) <= 0"
+                          [attr.aria-label]="'Ofertar por ' + s.descripcion"
                           (click)="agregarAlCarrito(s)"
                         >
                           {{
@@ -158,10 +196,11 @@
                         <button
                           type="button"
                           class="enlace"
-                          [disabled]="ocupado()"
+                          [disabled]="ocupado() || sigue('CAMBIOS_OFERTA', s.idSubasta)"
+                          [attr.aria-label]="'Recibir avisos de ofertas en ' + s.descripcion"
                           (click)="suscribirse({ tipo: 'CAMBIOS_OFERTA', valor: s.idSubasta })"
                         >
-                          Seguir
+                          {{ sigue('CAMBIOS_OFERTA', s.idSubasta) ? 'Siguiendo' : 'Seguir' }}
                         </button>
                       }
                     </td>
@@ -218,7 +257,7 @@
       }
       @case ('carrito') {
         <section class="tarjeta">
-          <h1>Ofertar</h1>
+          <h1 tabindex="-1">Ofertar</h1>
           @if (carrito().length) {
             <div class="ofertas">
               <div>
@@ -228,8 +267,14 @@
                       <h2>
                         {{ s.subasta.descripcion }} <small>{{ s.subasta.idSubasta }}</small>
                       </h2>
+                      @if (aSuperar(s.subasta); as mayor) {
+                        <p class="superar">
+                          Para ganar debe superar
+                          {{ mayor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </p>
+                      }
                       <p class="minimo">
-                        Mínimo
+                        Precio inicial
                         {{ s.subasta.valorMinimo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
                         ·
                         <span
@@ -278,19 +323,40 @@
                           </button>
                         }
                       </div>
-                      @if (s.valor !== null && s.valor < s.subasta.valorMinimo) {
-                        <p class="pista">Es menor que el mínimo: el sistema la rechazará.</p>
+                      @if (restante(s.subasta.fechaCierre) <= 0) {
+                        <p class="pista">Esta subasta ya cerró: quítela para enviar las demás.</p>
+                      } @else if (s.valor !== null) {
+                        @if (aSuperar(s.subasta); as mayor) {
+                          @if (s.valor <= mayor) {
+                            <p class="pista">
+                              Debe superar
+                              {{ mayor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}: el sistema
+                              la rechazará.
+                            </p>
+                          }
+                        } @else if (s.valor < s.subasta.valorMinimo) {
+                          <p class="pista">
+                            Es menor que el precio inicial: el sistema la rechazará.
+                          </p>
+                        }
                       }
                     </div>
                     <button
                       type="button"
                       class="enlace quitar"
+                      [attr.aria-label]="'Quitar ' + s.subasta.descripcion"
                       (click)="quitarDelCarrito(s.subasta.idSubasta)"
                     >
                       Quitar
                     </button>
                     @if (s.resultado) {
-                      <p [class.aviso]="!s.fallida" [class.error]="s.fallida">{{ s.resultado }}</p>
+                      <p
+                        [class.aviso]="!s.fallida"
+                        [class.error]="s.fallida"
+                        [attr.role]="s.fallida ? 'alert' : 'status'"
+                      >
+                        {{ s.resultado }}
+                      </p>
                     }
                   </article>
                 }
@@ -302,12 +368,14 @@
                 </p>
                 <button
                   type="button"
-                  [disabled]="ocupado() || faltanValores()"
+                  [disabled]="ocupado() || faltanValores() || hayCerradas()"
                   (click)="ofertarCarrito()"
                 >
                   {{ carrito().length === 1 ? 'Enviar oferta' : 'Enviar ofertas' }}
                 </button>
-                @if (faltanValores()) {
+                @if (hayCerradas()) {
+                  <p class="nota">Quite las subastas que ya cerraron para enviar.</p>
+                } @else if (faltanValores()) {
                   <p class="nota">Escriba el valor de cada oferta para enviar.</p>
                 } @else {
                   <p class="nota">Cada oferta se registra por separado.</p>
@@ -326,7 +394,7 @@
       }
       @case ('ofertas') {
         <section class="tarjeta">
-          <h1>Mis subastas</h1>
+          <h1 tabindex="-1">Mis subastas</h1>
           @if (!ofertasHechas().length) {
             <div class="vacio">
               <p>Aún no ha ofertado en este navegador.</p>
@@ -356,6 +424,14 @@
                       <div class="dato">
                         <span>Mi oferta</span>
                         <strong>{{ o.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                        @if (grupo.clave === 'ABIERTA' && (mayorDe(o.idSubasta) ?? 0) > o.valor) {
+                          <span class="superada"
+                            >Superada:
+                            {{
+                              mayorDe(o.idSubasta) | currency: 'COP' : 'symbol-narrow' : '1.0-0'
+                            }}</span
+                          >
+                        }
                       </div>
                       <div class="dato">
                         @switch (grupo.clave) {
@@ -403,10 +479,14 @@
                           <button
                             type="button"
                             class="enlace"
-                            [disabled]="ocupado()"
+                            [disabled]="ocupado() || sigue('CAMBIOS_OFERTA', o.idSubasta)"
                             (click)="suscribirse({ tipo: 'CAMBIOS_OFERTA', valor: o.idSubasta })"
                           >
-                            Avisarme si me superan
+                            {{
+                              sigue('CAMBIOS_OFERTA', o.idSubasta)
+                                ? 'Le avisaremos si lo superan'
+                                : 'Avisarme si me superan'
+                            }}
                           </button>
                         }
                         @if (grupo.clave === 'NO_GANADA') {
@@ -429,7 +509,7 @@
       }
       @case ('compras') {
         <section class="tarjeta">
-          <h1>Mis compras</h1>
+          <h1 tabindex="-1">Mis compras</h1>
           <p class="conteo">Los estados se actualizan solos.</p>
           <table>
             <thead>
@@ -438,7 +518,7 @@
                 <th>Bien</th>
                 <th>Estado</th>
                 <th class="numero">Valor ofertado</th>
-                <th><span hidden>Acciones</span></th>
+                <th><span class="oculto">Acciones</span></th>
               </tr>
             </thead>
             <tbody>
@@ -454,6 +534,9 @@
                     }}</span>
                     @if (c.motivo) {
                       <span class="motivo">{{ c.motivo }}</span>
+                    }
+                    @if (siguientePaso(c.estado); as paso) {
+                      <span class="siguiente">{{ paso }}</span>
                     }
                   </td>
                   <td class="numero precio">
@@ -482,7 +565,7 @@
       }
       @case ('publicar') {
         <section class="tarjeta estrecha">
-          <h1>Publicar subasta</h1>
+          <h1 tabindex="-1">Publicar subasta</h1>
           <p class="conteo">
             Escriba el id de una subasta cargada y pendiente. Al publicarla aparece en el catálogo.
           </p>

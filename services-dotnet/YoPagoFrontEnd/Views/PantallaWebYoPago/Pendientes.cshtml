@@ -17,7 +17,7 @@
             {
                 <form method="post" action="/pagar" asp-antiforgery="true">
                     <input type="hidden" name="numeroCompra" value="@compra.NumeroCompra">
-                    <label>Titular <input name="titular" required></label>
+                    <label>Titular <input name="titular" autocomplete="cc-name" required></label>
                     <fieldset class="medios">
                         <legend>Medio de pago</legend>
                         <div class="medios-opciones">

@@ -67,6 +67,27 @@ small {
   letter-spacing: 0;
 }
 
+.oculto {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+h1:focus {
+  outline: none;
+}
+.siguiente {
+  display: block;
+  max-width: 300px;
+  margin-top: 6px;
+  color: var(--suave);
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
 /* Controles */
 button {
   min-height: 42px;
@@ -669,6 +690,31 @@ tr.resaltada td {
   background: var(--marca);
   border-color: var(--marca);
   color: #fff;
+}
+.superar {
+  display: block;
+  margin-top: 4px;
+  color: var(--espera);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+p.superar {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--espera-tenue);
+  font-size: 14px;
+}
+.dato .superada {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--error-tenue);
+  color: var(--error);
+  font-size: 12px;
+  font-weight: 600;
 }
 .pista {
   margin-top: 8px;
