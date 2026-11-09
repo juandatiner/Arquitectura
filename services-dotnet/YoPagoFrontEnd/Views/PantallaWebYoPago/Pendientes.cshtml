@@ -12,16 +12,20 @@
         <article class="compra @(compra.NumeroCompra == Model.Resaltada ? "resaltada" : "")">
             <h2>Compra @compra.NumeroCompra</h2>
             <p class="valor">@compra.ValorTotal.ToString("C0", pesos)</p>
-            <p>Estado <strong>@compra.Estado</strong></p>
+            <p><span class="estado" data-estado="@compra.Estado">@compra.Estado</span></p>
             @if (compra.Estado == "PENDIENTE")
             {
                 <form method="post" action="/pagar" asp-antiforgery="true">
                     <input type="hidden" name="numeroCompra" value="@compra.NumeroCompra">
                     <label>Titular <input name="titular" required></label>
-                    <label>Medio de pago
-                        <select name="medio"><option value="PSE">PSE</option><option value="TARJETA">Tarjeta</option></select>
-                    </label>
-                    <button type="submit">Pagar</button>
+                    <fieldset class="medios">
+                        <legend>Medio de pago</legend>
+                        <div class="medios-opciones">
+                            <label class="medio"><input type="radio" name="medio" value="PSE" checked> PSE</label>
+                            <label class="medio"><input type="radio" name="medio" value="TARJETA"> Tarjeta</label>
+                        </div>
+                    </fieldset>
+                    <button type="submit">Pagar @compra.ValorTotal.ToString("C0", pesos)</button>
                 </form>
             }
             else
