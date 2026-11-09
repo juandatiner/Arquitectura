@@ -116,6 +116,55 @@ describe('PantallaWebSubasta', () => {
     expect(texto).toContain('Abiertas');
   });
 
+  it('al rechazar por oferta mayor muestra el monto legible y sugiere superarlo', async () => {
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    proxy.consultarMisCompras.mockResolvedValue([]);
+    proxy.registrarOferta.mockRejectedValue(
+      new ErrorSso(422, 'La oferta debe superar la oferta mayor actual de 300000000.00'),
+    );
+    const fixture = TestBed.createComponent(PantallaWebSubasta);
+    const pantalla = fixture.componentInstance;
+    await pantalla.ingresarCredenciales('ana', 'secreta');
+    const subasta = {
+      idSubasta: 'SUB-7',
+      idBien: 'B-7',
+      descripcion: 'Apartamento',
+      categoria: 'INMUEBLES',
+      valorMinimo: 280000000,
+      fechaInicio: '2026-11-01T00:00:00Z',
+      fechaCierre: '2999-01-01T00:00:00Z',
+      estado: 'PUBLICADA',
+    };
+    pantalla['agregarAlCarrito'](subasta);
+    pantalla['carrito']()[0].valor = 280000000;
+    pantalla['irA']('carrito');
+
+    await pantalla['ofertarCarrito']();
+    fixture.detectChanges();
+
+    const elemento: HTMLElement = fixture.nativeElement;
+    expect(elemento.querySelector('.seleccion .error')?.textContent).toContain('$ 300.000.000');
+    expect(elemento.querySelector('p.superar')?.textContent?.replace(/\D/g, '')).toBe('300000000');
+    expect(pantalla['sugerencias'](subasta)[0].valor).toBeGreaterThan(300000000);
+  });
+
+  it('busca la categoría en mayúsculas aunque se escriba en minúsculas', async () => {
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    proxy.consultarMisCompras.mockResolvedValue([]);
+    const pantalla = TestBed.createComponent(PantallaWebSubasta).componentInstance;
+    await pantalla.ingresarCredenciales('ana', 'secreta');
+    pantalla['filtros'].categoria = ' demo ';
+
+    pantalla['buscar']();
+
+    expect(proxy.consultarCatalogo).toHaveBeenLastCalledWith(
+      expect.objectContaining({ categoria: 'DEMO' }),
+      TOKEN,
+    );
+  });
+
   it('no envía ofertas sin valor', async () => {
     proxy.autenticar.mockResolvedValue({ token: TOKEN });
     proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });

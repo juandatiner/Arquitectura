@@ -1,6 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
 import {
   Compra,
   CriterioSuscripcion,
@@ -57,6 +58,7 @@ const CLAVE_SESION = 'sso.sesion';
 })
 export class PantallaWebSubasta {
   private readonly proxyWSSubastaWeb = inject(ProxyWSSubastaWeb);
+  private readonly titulo = inject(Title);
 
   protected readonly sesion = signal<Sesion | null>(null);
   protected readonly vista = signal<Vista>('catalogo');
@@ -72,6 +74,8 @@ export class PantallaWebSubasta {
   protected readonly compras = signal<Compra[]>([]);
   protected readonly compraSeleccionada = signal<Compra | null>(null);
   protected readonly ofertasHechas = signal<OfertaHecha[]>([]);
+  /** Oferta mayor de cada subasta según lo último que respondió el backend al ofertar. */
+  protected readonly mayores = signal<Record<string, number>>({});
   protected readonly esAdministrador = computed(() => this.sesion()?.rol === 'ADMIN');
   protected readonly paginas = computed(() => {
     const c = this.catalogo();
@@ -81,6 +85,9 @@ export class PantallaWebSubasta {
     this.carrito().reduce((total, s) => total + (s.valor ?? 0), 0),
   );
   protected readonly faltanValores = computed(() => this.carrito().some((s) => s.valor === null));
+  protected readonly hayCerradas = computed(() =>
+    this.carrito().some((s) => new Date(s.subasta.fechaCierre).getTime() <= this.ahora()),
+  );
   protected readonly grupos = computed(() => {
     const grupos: Record<Situacion, OfertaHecha[]> = {
       ABIERTA: [],
@@ -170,8 +177,13 @@ export class PantallaWebSubasta {
     try {
       const oferta = await this.proxyWSSubastaWeb.registrarOferta(idSubasta, valor, this.token());
       this.recordarOferta(idSubasta, valor);
+      this.recordarMayor(idSubasta, valor);
       this.marcarResultado(idSubasta, oferta.mensaje);
     } catch (e) {
+      const mayor = e instanceof ErrorSso ? mayorActual(e.message) : null;
+      if (mayor !== null) {
+        this.recordarMayor(idSubasta, mayor);
+      }
       this.marcarResultado(idSubasta, textoError(e), true);
     }
   }
@@ -197,6 +209,7 @@ export class PantallaWebSubasta {
 
   protected irA(vista: Vista): void {
     this.vista.set(vista);
+    this.anunciarVista();
     this.aviso.set(null);
     this.error.set(null);
     if (vista === 'compras' || vista === 'ofertas') {
@@ -213,12 +226,18 @@ export class PantallaWebSubasta {
   }
 
   protected buscar(): void {
+    this.filtros.texto = this.filtros.texto?.trim() ?? '';
+    this.filtros.categoria = this.filtros.categoria?.trim().toUpperCase() ?? '';
     this.filtros.pagina = 0;
     void this.consultarCatalogo(this.filtros);
   }
 
   protected enCarrito(idSubasta: string): boolean {
     return this.carrito().some((s) => s.subasta.idSubasta === idSubasta);
+  }
+
+  protected sigue(tipo: CriterioSuscripcion['tipo'], valor: string): boolean {
+    return this.suscripciones().some((s) => s.tipo === tipo && s.valor === valor);
   }
 
   protected miOferta(idSubasta: string): OfertaHecha | undefined {
@@ -255,14 +274,29 @@ export class PantallaWebSubasta {
     return this.carrito().find((s) => s.subasta === seleccion.subasta)?.valor ?? null;
   }
 
+  protected mayorDe(idSubasta: string): number | undefined {
+    return this.mayores()[idSubasta];
+  }
+
+  /** Valor desde el que una oferta puede ganar: superar la mayor conocida o, si no hay, el mínimo. */
+  protected aSuperar(subasta: SubastaCatalogo): number | undefined {
+    const mayor = this.mayorDe(subasta.idSubasta);
+    return mayor !== undefined && mayor >= subasta.valorMinimo ? mayor : undefined;
+  }
+
   protected sugerencias(subasta: SubastaCatalogo): { texto: string; valor: number }[] {
-    const base = this.miOferta(subasta.idSubasta)?.valor ?? subasta.valorMinimo;
     const redondear = (v: number) => Math.ceil(v / 10000) * 10000;
-    const primera = this.miOferta(subasta.idSubasta)
-      ? { texto: 'Mi oferta +5 %', valor: redondear(base * 1.05) }
-      : { texto: 'Mínimo', valor: subasta.valorMinimo };
+    const mayor = this.aSuperar(subasta);
+    if (mayor !== undefined) {
+      return [
+        { texto: 'Superar', valor: redondear(mayor * 1.01) },
+        { texto: '+5 %', valor: redondear(mayor * 1.05) },
+        { texto: '+10 %', valor: redondear(mayor * 1.1) },
+      ];
+    }
+    const base = subasta.valorMinimo;
     return [
-      primera,
+      { texto: 'Mínimo', valor: base },
       { texto: '+10 %', valor: redondear(base * 1.1) },
       { texto: '+25 %', valor: redondear(base * 1.25) },
     ];
@@ -272,7 +306,7 @@ export class PantallaWebSubasta {
 
   /** Ofertar por uno o varios bienes: un registrarOferta por cada subasta del carrito con valor. */
   protected async ofertarCarrito(): Promise<void> {
-    if (this.faltanValores()) {
+    if (this.faltanValores() || this.hayCerradas()) {
       return;
     }
     this.ocupado.set(true);
@@ -290,6 +324,7 @@ export class PantallaWebSubasta {
         );
         if (!this.carrito().length) {
           this.vista.set('ofertas');
+          this.anunciarVista();
         }
       }
     } finally {
@@ -357,11 +392,14 @@ export class PantallaWebSubasta {
     this.compras.set([]);
     this.compraSeleccionada.set(null);
     this.ofertasHechas.set([]);
+    this.mayores.set({});
     this.aviso.set(null);
     this.vista.set('catalogo');
+    this.titulo.setTitle('SSO · Subastas');
   }
 
   protected descripcionCriterio = descripcionCriterio;
+  protected siguientePaso = siguientePaso;
   protected textoEstado = textoEstado;
 
   private token(): string {
@@ -370,6 +408,7 @@ export class PantallaWebSubasta {
 
   private iniciarSesion(sesion: Sesion): void {
     this.sesion.set(sesion);
+    this.anunciarVista();
     try {
       sessionStorage.setItem(CLAVE_SESION, sesion.token);
     } catch {
@@ -377,6 +416,7 @@ export class PantallaWebSubasta {
     }
     this.ofertasHechas.set(this.leer<OfertaHecha[]>('ofertas') ?? []);
     this.suscripciones.set(this.leer<Suscripcion[]>('suscripciones') ?? []);
+    this.mayores.set(this.leer<Record<string, number>>('mayores') ?? {});
     if (sesion.rol !== 'ADMIN') {
       void this.consultarMisCompras();
     }
@@ -445,6 +485,17 @@ export class PantallaWebSubasta {
     this.guardar('ofertas', this.ofertasHechas());
   }
 
+  /** Título de la pestaña del navegador y foco en el encabezado de la vista, para lectores de pantalla. */
+  private anunciarVista(): void {
+    this.titulo.setTitle(`${TITULO_VISTA[this.vista()]} · SSO Subastas`);
+    setTimeout(() => document.querySelector<HTMLElement>('main h1')?.focus());
+  }
+
+  private recordarMayor(idSubasta: string, valor: number): void {
+    this.mayores.update((m) => ({ ...m, [idSubasta]: valor }));
+    this.guardar('mayores', this.mayores());
+  }
+
   private claveAlmacen(nombre: string): string {
     return `sso.${nombre}.${this.sesion()?.usuario ?? ''}`;
   }
@@ -489,11 +540,48 @@ export class PantallaWebSubasta {
 }
 
 function textoError(e: unknown): string {
-  return e instanceof ErrorSso ? e.message : 'Ocurrió un error inesperado';
+  return e instanceof ErrorSso ? formatearMontos(e.message) : 'Ocurrió un error inesperado';
+}
+
+/** Muestra los montos del backend (ej. 300000000.00) como pesos legibles. */
+function formatearMontos(texto: string): string {
+  return texto.replace(
+    /(?<![\w-])(\d+)\.\d{2}(?!\d)/g,
+    (_, entero: string) => `$ ${formatoMiles(Number(entero))}`,
+  );
+}
+
+/** Monto de la oferta mayor que trae el rechazo del backend, si lo trae. */
+function mayorActual(mensaje: string): number | null {
+  const m = /oferta mayor actual de (\d+(?:\.\d+)?)/.exec(mensaje);
+  return m ? Number(m[1]) : null;
 }
 
 function formatoMiles(valor: number | null): string {
   return valor === null ? '' : valor.toLocaleString('es-CO', { maximumFractionDigits: 0 });
+}
+
+const TITULO_VISTA: Record<Vista, string> = {
+  catalogo: 'Catálogo',
+  carrito: 'Ofertar',
+  ofertas: 'Mis subastas',
+  compras: 'Mis compras',
+  publicar: 'Publicar subasta',
+};
+
+/** Qué le toca hacer al cliente en cada estado de la compra. */
+const SIGUIENTE_PASO: Record<string, string> = {
+  CREADA: 'Pulse Continuar compra para validarla y recibir el enlace de pago.',
+  EN_VALIDACION: 'Estamos validando su compra. Le llegará un SMS con el valor y el enlace de pago.',
+  ESPERANDO_PAGO: 'Pague con el enlace que le llegó por SMS.',
+  PAGO_CONFIRMADO: 'Pago recibido. Estamos programando el envío.',
+  TERMINADA: 'Compra completa. El envío está programado.',
+  CANCELADA: 'La compra no pudo completarse.',
+  EN_REVISION: 'Su compra está en revisión. Le avisaremos por SMS.',
+};
+
+function siguientePaso(estado: string): string {
+  return SIGUIENTE_PASO[estado] ?? '';
 }
 
 const TEXTO_ESTADO: Record<string, string> = {
