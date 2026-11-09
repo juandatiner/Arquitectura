@@ -1,6 +1,7 @@
 @model ResultadoPago
 @{ ViewData["Titulo"] = "Pago realizado"; var pesos = System.Globalization.CultureInfo.GetCultureInfo("es-CO"); }
 <section class="tarjeta">
+    <span class="exito" aria-hidden="true">✓</span>
     <h1>Pago realizado</h1>
     <p class="valor">@Model.ValorPagado.ToString("C0", pesos)</p>
     <div class="detalle">

@@ -11,6 +11,8 @@ export interface Sesion {
   usuario: string;
   nombre: string;
   rol: string;
+  /** Momento de vencimiento del token (ms), si lo trae. */
+  expira?: number;
 }
 
 /** filtros de consultarCatalogo(filtros) — paso II.1. Todos opcionales. */

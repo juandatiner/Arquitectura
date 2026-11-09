@@ -12,10 +12,14 @@ describe('PantallaWebSubasta', () => {
     autenticar: vi.fn(),
     consultarCatalogo: vi.fn(),
     registrarOferta: vi.fn(),
+    consultarMisCompras: vi.fn(),
+    publicarNuevaSubasta: vi.fn(),
   };
 
   beforeEach(() => {
     vi.resetAllMocks();
+    sessionStorage.clear();
+    localStorage.clear();
     TestBed.configureTestingModule({
       imports: [PantallaWebSubasta],
       providers: [{ provide: ProxyWSSubastaWeb, useValue: proxy }],
@@ -63,6 +67,89 @@ describe('PantallaWebSubasta', () => {
       'Oferta bajo el mínimo',
     );
     expect(elemento.querySelector('.seleccion .aviso')).toBeNull();
+  });
+
+  it('recupera la sesión al recargar la página', async () => {
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    proxy.consultarMisCompras.mockResolvedValue([]);
+    await TestBed.createComponent(PantallaWebSubasta).componentInstance.ingresarCredenciales(
+      'ana',
+      'secreta',
+    );
+
+    const recargada = TestBed.createComponent(PantallaWebSubasta);
+    await recargada.whenStable();
+    recargada.detectChanges();
+
+    expect(recargada.nativeElement.textContent).toContain('Ana');
+    expect(recargada.nativeElement.querySelector('input[name=clave]')).toBeNull();
+  });
+
+  it('recuerda las ofertas aceptadas tras salir y volver a entrar', async () => {
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    proxy.consultarMisCompras.mockResolvedValue([]);
+    proxy.registrarOferta.mockResolvedValue({ mensaje: 'Oferta registrada' });
+    const fixture = TestBed.createComponent(PantallaWebSubasta);
+    const pantalla = fixture.componentInstance;
+    await pantalla.ingresarCredenciales('ana', 'secreta');
+    pantalla['agregarAlCarrito']({
+      idSubasta: 'SUB-9',
+      idBien: 'B-9',
+      descripcion: 'Bien recordado',
+      categoria: 'ARTE',
+      valorMinimo: 100,
+      fechaInicio: '2026-11-01T00:00:00Z',
+      fechaCierre: '2999-01-01T00:00:00Z',
+      estado: 'PUBLICADA',
+    });
+    pantalla['carrito']()[0].valor = 150;
+    await pantalla['ofertarCarrito']();
+    pantalla['salir']();
+    await pantalla.ingresarCredenciales('ana', 'secreta');
+    pantalla['irA']('ofertas');
+    fixture.detectChanges();
+
+    const texto: string = fixture.nativeElement.textContent;
+    expect(texto).toContain('Bien recordado');
+    expect(texto).toContain('Abiertas');
+  });
+
+  it('no envía ofertas sin valor', async () => {
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    proxy.consultarMisCompras.mockResolvedValue([]);
+    const pantalla = TestBed.createComponent(PantallaWebSubasta).componentInstance;
+    await pantalla.ingresarCredenciales('ana', 'secreta');
+    pantalla['agregarAlCarrito']({
+      idSubasta: 'SUB-8',
+      idBien: 'B-8',
+      descripcion: 'Bien',
+      categoria: 'ARTE',
+      valorMinimo: 100,
+      fechaInicio: '2026-11-01T00:00:00Z',
+      fechaCierre: '2999-01-01T00:00:00Z',
+      estado: 'PUBLICADA',
+    });
+
+    await pantalla['ofertarCarrito']();
+
+    expect(proxy.registrarOferta).not.toHaveBeenCalled();
+  });
+
+  it('al administrador solo le muestra Catálogo y Publicar', async () => {
+    const admin = btoa(JSON.stringify({ sub: 'admin', nombre: 'Admin', rol: 'ADMIN' }));
+    proxy.autenticar.mockResolvedValue({ token: `x.${admin}.y` });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    const fixture = TestBed.createComponent(PantallaWebSubasta);
+    await fixture.componentInstance.ingresarCredenciales('admin', 'secreta');
+    fixture.detectChanges();
+
+    const pestanas = [...fixture.nativeElement.querySelectorAll('nav button')].map((b) =>
+      (b as HTMLElement).textContent?.trim(),
+    );
+    expect(pestanas).toEqual(['Catálogo', 'Publicar']);
   });
 
   it('muestra el error del backend sin decidir nada', async () => {

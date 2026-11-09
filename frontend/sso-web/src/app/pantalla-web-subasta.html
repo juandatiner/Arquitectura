@@ -31,27 +31,40 @@
   </div>
 } @else {
   <header>
-    <span class="marca">SSO</span>
+    <span class="marca">SSO <span>Subastas</span></span>
     <nav>
       <button type="button" [class.activo]="vista() === 'catalogo'" (click)="irA('catalogo')">
         Catálogo
-      </button>
-      <button type="button" [class.activo]="vista() === 'carrito'" (click)="irA('carrito')">
-        Mis ofertas <span class="contador">({{ carrito().length }})</span>
-      </button>
-      <button type="button" [class.activo]="vista() === 'compras'" (click)="irA('compras')">
-        Mis compras
       </button>
       @if (esAdministrador()) {
         <button type="button" [class.activo]="vista() === 'publicar'" (click)="irA('publicar')">
           Publicar
         </button>
+      } @else {
+        <button type="button" [class.activo]="vista() === 'carrito'" (click)="irA('carrito')">
+          Ofertar
+          @if (carrito().length) {
+            <span class="contador">{{ carrito().length }}</span>
+          }
+        </button>
+        <button type="button" [class.activo]="vista() === 'ofertas'" (click)="irA('ofertas')">
+          Mis subastas
+        </button>
+        <button type="button" [class.activo]="vista() === 'compras'" (click)="irA('compras')">
+          Mis compras
+        </button>
       }
     </nav>
-    <span class="usuario"
-      >{{ sesion()?.nombre }}
-      <button type="button" class="enlace" (click)="salir()">Salir</button></span
-    >
+    <span class="usuario">
+      <span class="avatar" aria-hidden="true">{{ sesion()?.nombre?.charAt(0) }}</span>
+      <span class="nombre"
+        >{{ sesion()?.nombre }}
+        @if (esAdministrador()) {
+          <small>Administrador</small>
+        }
+      </span>
+      <button type="button" class="enlace" (click)="salir()">Salir</button>
+    </span>
   </header>
 
   <main>
@@ -68,10 +81,13 @@
           <h1>Catálogo</h1>
           <form class="filtros" (ngSubmit)="buscar()">
             <label>Buscar <input name="texto" [(ngModel)]="filtros.texto" /></label>
-            <label>Categoría <input name="categoria" [(ngModel)]="filtros.categoria" /></label>
+            <label
+              >Categoría
+              <input name="categoria" [(ngModel)]="filtros.categoria" placeholder="Ej. VEHICULOS"
+            /></label>
             <button type="submit" [disabled]="ocupado()">Buscar</button>
           </form>
-          @if (filtros.categoria) {
+          @if (filtros.categoria && !esAdministrador()) {
             <p class="seguir-categoria">
               <button
                 type="button"
@@ -84,86 +100,108 @@
             </p>
           }
           @if (catalogo(); as c) {
+            <p class="conteo">
+              {{ c.total }} {{ c.total === 1 ? 'subasta abierta' : 'subastas abiertas' }} · se
+              actualiza sola
+            </p>
             <table>
               <thead>
                 <tr>
                   <th>Subasta</th>
                   <th>Bien</th>
-                  <th>Cierre</th>
-                  <th>Estado</th>
+                  <th>Cierra en</th>
                   <th class="numero">Valor mínimo</th>
                   <th><span hidden>Acciones</span></th>
                 </tr>
               </thead>
               <tbody>
                 @for (s of c.contenido; track s.idSubasta) {
-                  <tr>
+                  <tr [class.cerrada]="restante(s.fechaCierre) <= 0">
                     <td class="codigo">{{ s.idSubasta }}</td>
                     <td class="bien">
                       <strong>{{ s.descripcion }}</strong>
-                      <span>{{ s.categoria }}</span>
+                      <span class="categoria">{{ s.categoria }}</span>
+                      @if (miOferta(s.idSubasta); as o) {
+                        <span class="mi-oferta"
+                          >Su oferta:
+                          {{ o.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</span
+                        >
+                      }
                     </td>
-                    <td class="cierre">{{ s.fechaCierre | date: 'd MMM, h:mm a' }}</td>
                     <td>
-                      <span class="estado" [attr.data-estado]="s.estado">{{
-                        textoEstado(s.estado)
-                      }}</span>
+                      <span
+                        class="reloj"
+                        [class.pronto]="cierraPronto(s.fechaCierre)"
+                        [class.fin]="restante(s.fechaCierre) <= 0"
+                        >{{ textoRestante(s.fechaCierre) }}</span
+                      >
+                      <span class="fecha">{{ s.fechaCierre | date: 'd MMM, h:mm a' }}</span>
                     </td>
                     <td class="numero precio">
                       {{ s.valorMinimo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
                     </td>
                     <td class="acciones">
-                      <button
-                        type="button"
-                        [disabled]="enCarrito(s.idSubasta)"
-                        (click)="agregarAlCarrito(s)"
-                      >
-                        {{ enCarrito(s.idSubasta) ? 'Agregada' : 'Ofertar' }}
-                      </button>
-                      <button
-                        type="button"
-                        class="enlace"
-                        [disabled]="ocupado()"
-                        (click)="suscribirse({ tipo: 'CAMBIOS_OFERTA', valor: s.idSubasta })"
-                      >
-                        Seguir
-                      </button>
+                      @if (!esAdministrador()) {
+                        <button
+                          type="button"
+                          [disabled]="enCarrito(s.idSubasta) || restante(s.fechaCierre) <= 0"
+                          (click)="agregarAlCarrito(s)"
+                        >
+                          {{
+                            enCarrito(s.idSubasta)
+                              ? 'Agregada'
+                              : miOferta(s.idSubasta)
+                                ? 'Mejorar oferta'
+                                : 'Ofertar'
+                          }}
+                        </button>
+                        <button
+                          type="button"
+                          class="enlace"
+                          [disabled]="ocupado()"
+                          (click)="suscribirse({ tipo: 'CAMBIOS_OFERTA', valor: s.idSubasta })"
+                        >
+                          Seguir
+                        </button>
+                      }
                     </td>
                   </tr>
                 } @empty {
                   <tr>
-                    <td colspan="6" class="vacio">No hay subastas con esos filtros.</td>
+                    <td colspan="5" class="vacio">No hay subastas abiertas con esos filtros.</td>
                   </tr>
                 }
               </tbody>
             </table>
-            <p class="paginas">
-              <button
-                type="button"
-                class="secundario"
-                [disabled]="c.pagina === 0"
-                (click)="cambiarPagina(c.pagina - 1)"
-              >
-                Anterior
-              </button>
-              Página {{ c.pagina + 1 }} de {{ paginas() }}
-              <button
-                type="button"
-                class="secundario"
-                [disabled]="c.pagina + 1 >= paginas()"
-                (click)="cambiarPagina(c.pagina + 1)"
-              >
-                Siguiente
-              </button>
-            </p>
+            @if (paginas() > 1) {
+              <p class="paginas">
+                <button
+                  type="button"
+                  class="secundario"
+                  [disabled]="c.pagina === 0"
+                  (click)="cambiarPagina(c.pagina - 1)"
+                >
+                  Anterior
+                </button>
+                Página {{ c.pagina + 1 }} de {{ paginas() }}
+                <button
+                  type="button"
+                  class="secundario"
+                  [disabled]="c.pagina + 1 >= paginas()"
+                  (click)="cambiarPagina(c.pagina + 1)"
+                >
+                  Siguiente
+                </button>
+              </p>
+            }
           }
           @if (suscripciones().length) {
             <div class="suscripciones">
-              <h2>Mis suscripciones</h2>
+              <h2>Mis avisos</h2>
               <ul>
                 @for (s of suscripciones(); track s.idSuscripcion) {
                   <li>
-                    {{ descripcionCriterio(s) }}
+                    Avisarme de {{ descripcionCriterio(s) }}
                     <button
                       type="button"
                       class="enlace"
@@ -185,28 +223,68 @@
             <div class="ofertas">
               <div>
                 @for (s of carrito(); track s.subasta.idSubasta) {
-                  <article class="seleccion">
+                  <article class="seleccion" [class.con-error]="s.fallida">
                     <div>
                       <h2>
                         {{ s.subasta.descripcion }} <small>{{ s.subasta.idSubasta }}</small>
                       </h2>
                       <p class="minimo">
-                        Valor mínimo
+                        Mínimo
                         {{ s.subasta.valorMinimo | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        ·
+                        <span
+                          class="reloj"
+                          [class.pronto]="cierraPronto(s.subasta.fechaCierre)"
+                          [class.fin]="restante(s.subasta.fechaCierre) <= 0"
+                          >{{
+                            restante(s.subasta.fechaCierre) > 0
+                              ? 'cierra en ' + textoRestante(s.subasta.fechaCierre)
+                              : 'Cerrada'
+                          }}</span
+                        >
                       </p>
+                      @if (miOferta(s.subasta.idSubasta); as o) {
+                        <p class="minimo">
+                          Su última oferta:
+                          {{ o.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                        </p>
+                      }
                     </div>
-                    <label
-                      >Mi oferta
-                      <input
-                        type="number"
-                        min="1"
-                        [name]="'valor-' + s.subasta.idSubasta"
-                        [(ngModel)]="s.valor"
-                      />
-                    </label>
+                    <div>
+                      <label class="campo-valor"
+                        >Mi oferta
+                        <span class="moneda">
+                          <span aria-hidden="true">$</span>
+                          <input
+                            inputmode="numeric"
+                            autocomplete="off"
+                            placeholder="Escriba el valor"
+                            [name]="'valor-' + s.subasta.idSubasta"
+                            [value]="formatoMiles(s.valor)"
+                            (input)="escribirValor(s, $event)"
+                          />
+                        </span>
+                      </label>
+                      <div class="sugerencias">
+                        @for (g of sugerencias(s.subasta); track g.texto) {
+                          <button
+                            type="button"
+                            class="pastilla"
+                            [class.elegida]="s.valor === g.valor"
+                            (click)="fijarValor(s, g.valor)"
+                          >
+                            {{ g.texto }} ·
+                            {{ g.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
+                          </button>
+                        }
+                      </div>
+                      @if (s.valor !== null && s.valor < s.subasta.valorMinimo) {
+                        <p class="pista">Es menor que el mínimo: el sistema la rechazará.</p>
+                      }
+                    </div>
                     <button
                       type="button"
-                      class="enlace"
+                      class="enlace quitar"
                       (click)="quitarDelCarrito(s.subasta.idSubasta)"
                     >
                       Quitar
@@ -222,21 +300,137 @@
                 <p class="total">
                   {{ totalOfertas() | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}
                 </p>
-                <button type="button" [disabled]="ocupado()" (click)="ofertarCarrito()">
-                  Enviar ofertas
+                <button
+                  type="button"
+                  [disabled]="ocupado() || faltanValores()"
+                  (click)="ofertarCarrito()"
+                >
+                  {{ carrito().length === 1 ? 'Enviar oferta' : 'Enviar ofertas' }}
                 </button>
+                @if (faltanValores()) {
+                  <p class="nota">Escriba el valor de cada oferta para enviar.</p>
+                } @else {
+                  <p class="nota">Cada oferta se registra por separado.</p>
+                }
               </aside>
             </div>
           } @else {
-            <p class="vacio">
-              Agregue subastas desde el catálogo para ofertar por uno o varios bienes.
-            </p>
+            <div class="vacio">
+              <p>No tiene ofertas por enviar.</p>
+              <button type="button" class="secundario" (click)="irA('catalogo')">
+                Ir al catálogo
+              </button>
+            </div>
           }
+        </section>
+      }
+      @case ('ofertas') {
+        <section class="tarjeta">
+          <h1>Mis subastas</h1>
+          @if (!ofertasHechas().length) {
+            <div class="vacio">
+              <p>Aún no ha ofertado en este navegador.</p>
+              <button type="button" class="secundario" (click)="irA('catalogo')">
+                Ir al catálogo
+              </button>
+            </div>
+          }
+          @for (grupo of gruposVista; track grupo.clave) {
+            @let lista = grupos()[grupo.clave];
+            @if (lista.length) {
+              <div class="grupo" [attr.data-grupo]="grupo.clave">
+                <h2>
+                  {{ grupo.titulo }} <span class="contador">{{ lista.length }}</span>
+                </h2>
+                <ul class="lista-ofertas">
+                  @for (o of lista; track o.idSubasta) {
+                    <li>
+                      <div class="bien">
+                        <strong>{{ o.descripcion }}</strong>
+                        <span class="categoria">{{ o.categoria }}</span>
+                        <span class="fecha"
+                          >{{ o.idSubasta }} · ofertó el
+                          {{ o.enviadaEn | date: 'd MMM, h:mm a' }}</span
+                        >
+                      </div>
+                      <div class="dato">
+                        <span>Mi oferta</span>
+                        <strong>{{ o.valor | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</strong>
+                      </div>
+                      <div class="dato">
+                        @switch (grupo.clave) {
+                          @case ('ABIERTA') {
+                            <span>Cierra en</span>
+                            <strong class="reloj" [class.pronto]="cierraPronto(o.fechaCierre)">{{
+                              textoRestante(o.fechaCierre)
+                            }}</strong>
+                          }
+                          @case ('GANADA') {
+                            <span>Compra</span>
+                            <strong
+                              class="estado"
+                              [attr.data-estado]="compraDe(o.idSubasta)?.estado"
+                              >{{ textoEstado(compraDe(o.idSubasta)?.estado ?? '') }}</strong
+                            >
+                          }
+                          @case ('POR_DEFINIR') {
+                            <span>Cerró</span>
+                            <strong>{{ o.fechaCierre | date: 'h:mm a' }}</strong>
+                          }
+                          @default {
+                            <span>Cerró</span>
+                            <strong>{{ o.fechaCierre | date: 'd MMM' }}</strong>
+                          }
+                        }
+                      </div>
+                      <div class="acciones">
+                        @if (grupo.clave === 'GANADA') {
+                          @if (compraDe(o.idSubasta)?.estado === 'CREADA') {
+                            <button
+                              type="button"
+                              [disabled]="ocupado()"
+                              (click)="seleccionarCompra(compraDe(o.idSubasta)!.numeroCompra)"
+                            >
+                              Continuar compra
+                            </button>
+                          } @else {
+                            <button type="button" class="secundario" (click)="irA('compras')">
+                              Ver compra
+                            </button>
+                          }
+                        }
+                        @if (grupo.clave === 'ABIERTA') {
+                          <button
+                            type="button"
+                            class="enlace"
+                            [disabled]="ocupado()"
+                            (click)="suscribirse({ tipo: 'CAMBIOS_OFERTA', valor: o.idSubasta })"
+                          >
+                            Avisarme si me superan
+                          </button>
+                        }
+                        @if (grupo.clave === 'NO_GANADA') {
+                          <button type="button" class="enlace" (click)="olvidarOferta(o.idSubasta)">
+                            Quitar de la lista
+                          </button>
+                        }
+                      </div>
+                    </li>
+                  }
+                </ul>
+              </div>
+            }
+          }
+          <p class="nota">
+            Se muestran las ofertas hechas desde este navegador. Si alguien supera su oferta le
+            llega un aviso al celular y al correo cuando sigue la subasta.
+          </p>
         </section>
       }
       @case ('compras') {
         <section class="tarjeta">
           <h1>Mis compras</h1>
+          <p class="conteo">Los estados se actualizan solos.</p>
           <table>
             <thead>
               <tr>
@@ -289,9 +483,17 @@
       @case ('publicar') {
         <section class="tarjeta estrecha">
           <h1>Publicar subasta</h1>
+          <p class="conteo">
+            Escriba el id de una subasta cargada y pendiente. Al publicarla aparece en el catálogo.
+          </p>
           <form (ngSubmit)="solicitarPublicacion(idSubastaPublicar)">
             <label
-              >Id de la subasta <input name="idSubasta" [(ngModel)]="idSubastaPublicar" required
+              >Id de la subasta
+              <input
+                name="idSubasta"
+                [(ngModel)]="idSubastaPublicar"
+                placeholder="Ej. SUB-0007"
+                required
             /></label>
             <button type="submit" [disabled]="ocupado()">Publicar</button>
           </form>
