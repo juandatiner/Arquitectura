@@ -125,7 +125,8 @@ export class PantallaWebSubasta {
   /** Paso I.1 (Browser → PantallaWebSubasta ingresarCredenciales(usuario, clave)) e I.2. */
   async ingresarCredenciales(usuario: string, clave: string): Promise<void> {
     await this.ejecutar(async () => {
-      const { token } = await this.proxyWSSubastaWeb.autenticar(usuario, clave);
+      // Un espacio de más al inicio o al final no es motivo de error.
+      const { token } = await this.proxyWSSubastaWeb.autenticar(usuario.trim(), clave.trim());
       this.iniciarSesion(leerSesion(token));
       this.clave = '';
       await this.consultarCatalogo(this.filtros);
@@ -386,6 +387,10 @@ export class PantallaWebSubasta {
       /* sin almacenamiento: no hay nada que borrar */
     }
     this.sesion.set(null);
+    // El formulario queda vacío para que la siguiente cuenta no se mezcle con la anterior.
+    this.usuario = '';
+    this.clave = '';
+    this.error.set(null);
     this.catalogo.set(null);
     this.carrito.set([]);
     this.suscripciones.set([]);

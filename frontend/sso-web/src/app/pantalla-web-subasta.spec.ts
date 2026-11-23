@@ -212,4 +212,33 @@ describe('PantallaWebSubasta', () => {
       'Usuario o clave incorrectos',
     );
   });
+
+  it('quita los espacios del inicio y del final antes de autenticar', async () => {
+    const fixture = TestBed.createComponent(PantallaWebSubasta);
+
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+
+    await fixture.componentInstance.ingresarCredenciales('  ana ', ' secreta  ');
+
+    expect(proxy.autenticar).toHaveBeenLastCalledWith('ana', 'secreta');
+  });
+
+  it('al salir deja el formulario vacío para la siguiente cuenta', async () => {
+    const fixture = TestBed.createComponent(PantallaWebSubasta);
+    const pantalla = fixture.componentInstance as unknown as {
+      usuario: string;
+      clave: string;
+      salir(): void;
+    };
+    proxy.autenticar.mockResolvedValue({ token: TOKEN });
+    proxy.consultarCatalogo.mockResolvedValue({ contenido: [], pagina: 0, tamano: 10, total: 0 });
+    pantalla.usuario = 'admin';
+    await fixture.componentInstance.ingresarCredenciales('admin', 'secreta');
+
+    pantalla.salir();
+
+    expect(pantalla.usuario).toBe('');
+    expect(pantalla.clave).toBe('');
+  });
 });
