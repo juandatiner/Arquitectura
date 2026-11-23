@@ -44,7 +44,7 @@ services/        componentes Java del diagrama (Maven multi-módulo), incluidos 
 services-dotnet/ MSPago, YoPagoBackEnd y YoPagoFrontEnd (.NET 8)
 frontend/        sso-web → SSOWeb.zip (Angular)
 tools/           extractor del modelo VPP, verificador de código y simulador SMS
-deploy/          docker-compose y .env por máquina
+deploy/          docker-compose y .env por máquina (maquina-1, -2, -3) y en un solo equipo (dev)
 docs/            arquitectura, ADR, enunciado, modelo VPP y modelo canónico
 ```
 
@@ -61,3 +61,6 @@ Ver [`CONTRIBUTING.md`](CONTRIBUTING.md).
 
 Se construye todo en la máquina de desarrollo, se publican imágenes y cada VM ejecuta su propio
 `deploy/maquina-N/docker-compose.yml`. Pasos en [`deploy/README.md`](deploy/README.md).
+
+Para correr todo el sistema en un solo equipo (los mismos 35 contenedores en un Compose): `deploy/dev` y `make up`,
+sección [Todo en una sola máquina](deploy/README.md#todo-en-una-sola-máquina-deploydev).
