@@ -95,4 +95,14 @@ class SrvLoginTest {
                 .isInstanceOf(CredencialesInvalidasException.class);
         verifyNoInteractions(repoLogin);
     }
+
+    @Test
+    void autenticarIgnoraEspaciosAlInicioYAlFinalYMayusculasDelUsuario() {
+        when(integraLoginAD.validarCredenciales("cliente1", "Cliente1*")).thenReturn("cliente1");
+        when(repoLogin.obtenerDatosCliente("cliente1")).thenReturn(ANA);
+
+        RespuestaAcceso respuesta = srvLogin.autenticar("  Cliente1 ", " Cliente1*  ");
+
+        assertThat(respuesta.cliente()).isEqualTo(ANA);
+    }
 }

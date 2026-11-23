@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Date;
+import java.util.Locale;
 import org.springframework.stereotype.Service;
 
 /** Lógica de autenticación: valida contra AD, obtiene los datos del cliente y emite el token. */
@@ -31,7 +32,8 @@ public class SrvLogin {
 
     /** Pasos I.8 (WSAcceso → SrvLogin), I.9 (→ IntegraLoginAD) e I.11 (→ RepoLogin). */
     public RespuestaAcceso autenticar(String usuario, String clave) {
-        String identidadValidada = integraLoginAD.validarCredenciales(usuario, clave);
+        String identidadValidada =
+                integraLoginAD.validarCredenciales(normalizarUsuario(usuario), limpiar(clave));
         DatosCliente cliente = repoLogin.obtenerDatosCliente(identidadValidada);
         Instant ahora = Instant.now(reloj);
         Instant expira = ahora.plus(propiedadesToken.duracion());
@@ -50,5 +52,14 @@ public class SrvLogin {
                         .signWith(propiedadesToken.clavePrivada())
                         .compact();
         return new RespuestaAcceso(token, expira, cliente);
+    }
+
+    /** Un espacio de más al inicio o al final, o una mayúscula, no hacen fallar el ingreso. */
+    private static String normalizarUsuario(String usuario) {
+        return usuario == null ? null : usuario.strip().toLowerCase(Locale.ROOT);
+    }
+
+    private static String limpiar(String clave) {
+        return clave == null ? null : clave.strip();
     }
 }
