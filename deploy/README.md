@@ -94,3 +94,31 @@ tools/scripts/escenarios-falla.sh
 ```
 
 Los escenarios detienen y arrancan contenedores: no correrlos con usuarios conectados.
+
+## Todo en una sola máquina (`deploy/dev`)
+
+Los mismos servicios de las tres máquinas en un solo Compose (35 contenedores), para correr el sistema en un equipo
+con Docker, `make`, `python3` y `openssl`. Se construye con los Dockerfile del repositorio; no necesita registro.
+
+```bash
+cp deploy/dev/.env.example deploy/dev/.env            # llenar: claves inventadas, TASA_IMPUESTO=0.19, URL_PAGO=http://localhost:5000
+tools/scripts/generar-claves-token.sh deploy/secretos
+tools/scripts/generar-certificado-tls.sh deploy/secretos 127.0.0.1
+python3 -I tools/scripts/generar-usuario-mom.py <RABBITMQ_USUARIO> <RABBITMQ_CLAVE> deploy/secretos/mom   # los del .env
+make up                                                # construye y levanta; make down para apagar (nunca down -v)
+```
+
+Datos, con los CSV fuera del repositorio (plantillas en `tools/carga/plantillas`):
+
+```bash
+AD_CONTENEDOR=sso-dev-ad-1 AD_CLAVE_ADMIN=<AD_ADMIN_CLAVE> DB_ACCESO_CONTENEDOR=sso-dev-db-acceso-1 \
+  python3 -I tools/carga/cargar_usuarios.py usuarios.csv --destino todo
+DB_CATALOGO_CONTENEDOR=sso-dev-db-catalogo-1 DB_SUBASTA_CONTENEDOR=sso-dev-db-subasta-1 \
+  python3 -I tools/carga/cargar_subastas.py subastas.csv
+DB_YOPAGO_CONTENEDOR=sso-dev-db-yopago-1 python3 -I tools/carga/cargar_yopago.py yopago.csv
+DB_OFAC_CONTENEDOR=sso-dev-db-ofac-1 python3 -I tools/carga/cargar_ofac.py ofac.csv
+SSO_URL=http://localhost YOPAGO_URL=http://localhost:5000 bash tools/scripts/smoke-test.sh
+```
+
+Páginas: SSO `http://localhost`, YoPago `http://localhost:5000`, SMS `http://localhost:9004/sms`, correos
+`http://localhost:8025`. Un puerto ocupado se cambia en el `.env` con su variable `*_PUERTO_HOST`.
