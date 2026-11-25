@@ -4,6 +4,7 @@
 #   bash tools/scripts/una-maquina.sh [carpeta-con-csv]   configura, construye, levanta, carga y prueba
 #   bash tools/scripts/una-maquina.sh prueba              prueba completa, casos de uso I a X (requiere jq)
 #   bash tools/scripts/una-maquina.sh estado              contenedores y direcciones
+#   bash tools/scripts/una-maquina.sh subasta [minutos]   crea una subasta DEMO que cierra en N minutos (10)
 #   bash tools/scripts/una-maquina.sh apagar              apaga y conserva los datos
 #
 # Llena solo las variables vacías de deploy/dev/.env: claves y usuario de RabbitMQ al azar, y los
@@ -60,6 +61,27 @@ case "${1:-}" in
     exit 0 ;;
   estado)
     estado; direcciones; exit 0 ;;
+  subasta)
+    minutos="${2:-10}"
+    [[ "$minutos" =~ ^[0-9]+$ ]] && [ "$minutos" -ge 1 ] || falla "los minutos deben ser un número entero, ej.: subasta 10"
+    docker ps --format '{{.Names}}' | grep -qx sso-dev-db-catalogo-1 || falla "el sistema no está encendido: primero  bash tools/scripts/una-maquina.sh"
+    csv="$(mktemp)"
+    python3 -I - "$minutos" > "$csv" <<'PY'
+import datetime as d, sys
+n = d.datetime.now(d.timezone.utc)
+i = "RAP-" + n.strftime("%H%M%S")
+ini = (n - d.timedelta(hours=1)).isoformat(timespec="seconds")
+fin = (n + d.timedelta(minutes=int(sys.argv[1]))).isoformat(timespec="seconds")
+print("id_subasta,id_bien,descripcion,categoria,valor_minimo,fecha_inicio,fecha_cierre")
+print(f"{i},BIEN-{i},Bien de demostración {i},DEMO,1000000,{ini},{fin}")
+PY
+    DB_CATALOGO_CONTENEDOR=sso-dev-db-catalogo-1 DB_SUBASTA_CONTENEDOR=sso-dev-db-subasta-1 \
+      python3 -I tools/carga/cargar_subastas.py "$csv" >/dev/null
+    id="$(tail -1 "$csv" | cut -d, -f1)"
+    rm -f "$csv"
+    echo "Subasta creada: $id (categoría DEMO, cierra en $minutos minutos)."
+    echo "Publíquela con admin.sso en la pestaña Publicar."
+    exit 0 ;;
   prueba)
     command -v jq >/dev/null || falla "falta jq (sudo apt install jq · brew install jq)"
     paso "Prueba completa (casos de uso I a X)"
@@ -161,5 +183,6 @@ YOPAGO_URL="http://localhost:$(puerto YOPAGOWEB_PUERTO_HOST 5000)" \
 paso "Listo. Abra en el navegador:"
 direcciones
 echo
+echo "  Subasta de prueba: bash tools/scripts/una-maquina.sh subasta 10"
 echo "  Prueba completa:  bash tools/scripts/una-maquina.sh prueba"
 echo "  Apagar:           bash tools/scripts/una-maquina.sh apagar   (nunca down -v: borra los datos)"
